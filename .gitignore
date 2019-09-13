@@ -1,0 +1,13 @@
+# Emacs Editor Files
+*~
+
+# All Plots
+*.pdf
+*.png
+*.jpeg
+
+# Compiled Object Files 
+*.so
+*.a
+*.o
+
