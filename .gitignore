@@ -1,5 +1,7 @@
 # Emacs Editor Files
 *~
+.idea/* 
+projects/*/.idea/ 
 
 # All Plots
 *.pdf
@@ -10,4 +12,8 @@
 *.so
 *.a
 *.o
+
+# Data Files
+*.root
+*.hipo
 
