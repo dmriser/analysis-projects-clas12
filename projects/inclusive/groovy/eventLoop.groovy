@@ -25,7 +25,8 @@ histoBuilders = [
 
 requiredBanks = [
         part : "REC::Particle",
-        ec   : "REC::Calorimeter"
+        ec   : "REC::Calorimeter",
+        cc   : "REC::Cherenkov"
 ]
 
 def calculateKin (beam, target, electron){
@@ -56,22 +57,26 @@ for (filename in args){
     while(reader.hasEvent()){
         event = reader.getNextEvent()
 
-        if (requiredBanks.every { name, bank -> event.hasBank(bank) }){
+        if (processedEvents > 10){
+            break
+        }
+
+        if (requiredBanks.every { name, bank -> event.hasBank(bank) }) {
 
             def banks = requiredBanks.collect { name, bank ->
                 return [name, event.getBank(bank)]
             }.collectEntries()
 
-            def electron = (0 ..< banks.part.rows()).find{
-                banks.part.getInt("pid",it) == 11 && banks.part.getShort("status",it) < 0
-            }?.with{ ipt->
-                def particle = new Particle(11, *["px","py","pz"].collect{ axis -> banks.part.getFloat(axis,ipt)})
+            def electron = (0..<banks.part.rows()).find {
+                banks.part.getInt("pid", it) == 11 && banks.part.getShort("status", it) < 0
+            }?.with { ipt ->
+                def particle = new Particle(11, *["px", "py", "pz"].collect { axis -> banks.part.getFloat(axis, ipt) })
                 particle.index = ipt
-                particle.sector = banks.ec.getByte("sector", banks.ec.getShort("pindex").findIndexOf{ it == ipt })
+                particle.sector = banks.ec.getByte("sector", banks.ec.getShort("pindex").findIndexOf { it == ipt })
                 return particle
             }
 
-            if (electron){
+            if (electron) {
                 kinematics = calculateKin(beamParticle, targetParticle, electron)
                 histos.computeIfAbsent("w_$electron.sector", histoBuilders.w).fill(kinematics.w)
                 histos.computeIfAbsent("w_q2_$electron.sector", histoBuilders.wq2).fill(kinematics.w, kinematics.q2)
