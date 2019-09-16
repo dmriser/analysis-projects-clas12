@@ -5,7 +5,7 @@ TIME: 60
 CPU: 16
 MEMORY: 64 GB
 OS: CENTOS7
-COMMAND: chmod +x run.py; ./run.py 
+COMMAND: chmod +x run.csh; ./run.csh
 OTHER_FILES: 
-/u/home/dmriser/analysis-projects-clas12/farm_scripts/run.py
+/u/home/dmriser/analysis-projects-clas12/farm_scripts/run.csh
 
