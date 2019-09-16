@@ -11,15 +11,15 @@ momentum = { title -> new H1F("$title", "$title", 200, 0, 10.6) }
 GParsPool.withPool 2, {
     args.eachParallel { filename ->
 
-        reader = new HipoDataSource()
+        def reader = new HipoDataSource()
         reader.open(filename)
 
         while (reader.hasEvent()) {
-            event = reader.getNextEvent()
+            def event = reader.getNextEvent()
 
             if (event.hasBank("REC::Particle")) {
-                part = event.getBank('REC::Particle')
-                ele = (0..<part.rows()).find {
+                def part = event.getBank('REC::Particle')
+                def ele = (0..<part.rows()).find {
                     part.getInt("pid", it) == 11 && part.getShort("status", it) < 0
                 }?.with {
                     return new Particle(11, *["px", "py", "pz"].collect { ax -> part.getFloat(ax, it) })
