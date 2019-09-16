@@ -1,0 +1,11 @@
+NAME: clas12-analysis-dmriser 
+PROJECT: clas12
+TRACK: simulation 
+TIME: 60
+CPU: 16
+MEMORY: 64 GB
+OS: CENTOS7
+COMMAND: chmod +x run.py; ./run.py 
+OTHER_FILES: 
+/u/home/dmriser/analysis-projects-clas12/farm_scripts/run.py
+

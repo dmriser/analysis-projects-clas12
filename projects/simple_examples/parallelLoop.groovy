@@ -8,7 +8,7 @@ import groovyx.gpars.GParsPool
 histos = new ConcurrentHashMap()
 momentum = { title -> new H1F("$title", "$title", 200, 0, 10.6) }
 
-GParsPool.withPool 2, {
+GParsPool.withPool 16, {
     args.eachParallel { filename ->
 
         def reader = new HipoDataSource()
