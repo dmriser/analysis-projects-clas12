@@ -8,6 +8,10 @@ import org.jlab.groot.data.H2F
 import org.jlab.groot.data.TDirectory
 import org.jlab.io.hipo.HipoDataSource
 
+import event.DCHit
+import event.Event
+import event.EventConverter
+
 constants = [
         beamEnergy: 10.594,
 ]
@@ -18,12 +22,7 @@ targetParticle = new Particle(2212, 0, 0, 0)
 histos = new ConcurrentHashMap()
 histoBuilders = [
         dt  : { title -> new H1F("$title", "$title", 200, -10, 10) },
-]
-
-requiredBanks = [
-        part: "REC::Particle",
-        ec : "REC::Calorimeter",
-        ftof : "REC::Scintillator"
+        beta : { title -> new H1F("$title", "$title", 200, 0.2, 1.1)}
 ]
 
 Particle.metaClass.index = null
@@ -35,43 +34,30 @@ for (filename in args) {
     reader.open(filename)
 
     while (reader.hasEvent()) {
-        def event = reader.getNextEvent()
+        def dataEvent = reader.getNextEvent()
+        def event = new Event()
 
-        if (requiredBanks.every { name, bank -> event.hasBank(bank) }) {
+        //EventConverter.convertScalar(dataEvent, event)
+        EventConverter.convertPart(dataEvent, event)
 
-            def banks = requiredBanks.collect { name, bank ->
-                return [name, event.getBank(bank)]
-            }.collectEntries()
-
-            def electron = (0..<banks.part.rows()).find {
-                banks.part.getInt("pid", it) == 11 && banks.part.getShort("status", it) < 0
-            }?.with { ipt ->
-                def particle = new Particle(11, *["px", "py", "pz"].collect { axis -> banks.part.getFloat(axis, ipt) })
-                particle.index = ipt
-                particle.sector = banks.ec.getByte("sector", banks.ec.getShort("pindex").findIndexOf { it == ipt })
-                return particle
-            }
-
-            timeOfFlight = (0 ..< banks.ftof.rows()).collect{ index ->
-                [banks.ftof.getShort('pindex',index).toInteger(),
-                 [time:banks.ftof.getFloat('time',index), path:banks.ftof.getFloat('path',index)]
-                ]
-            }.collectEntries()
-
-            if(timeOfFlight.containsKey(electron.index)){
-                def startTime = timeOfFlight.get(electron.index).time
-                timeOfFlight.each{ index, data ->
-                    if (banks.part.getInt("pid", index) == 211){
-                        def tof = data.time - startTime
-                        def pion = new Particle(211, *["px", "py", "pz"].collect { axis ->
-                            banks.part.getFloat(axis, index) })
-
-                        println(data.path / data.time)
-                    }
-                }
-            }
-
+        def electronInds = (0 ..< event.npart).findAll{ index ->
+            event.pid[index]==11 && event.status[index]<0
         }
+
+        def pionInds = (0 ..< event.npart).findAll{ index ->
+            event.pid[index]==211
+        }.sort{ index -> event.p[index] }.reverse()
+
+        if (electronInds && pionInds){
+            def eIdx = electronInds.getAt(0)
+            def pIdx = pionInds.getAt(0)
+            def betaPred = 1 / Math.sqrt( 1 + (PDGDatabase.getParticleMass(211) / event.p[pIdx])**2 )
+
+            if (event.tof_status.contains(pIdx)){
+                def tPred = event.tof_path[pIdx] / betaPred
+            }
+        }
+
     }
 }
 
