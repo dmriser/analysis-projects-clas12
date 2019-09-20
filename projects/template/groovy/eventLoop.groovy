@@ -7,6 +7,8 @@ import org.jlab.groot.data.H1F
 import org.jlab.groot.data.H2F
 import org.jlab.groot.data.TDirectory
 import org.jlab.io.hipo.HipoDataSource
+import event.EventConverter
+import pid.electron.ElectronFromEvent
 
 constants = [
         beamEnergy: 10.594,
@@ -18,44 +20,57 @@ targetParticle = new Particle(2212, 0, 0, 0)
 histos = new ConcurrentHashMap()
 histoBuilders = [
         w  : { title -> new H1F("$title", "$title", 60, 0.5, 4.5) },
+        missing_mass  : { title -> new H1F("$title", "$title", 60, -1, 1) },
 ]
 
-requiredBanks = [
-        part: "REC::Particle",
-        ec : "REC::Calorimeter"
+def electronId = new ElectronFromEvent()
+electronCuts = [
+        electronId.passElectronStatus,
+        electronId.passElectronNpheCut,
+        electronId.passElectronVertexCut,
+        electronId.passElectronPCALFiducialCut,
+        electronId.passElectronEIEOCut,
+        electronId.passElectronDCR1,
+        electronId.passElectronDCR2,
+        electronId.passElectronDCR3
 ]
-
-Particle.metaClass.index = null
-Particle.metaClass.sector = null
 
 for (filename in args) {
     def reader = new HipoDataSource()
     reader.open(filename)
 
     while (reader.hasEvent()) {
-        def event = reader.getNextEvent()
+        def dataEvent = reader.getNextEvent()
+        def event = EventConverter.convert(dataEvent)
 
-        if (requiredBanks.every { name, bank -> event.hasBank(bank) }) {
+        def electrons = (0 ..< event.npart).findAll{event.charge[it] < 0}.findAll{
+            electronCuts.every{cut -> cut(event, it)}
+        }.collect{ new Particle(11,event.px[it],event.py[it],event.pz[it]) }
+        //println(electrons)
 
-            def banks = requiredBanks.collect { name, bank ->
-                return [name, event.getBank(bank)]
-            }.collectEntries()
+        def protons = (0 ..< event.npart).findAll{event.pid[it] == 2212}.collect{
+            new Particle(2212,event.px[it],event.py[it],event.pz[it])
+        }
+        //println(protons)
 
-            def electron = (0..<banks.part.rows()).find {
-                banks.part.getInt("pid", it) == 11 && banks.part.getShort("status", it) < 0
-            }?.with { ipt ->
-                def particle = new Particle(11, *["px", "py", "pz"].collect { axis -> banks.part.getFloat(axis, ipt) })
-                particle.index = ipt
-                particle.sector = banks.ec.getByte("sector", banks.ec.getShort("pindex").findIndexOf { it == ipt })
-                return particle
-            }
+        electrons.each{ electron ->
+            def q = new Particle(beamParticle)
+            q.combine(electron, -1)
 
-            if (electron){
-                // Analysis
+            def missing = new Particle(beamParticle)
+            missing.combine(targetParticle, 1)
+            missing.combine(electron, -1)
+            histos.computeIfAbsent("w", histoBuilders.w).fill(missing.mass2().abs())
+
+            protons.each{ proton ->
+                def miss = new Particle(missing)
+                miss.combine(proton, -1)
+                histos.computeIfAbsent("missing_mass", histoBuilders.missing_mass).fill(miss.mass2())
             }
         }
     }
 }
+
 
 out = new TDirectory()
 out.mkdir("/hist")
