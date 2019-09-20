@@ -63,7 +63,7 @@ for (filename in args) {
                 println("chi-2 = " + event.dc_chi2.get(index) + ", ndf = " + event.dc_ndf.get(index))
             }
         }
-        */
+
 
         def electronResults = (0 ..< event.npart).collect{ index ->
             return [index, electronCuts.collect{cut->cut(event,index)}]
@@ -74,6 +74,12 @@ for (filename in args) {
             !cutResults.contains(false)
         }
         println(result)
+        */
+
+        if (event.mc_status) {
+            println('Monte Carlo Event with ' + event.mc_npart + ' particles.')
+            println(event.mc_p.values())
+        }
 
         eventIndex++
     }
