@@ -47,7 +47,7 @@ for (filename in args) {
                  p : event.p[it], beta : event.beta[it], index:it]
             }.each{
                 if (event.tof_status.contains(it.index)){
-                    def dt = calc_dt(it, 211, event.start_time + event.rf_time)
+                    def dt = calc_dt(it, 211, event.start_time)
                     histos.computeIfAbsent("tof_beta_p_sector" + it.sector, histoBuilders.beta_p).fill(it.p, it.beta)
                     histos.computeIfAbsent("delta_t_sector" + it.sector + "_paddle" + it.paddle, histoBuilders.dt).fill(dt)
                     histos.computeIfAbsent("delta_t_sector" + it.sector, histoBuilders.dt).fill(dt)
