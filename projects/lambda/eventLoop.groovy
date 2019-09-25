@@ -46,6 +46,21 @@ def pairs(def l) {
     l.subsequences().findAll {it.size() == 2}
 }
 
+def getCombos = {negatives, positives ->
+    combos = []
+    (0 ..< negatives.size()).each{ ineg ->
+        (0 ..< positives.size()).each{ ipos ->
+            (ipos+1 ..< positives.size()).each{ jpos ->
+                combos.add(
+                        [negatives[ineg], positives[ipos], positives[jpos]])
+                combos.add(
+                        [negatives[ineg], positives[jpos], positives[ipos]])
+            }
+        }
+    }
+    return combos
+}
+
 def electronId = new ElectronFromEvent()
 
 electronCuts = [
@@ -60,13 +75,13 @@ electronCuts = [
 def histos = new ConcurrentHashMap()
 histoBuilders = [
         ncombos : { title -> new H1F("$title", "$title", 10, 0, 10)},
-        mmkp : { title -> new H1F("$title", "$title", 100, 0, 4)},
-        mmpkp : { title -> new H1F("$title", "$title", 100, 0, 4)},
-        mmpkpkm : { title -> new H1F("$title", "$title", 100, -2, 2)},
-        mmpkp_mmpkm : { title -> new H2F("$title", "$title", 100, 0, 1, 100, 0, 1)},
-        im_kk : { title -> new H1F("$title", "$title", 100, 0.8, 2.0)},
-        im_pkm : { title -> new H1F("$title", "$title", 100, 1.3, 3.0)},
-        im_kk_pkm : { title -> new H2F("$title", "$title", 100, 0.8, 1.3, 100, 1.3, 1.8)}
+        mmkp : { title -> new H1F("$title", "$title", 200, 0, 4)},
+        mmpkp : { title -> new H1F("$title", "$title", 200, 0, 4)},
+        mmpkpkm : { title -> new H1F("$title", "$title", 200, -2, 2)},
+        mmpkp_mmpkm : { title -> new H2F("$title", "$title", 200, 0, 1, 200, 0, 1)},
+        im_kk : { title -> new H1F("$title", "$title", 200, 0.8, 2.0)},
+        im_pkm : { title -> new H1F("$title", "$title", 200, 1.3, 3.0)},
+        im_kk_pkm : { title -> new H2F("$title", "$title", 200, 0.8, 1.3, 200, 1.3, 1.8)}
 ]
 
 for (filename in args) {
@@ -100,12 +115,9 @@ for (filename in args) {
         // General information regarding the combos
         histos.computeIfAbsent("combos", histoBuilders.ncombos).fill(combos.size())
         eventsFound += combos.size()
-
+/*
         combos.each{ combo ->
-            def ele = combo.get(0)
-            def pro = combo.get(1)
-            def kp  = combo.get(2)
-            def km  = combo.get(3)
+            def (ele, pro, kp, km) = combo[0..3]
 
             def missing = new Particle(beam)
             missing.combine(target, 1)
@@ -118,7 +130,8 @@ for (filename in args) {
             histos.computeIfAbsent("mmpkp", histoBuilders.mmkp).fill(mmpkp)
 
             missing.combine(km, -1)
-            histos.computeIfAbsent("mmpkpkm", histoBuilders.mmpkpkm).fill(missing.mass2())
+            def mm_exclusive = missing.mass2()
+            histos.computeIfAbsent("mmpkpkm", histoBuilders.mmpkpkm).fill(mm_exclusive)
 
             missing.combine(kp, 1)
             def mmpkm = missing.mass()
@@ -132,6 +145,82 @@ for (filename in args) {
             pkm.combine(km, 1)
             histos.computeIfAbsent("im_pkm", histoBuilders.im_pkm).fill(pkm.mass())
             histos.computeIfAbsent("im_kk_pkm", histoBuilders.im_kk_pkm).fill(kk.mass(), pkm.mass())
+
+            if (mm_exclusive.abs() < 0.3){
+                histos.computeIfAbsent("mmpkp_mmpkm_exclusive", histoBuilders.mmpkp_mmpkm).fill(mmpkp, mmpkm)
+                histos.computeIfAbsent("mmpkp_exclusive", histoBuilders.mmkp).fill(mmpkp)
+                histos.computeIfAbsent("im_kk_exclusive", histoBuilders.im_kk).fill(kk.mass())
+                histos.computeIfAbsent("im_pkm_exclusive", histoBuilders.im_pkm).fill(pkm.mass())
+                histos.computeIfAbsent("im_kk_pkm_exclusive", histoBuilders.im_kk_pkm).fill(kk.mass(), pkm.mass())
+            }
+        }
+*/
+        // Select events based on the combo method.
+        if (event.charge.values().count{it > 0} >= 2 && event.charge.values().count{it < 0} >= 2){
+            def ele_index = (0 ..< event.npart).find{ event.pid[it] == 11 && event.status[it] < 0 }
+            def negatives = event.charge.findResults{ key, value ->
+                (value < 0 && key != ele_index && event.p[key] > 0.4) ? key : null
+            }
+            def positives = event.charge.findResults{ key, value ->
+                (value > 0 && event.p[key] > 0.4) ? key : null
+            }
+            def all_combos = getCombos(negatives, positives)
+            //println(ele_index)
+            //println(negatives)
+            //println(positives)
+            //println(all_combos)
+            //println("For event "+eventIndex+" processing "+all_combos.size()+" combos.")
+
+            if (ele_index != null && all_combos.size() < 13){
+                def ele = new Particle(11, event.px[ele_index], event.py[ele_index], event.pz[ele_index])
+                def masses = all_combos.each { combo_idx ->
+                    def km = new Particle(-321, event.px[combo_idx[0]], event.py[combo_idx[0]], event.pz[combo_idx[0]])
+                    def kp = new Particle(321, event.px[combo_idx[1]], event.py[combo_idx[1]], event.pz[combo_idx[1]])
+                    def pro = new Particle(2212, event.px[combo_idx[2]], event.py[combo_idx[2]], event.pz[combo_idx[2]])
+
+                    def missing = new Particle(beam)
+                    missing.combine(target, 1)
+                    missing.combine(ele, -1)
+                    missing.combine(kp, -1)
+                    missing.combine(pro, -1)
+                    missing.combine(km, -1)
+                    return [index:combo_idx, mass:missing.mass2().abs()]
+                }
+
+                def bestCombo = masses.findResult{k,v -> (v == minMass) ? k : null }
+                if (bestCombo && bestCombo.mass < 0.3){
+                    def km = new Particle(-321, event.px[combo_idx[0]], event.py[combo_idx[0]], event.pz[combo_idx[0]])
+                    def kp = new Particle(321, event.px[combo_idx[1]], event.py[combo_idx[1]], event.pz[combo_idx[1]])
+                    def pro = new Particle(2212, event.px[combo_idx[2]], event.py[combo_idx[2]], event.pz[combo_idx[2]])
+
+                    def missing = new Particle(beam)
+                    missing.combine(target, 1)
+                    missing.combine(ele, -1)
+                    missing.combine(kp, -1)
+                    histos.computeIfAbsent("mmkp", histoBuilders.mmkp).fill(missing.mass())
+
+                    missing.combine(pro, -1)
+                    def mmpkp = missing.mass()
+                    histos.computeIfAbsent("mmpkp", histoBuilders.mmkp).fill(mmpkp)
+
+                    missing.combine(km, -1)
+                    def mm_exclusive = missing.mass2()
+                    histos.computeIfAbsent("mmpkpkm", histoBuilders.mmpkpkm).fill(mm_exclusive)
+
+                    missing.combine(kp, 1)
+                    def mmpkm = missing.mass()
+                    histos.computeIfAbsent("mmpkp_mmpkm", histoBuilders.mmpkp_mmpkm).fill(mmpkp, mmpkm)
+
+                    def kk = new Particle(kp)
+                    kk.combine(km, 1)
+                    histos.computeIfAbsent("im_kk", histoBuilders.im_kk).fill(kk.mass())
+
+                    def pkm = new Particle(pro)
+                    pkm.combine(km, 1)
+                    histos.computeIfAbsent("im_pkm", histoBuilders.im_pkm).fill(pkm.mass())
+                    histos.computeIfAbsent("im_kk_pkm", histoBuilders.im_kk_pkm).fill(kk.mass(), pkm.mass())
+                }
+            }
         }
 
         eventIndex++
