@@ -1,0 +1,22 @@
+[
+    {
+        "name": "CUSTOM::Bank",
+        "group": 300,
+        "item" : 1,
+        "info": "Custom bank definition",
+        "entries": [
+            {"name":"shortVar", "type":"S", "info":"A short variable"},
+            {"name":"byteVar",  "type":"B", "info":"A byte variable"},
+            {"name":"floatVar", "type":"F", "info":"A float variable"}
+        ]
+    },
+    {
+        "name": "DR::PID",
+        "group": 300,
+        "item" : 2,
+        "info": "David made this PID bank for testing",
+        "entries": [
+            {"name":"pid", "type":"S", "info":"PID code"}
+        ]
+    }
+]

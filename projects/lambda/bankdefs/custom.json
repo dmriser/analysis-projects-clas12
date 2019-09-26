@@ -1,0 +1,15 @@
+[
+    {
+        "name": "SKIM::ParticleID",
+        "group": 300,
+        "item" : 1,
+        "info": "Particle identification assigned by minimization of the missing mass, considering all charge combos.",
+        "entries": [
+            {"name":"ele", "type":"I", "info":"index of electron"},
+            {"name":"pro", "type":"I", "info":"index of proton"},
+            {"name":"kp", "type":"I", "info":"index of positive kaon"},
+            {"name":"km", "type":"I", "info":"index of negative kaon"},
+            {"name":"missingMass2", "type":"F", "info":"missing mass of event"}
+        ]
+    }
+]
