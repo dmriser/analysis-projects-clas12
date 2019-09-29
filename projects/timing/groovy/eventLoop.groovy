@@ -39,6 +39,10 @@ GParsPool.withPool 2, {
             def dataEvent = reader.getNextEvent()
             def event = EventConverter.convert(dataEvent)
 
+            if (event.tof_status.contains(0)){
+                println(event.tof_layer[0])
+            }
+
             (0..<event.npart).find { event.pid[it] == 11 && event.status[it] < 0 }.with {
                 (0..<event.npart).findAll { event.charge[it] > 0 }.collect {
                     [path  : event.tof_path[it], time: event.tof_time[it],

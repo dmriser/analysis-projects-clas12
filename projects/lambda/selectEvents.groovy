@@ -31,8 +31,13 @@ def loadSkimParticleID(dataEvent, event){
 
 def histos = new ConcurrentHashMap()
 histoBuilders = [
-        missing_mass : { title -> new H1F("$title", "$title", 100, -1.0, 1.0) },
-        missing_mass_energy : { title -> new H2F("$title", "$title", 100, -1.0, 1.0, 100, -1.0, 1.0)}
+        missing_mass : { title -> new H1F("$title", "$title", 200, -1.0, 1.0) },
+        missing_mass_energy : { title -> new H2F("$title", "$title", 100, -1.0, 1.0, 100, -1.0, 1.0)},
+        im_kk : { title -> new H1F("$title", "$title", 200, 0.7, 2.5)},
+        im_pkm : { title -> new H1F("$title", "$title", 200, 1.4, 2.5) },
+        im_kk_pk : { title -> new H2F("$title", "$title", 100, 0.7, 1.6, 100, 1.2, 2.5)},
+        im_pk_pk : { title -> new H2F("$title", "$title", 100, 1.4, 2.5, 100, 1.2, 2.5)},
+        missing_mass_km : { title -> new H1F("$title", "$title", 200, 0.0, 2.0)}
 ]
 
 for (filename in args) {
@@ -65,6 +70,36 @@ for (filename in args) {
         histos.computeIfAbsent("missing_energy", histoBuilders.missing_mass).fill(missing.e())
         histos.computeIfAbsent("missing_mass_energy", histoBuilders.missing_mass_energy).fill(
                 event.missing_mass2, missing.e())
+
+        def missingKm = new Particle(beam)
+        missingKm.combine(target, 1)
+        missingKm.combine(ele, -1)
+        missingKm.combine(kp, -1)
+        missingKm.combine(pro, -1)
+        histos.computeIfAbsent("missing_mass_km", histoBuilders.missing_mass_km).fill(missingKm.mass())
+
+        def kk = new Particle(kp)
+        kk.combine(km, 1)
+        histos.computeIfAbsent("invmass_kk", histoBuilders.im_kk).fill(kk.mass())
+
+        def pkm = new Particle(pro)
+        pkm.combine(km, 1)
+        histos.computeIfAbsent("invmass_pkm", histoBuilders.im_pkm).fill(pkm.mass())
+
+        def pkp = new Particle(pro)
+        pkp.combine(kp, 1)
+        histos.computeIfAbsent("invmass_pkp", histoBuilders.im_pkm).fill(kk.mass())
+        histos.computeIfAbsent("invmass_kk_pkp", histoBuilders.im_kk_pk).fill(kk.mass(), pkp.mass())
+        histos.computeIfAbsent("invmass_kk_pkm", histoBuilders.im_kk_pk).fill(kk.mass(), pkm.mass())
+        histos.computeIfAbsent("invmass_pkp_pkm", histoBuilders.im_pk_pk).fill(pkp.mass(), pkm.mass())
+
+        if (missing.mass() < 0.1 && missing.e().abs() < 0.1){
+            histos.computeIfAbsent("invmass_kk_ex", histoBuilders.im_kk).fill(kk.mass())
+            histos.computeIfAbsent("invmass_pkp_ex", histoBuilders.im_pkm).fill(kk.mass())
+            histos.computeIfAbsent("invmass_kk_pkp_ex", histoBuilders.im_kk_pk).fill(kk.mass(), pkp.mass())
+            histos.computeIfAbsent("invmass_kk_pkm_ex", histoBuilders.im_kk_pk).fill(kk.mass(), pkm.mass())
+            histos.computeIfAbsent("invmass_pkp_pkm_ex", histoBuilders.im_pk_pk).fill(pkp.mass(), pkm.mass())
+        }
 
         eventIndex++
     }

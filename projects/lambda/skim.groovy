@@ -28,7 +28,6 @@ def getCombos = { negatives, positives ->
     return combos
 }
 
-
 // Setup custom bank structure to be written
 // alongside the standard banks in skimmed file.
 def factory = new SchemaFactory()
@@ -70,10 +69,10 @@ for (filename in args) {
                     missing.combine(kp, -1)
                     missing.combine(pro, -1)
                     missing.combine(km, -1)
-                    return [index: combo_idx, mass: missing.mass2()]
+                    return [index: combo_idx, mass: missing.mass2(), energy: missing.e()]
                 }
 
-                masses.min { it.mass.abs() }?.with {
+                masses.min { it.energy.abs() }?.with {
                     if (it.mass.abs() < 0.8) {
                         def outputEvent = writer.createEvent()
                         def customBank = outputEvent.createBank("SKIM::ParticleID", 1)
