@@ -1,9 +1,9 @@
 NAME: clas12-analysis-dmriser 
 PROJECT: clas12
 TRACK: simulation 
-TIME: 60
+TIME: 360
 CPU: 16
-MEMORY: 64 GB
+MEMORY: 4 GB
 OS: CENTOS7
 COMMAND: chmod +x run.csh; ./run.csh
 OTHER_FILES: 
