@@ -4,6 +4,7 @@ import groovyx.gpars.GParsPool
 import java.util.concurrent.ConcurrentHashMap
 import org.jlab.clas.pdg.PDGDatabase
 import org.jlab.clas.physics.Particle
+import org.jlab.clas.physics.Vector3
 import org.jlab.groot.data.TDirectory
 import org.jlab.groot.data.H1F
 import org.jlab.groot.data.H2F
@@ -14,16 +15,32 @@ import org.jlab.io.hipo.HipoDataSource
 def beam = new Particle(11, 0.0, 0.0, 10.594)
 def target = new Particle(2212, 0.0, 0.0, 0.0)
 
-def histos = new ConcurrentHashMap()
+histos = new ConcurrentHashMap()
 histoBuilders = [
         w       : { title -> new H1F("$title", "$title", 200, 0.6, 1.3) },
         wzoom   : { title -> new H1F("$title", "$title", 200, 0.75, 1.15) },
-        dwphi   : { title -> new H2F("$title", "$title", 200, -30, 330, 200, -0.2, 0.2) },
-        dwtheta : { title -> new H2F("$title", "$title", 200, 5, 15, 200, -0.2, 0.2) },
-        dwrelphi: { title -> new H2F("$title", "$title", 200, -30, 30, 200, -0.2, 0.2) },
-        dtheta : { title -> new H1F("$title", "$title", 200, -5, 5) },
-        dp : { title -> new H1F("$title", "$title", 200, -0.5, 0.5) }
+        dtheta  : { title -> new H1F("$title", "$title", 200, -5, 5) },
+        dp      : { title -> new H1F("$title", "$title", 200, -0.5, 0.5) },
+        dvertex : { title -> new H1F("$title", "$title", 200, -5, 5) },
+        ebeam   : { title -> new H1F("$title", "$title", 200, 9.9, 11.2) },
+        theta_ep: { title -> new H1F("$title", "$title", 200, 120, 180) },
+        emissing: { title -> new H1F("$title", "$title", 200, -1, 1) },
+]
 
+// 2-D histograms with naming x_y
+histoBuilders2 = [
+        phi_dw       : { title -> new H2F("$title", "$title", 200, -30, 330, 200, -0.2, 0.2) },
+        theta_dw     : { title -> new H2F("$title", "$title", 200, 5, 15, 200, -0.2, 0.2) },
+        relphi_dw    : { title -> new H2F("$title", "$title", 200, -30, 30, 200, -0.2, 0.2) },
+        relphi_theta : { title -> new H2F("$title", "$title", 200, -30, 30, 200, 5, 15) },
+        phi_theta    : { title -> new H2F("$title", "$title", 200, -30, 330, 200, 5, 15) },
+        p_theta      : { title -> new H2F("$title", "$title", 200, 0, 11, 200, 5, 15) },
+        dvertex_p    : { title -> new H2F("$title", "$title", 200, -5, 5, 200, 0, 11) },
+        dvertex_theta: { title -> new H2F("$title", "$title", 200, -5, 5, 200, 5, 15) },
+        dvertex_rphi : { title -> new H2F("$title", "$title", 200, -5, 5, 200, -30, 30) },
+        dvertex_phi  : { title -> new H2F("$title", "$title", 200, -5, 5, 200, -30, 330) },
+        pres_p       : { title -> new H2F("$title", "$title", 200, -1, 1, 200, 0, 11) },
+        pres_theta   : { title -> new H2F("$title", "$title", 200, -1, 1, 200, 5, 15) },
 ]
 
 def shiftPhi(phi) {
@@ -56,12 +73,11 @@ def angleBetween(v1, v2) {
 }
 
 def getKin(beam, target, electron) {
+
     def missing = new Particle(beam)
     missing.combine(target, 1)
     missing.combine(electron, -1)
     def w = missing.mass()
-    //missing.combine(proton, -1)
-    //def missing_mass = missing.mass2()
 
     def q = new Particle(beam)
     q.combine(electron, -1)
@@ -71,7 +87,27 @@ def getKin(beam, target, electron) {
     def y = nu / beam.e()
     def x = q2 / (2 * nu * PDGDatabase.getParticleMass(2212))
 
-    /*def zaxis = new Vector3(0, 0, 1)
+    return [x: x, y: y, w: w, nu: nu, q2: q2]
+}
+
+def getPKin(beam, target, electron, proton) {
+
+    def missing = new Particle(beam)
+    missing.combine(target, 1)
+    missing.combine(electron, -1)
+    def w = missing.mass()
+    missing.combine(proton, -1)
+    def missing_mass = missing.mass2()
+
+    def q = new Particle(beam)
+    q.combine(electron, -1)
+    def q2 = -1 * q.mass2()
+
+    def nu = beam.e() - electron.e()
+    def y = nu / beam.e()
+    def x = q2 / (2 * nu * PDGDatabase.getParticleMass(2212))
+
+    def zaxis = new Vector3(0, 0, 1)
     def enorm = electron.vector().vect().cross(zaxis)
     def pnorm = proton.vector().vect().cross(zaxis)
     def phi = enorm.theta(pnorm)
@@ -93,10 +129,39 @@ def getKin(beam, target, electron) {
             missing_mass: missing_mass, missing_energy: missing.e(),
             dtheta_ele  : dtheta_ele, dtheta_pro: dtheta_pro,
             dp_ele      : dp_ele, dp_pro: dp_pro]
-*/
-    return [x: x, y: y, w: w, nu: nu, q2: q2]
 }
 
+def getElectronDeltas(beam, ele) {
+    def calc_energy = beam.e() / (1 + (beam.e() / PDGDatabase.getParticleMass(2212))) * (1 - Math.cos(ele.theta()))
+    def delta_energy = calc_energy - ele.e()
+    def calc_theta = Math.toDegrees(Math.acos(1 + (PDGDatabase.getParticleMass(2212) / beam.e()) * (1 - beam.e() / ele.e())))
+    def delta_theta = calc_theta - Math.toDegrees(ele.theta())
+    return [delta_theta, delta_energy]
+}
+
+def fillElectronHistos(ele, kin, sector, sphi, rphi, dw, delta_theta, delta_energy, title) {
+
+    // 1-D
+    histos.computeIfAbsent("w_" + title, histoBuilders.w).fill(kin.w)
+    histos.computeIfAbsent("wzoom_" + title, histoBuilders.wzoom).fill(kin.w)
+    histos.computeIfAbsent("dp_ele", histoBuilders.dp).fill(delta_energy)
+    histos.computeIfAbsent("dtheta_ele", histoBuilders.dtheta).fill(delta_theta)
+
+    // 2-D
+    histos.computeIfAbsent("rphi_dw_" + title, histoBuilders2.relphi_dw).fill(rphi, dw)
+    histos.computeIfAbsent("phi_dw_" + title, histoBuilders2.phi_dw).fill(sphi, dw)
+    histos.computeIfAbsent("theta_dw_" + title, histoBuilders2.theta_dw).fill(Math.toDegrees(ele.theta()), dw)
+
+    // 1-D
+    histos.computeIfAbsent("w_" + title + "_" + sector, histoBuilders.w).fill(kin.w)
+    histos.computeIfAbsent("wzoom_" + title + "_" + sector, histoBuilders.wzoom).fill(kin.w)
+    histos.computeIfAbsent("dp_ele_" + title + "_" + sector, histoBuilders.dp).fill(delta_energy)
+    histos.computeIfAbsent("dtheta_ele_" + title + "_" + sector, histoBuilders.dtheta).fill(delta_theta)
+
+    // 2-D
+    histos.computeIfAbsent("relphi_dw_" + title + "_" + sector, histoBuilders2.relphi_dw).fill(rphi, dw)
+    histos.computeIfAbsent("theta_dw_" + title + "_" + sector, histoBuilders2.theta_dw).fill(Math.toDegrees(ele.theta()), dw)
+}
 
 GParsPool.withPool 4, {
     args.eachParallel { filename ->
@@ -123,50 +188,21 @@ GParsPool.withPool 4, {
                 def sphi = shiftPhi(phi)
                 def rphi = relativePhi(sphi, sector)
                 def dw = PDGDatabase.getParticleMass(2212) - kin.w
+                def (delta_theta, delta_e) = getElectronDeltas(beam,ele)
 
-                //getting data resolution
-                def calculated_energy = beam.e() /( 1 + (beam.e()/0.938)*(1 - Math.cos(ele.theta())))
-                def measured_energy = ele.e()
-                def delta_energy = calculated_energy - measured_energy
-                def calc_theta = Math.toDegrees(Math.acos( 1 + (0.938 / beam.e())*(1 - beam.e()/ele.e())))
-                def meas_theta = Math.toDegrees(ele.theta())
-                def delta_theta = calc_theta - meas_theta;
+                fillElectronHistos(ele, kin, sector, sphi, rphi, dw, delta_theta, delta_e, "base")
 
-                // Integrated
-                histos.computeIfAbsent("w", histoBuilders.w).fill(kin.w)
-                histos.computeIfAbsent("wzoom", histoBuilders.wzoom).fill(kin.w)
-                histos.computeIfAbsent("dwrelphi", histoBuilders.dwrelphi).fill(rphi, dw)
-                histos.computeIfAbsent("dwphi", histoBuilders.dwphi).fill(sphi, dw)
-                histos.computeIfAbsent("dwtheta", histoBuilders.dwtheta).fill(Math.toDegrees(ele.theta()), dw)
 
-                // By sector
-                histos.computeIfAbsent("w_$sector", histoBuilders.w).fill(kin.w)
-                histos.computeIfAbsent("wzoom_$sector", histoBuilders.wzoom).fill(kin.w)
-                histos.computeIfAbsent("dwrelphi_$sector", histoBuilders.dwrelphi).fill(rphi, dw)
-                histos.computeIfAbsent("dwtheta_$sector", histoBuilders.dwtheta).fill(Math.toDegrees(ele.theta()), dw)
+                (0..<event.npart).findAll { event.pid[it] == 2212 }.each {
+                    def pro = new Particle(2212, event.px[it], event.py[it], event.pz[it])
+                    def pkin = getPKin(beam, target, ele, pro)
 
-                if (kin.w > 0.7 && kin.w < 1.2) {
-                    histos.computeIfAbsent("dpele", histoBuilders.dp).fill(delta_energy)
-                    histos.computeIfAbsent("dthetaele", histoBuilders.dtheta).fill(delta_theta)
-                    histos.computeIfAbsent("dpele_$sector", histoBuilders.dp).fill(delta_energy)
-                    histos.computeIfAbsent("dthetaele_$sector", histoBuilders.dtheta).fill(delta_theta)
+                    if (event.tof_status.contains(it)){
+                        fillElectronHistos(ele, kin, sector, sphi, rphi, dw, delta_theta, delta_e, "tof_proton")
+                    } else if (event.ctof_status.contains(it)){
+                        fillElectronHistos(ele, kin, sector, sphi, rphi, dw, delta_theta, delta_e, "ctof_proton")
+                    }
                 }
-
-                def protons = (0 ..< event.npart).findAll{ event.pid[it] == 2212 && event.tof_status.contains(it) }
-                if (protons.size() > 0){
-                    histos.computeIfAbsent("w_proton", histoBuilders.w).fill(kin.w)
-                    histos.computeIfAbsent("wzoom_proton", histoBuilders.wzoom).fill(kin.w)
-                    histos.computeIfAbsent("dwrelphi_proton", histoBuilders.dwrelphi).fill(rphi, dw)
-                    histos.computeIfAbsent("dwphi_proton", histoBuilders.dwphi).fill(sphi, dw)
-                    histos.computeIfAbsent("dwtheta_proton", histoBuilders.dwtheta).fill(Math.toDegrees(ele.theta()), dw)
-
-                    // By sector
-                    histos.computeIfAbsent("w_proton_$sector", histoBuilders.w).fill(kin.w)
-                    histos.computeIfAbsent("wzoom_proton_$sector", histoBuilders.wzoom).fill(kin.w)
-                    histos.computeIfAbsent("dwrelphi_proton_$sector", histoBuilders.dwrelphi).fill(rphi, dw)
-                    histos.computeIfAbsent("dwtheta_proton_$sector", histoBuilders.dwtheta).fill(Math.toDegrees(ele.theta()), dw)
-                }
-
             }
 
             eventIndex++
