@@ -19,7 +19,7 @@ def getKin(beam, target, electron) {
     def missing = new Particle(beam)
     missing.combine(target, 1)
     missing.combine(electron, -1)
-    def w = missing.mass2().abs()
+    def w = missing.mass()
     //missing.combine(proton, -1)
     //def missing_mass = missing.mass2()
 
@@ -73,7 +73,7 @@ for (filename in args) {
         }?.with{ i ->
             def ele = new Particle(11, event.px[i], event.py[i], event.pz[i])
             def kin = getKin(beam, target, ele)
-            if (kin.w < 1.2 && kin.w > 0.7){
+            if (kin.w < 1.3 && kin.w > 0.6){
                 writer.writeEvent(dataEvent)
             }
         }

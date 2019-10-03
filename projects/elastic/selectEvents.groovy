@@ -19,8 +19,8 @@ histos = new ConcurrentHashMap()
 histoBuilders = [
         w       : { title -> new H1F("$title", "$title", 200, 0.6, 1.3) },
         wzoom   : { title -> new H1F("$title", "$title", 200, 0.75, 1.15) },
-        dtheta  : { title -> new H1F("$title", "$title", 200, -5, 5) },
-        dp      : { title -> new H1F("$title", "$title", 200, -0.5, 0.5) },
+        dtheta  : { title -> new H1F("$title", "$title", 200, -15, 15) },
+        dp      : { title -> new H1F("$title", "$title", 200, -5, 5) },
         dvertex : { title -> new H1F("$title", "$title", 200, -5, 5) },
         ebeam   : { title -> new H1F("$title", "$title", 200, 9.9, 11.2) },
         theta_ep: { title -> new H1F("$title", "$title", 200, 120, 180) },
@@ -163,7 +163,7 @@ def fillElectronHistos(ele, kin, sector, sphi, rphi, dw, delta_theta, delta_ener
     histos.computeIfAbsent("theta_dw_" + title + "_" + sector, histoBuilders2.theta_dw).fill(Math.toDegrees(ele.theta()), dw)
 }
 
-GParsPool.withPool 4, {
+GParsPool.withPool 8, {
     args.eachParallel { filename ->
 
         def reader = new HipoDataSource()
