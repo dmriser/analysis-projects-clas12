@@ -76,10 +76,15 @@ for (filename in args) {
         println(result)
         */
 
-        if (event.mc_status) {
-            println('Monte Carlo Event with ' + event.mc_npart + ' particles.')
-            println(event.mc_p.values())
+        event.ctof_status.each{ i ->
+            println(event.ctof_sector[i] + ", " + event.ctof_layer[i] + ", " + event.ctof_component[i])
+            println(event.ctof_energy[i] + ", " + event.ctof_time[i] + ", " + event.ctof_path[i])
         }
+
+        //if (event.mc_status) {
+        //    println('Monte Carlo Event with ' + event.mc_npart + ' particles.')
+        //    println(event.mc_p.values())
+        //}
 
         eventIndex++
     }
