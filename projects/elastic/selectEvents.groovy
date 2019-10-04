@@ -17,30 +17,33 @@ def target = new Particle(2212, 0.0, 0.0, 0.0)
 
 histos = new ConcurrentHashMap()
 histoBuilders = [
-        w       : { title -> new H1F("$title", "$title", 200, 0.6, 1.3) },
-        wzoom   : { title -> new H1F("$title", "$title", 200, 0.75, 1.15) },
-        dtheta  : { title -> new H1F("$title", "$title", 200, -15, 15) },
-        dp      : { title -> new H1F("$title", "$title", 200, -5, 5) },
-        dvertex : { title -> new H1F("$title", "$title", 200, -5, 5) },
-        ebeam   : { title -> new H1F("$title", "$title", 200, 9.9, 11.2) },
-        theta_ep: { title -> new H1F("$title", "$title", 200, 120, 180) },
-        emissing: { title -> new H1F("$title", "$title", 200, -1, 1) },
+        w            : { title -> new H1F("$title", "$title", 200, 0.6, 1.3) },
+        wzoom        : { title -> new H1F("$title", "$title", 200, 0.75, 1.15) },
+        dtheta       : { title -> new H1F("$title", "$title", 200, -15, 15) },
+        dp           : { title -> new H1F("$title", "$title", 200, -5, 5) },
+        dvertex      : { title -> new H1F("$title", "$title", 200, -5, 5) },
+        ebeam        : { title -> new H1F("$title", "$title", 200, 9.9, 11.2) },
+        theta_ep     : { title -> new H1F("$title", "$title", 200, 120, 180) },
+        emissing     : { title -> new H1F("$title", "$title", 200, -1, 1) },
+        opening_angle: { title -> new H1F("$title", "$title", 200, 0, 180) },
 ]
 
 // 2-D histograms with naming x_y
 histoBuilders2 = [
-        phi_dw       : { title -> new H2F("$title", "$title", 200, -30, 330, 200, -0.2, 0.2) },
-        theta_dw     : { title -> new H2F("$title", "$title", 200, 5, 15, 200, -0.2, 0.2) },
-        relphi_dw    : { title -> new H2F("$title", "$title", 200, -30, 30, 200, -0.2, 0.2) },
-        relphi_theta : { title -> new H2F("$title", "$title", 200, -30, 30, 200, 5, 15) },
-        phi_theta    : { title -> new H2F("$title", "$title", 200, -30, 330, 200, 5, 15) },
-        p_theta      : { title -> new H2F("$title", "$title", 200, 0, 11, 200, 5, 15) },
-        dvertex_p    : { title -> new H2F("$title", "$title", 200, -5, 5, 200, 0, 11) },
-        dvertex_theta: { title -> new H2F("$title", "$title", 200, -5, 5, 200, 5, 15) },
-        dvertex_rphi : { title -> new H2F("$title", "$title", 200, -5, 5, 200, -30, 30) },
-        dvertex_phi  : { title -> new H2F("$title", "$title", 200, -5, 5, 200, -30, 330) },
-        pres_p       : { title -> new H2F("$title", "$title", 200, -1, 1, 200, 0, 11) },
-        pres_theta   : { title -> new H2F("$title", "$title", 200, -1, 1, 200, 5, 15) },
+        phi_dw         : { title -> new H2F("$title", "$title", 200, -30, 330, 200, -0.2, 0.2) },
+        theta_dw       : { title -> new H2F("$title", "$title", 200, 5, 15, 200, -0.2, 0.2) },
+        relphi_dw      : { title -> new H2F("$title", "$title", 200, -30, 30, 200, -0.2, 0.2) },
+        relphi_theta   : { title -> new H2F("$title", "$title", 200, -30, 30, 200, 5, 15) },
+        phi_theta      : { title -> new H2F("$title", "$title", 200, -30, 330, 200, 5, 15) },
+        p_theta        : { title -> new H2F("$title", "$title", 200, 0, 11, 200, 5, 15) },
+        dvertex_p      : { title -> new H2F("$title", "$title", 200, -5, 5, 200, 0, 11) },
+        dvertex_theta  : { title -> new H2F("$title", "$title", 200, -5, 5, 200, 5, 15) },
+        dvertex_rphi   : { title -> new H2F("$title", "$title", 200, -5, 5, 200, -30, 30) },
+        dvertex_phi    : { title -> new H2F("$title", "$title", 200, -5, 5, 200, -30, 330) },
+        p_res_p        : { title -> new H2F("$title", "$title", 200, -3, 3, 200, 0, 11) },
+        p_res_theta    : { title -> new H2F("$title", "$title", 200, -3, 3, 200, 5, 15) },
+        theta_res_p    : { title -> new H2F("$title", "$title", 200, -10, 10, 200, 0, 11) },
+        theta_res_theta: { title -> new H2F("$title", "$title", 200, -10, 10, 200, 5, 15) },
 ]
 
 def shiftPhi(phi) {
@@ -70,6 +73,10 @@ def angleBetween(v1, v2) {
     return Math.toDegrees(
             Math.acos(v1.dot(v2))
     )
+}
+
+def getDeltaVertex(event, i, j) {
+    return Math.sqrt((event.vx[j] - event.vx[i])**2 + (event.vy[j] - event.vy[i])**2 + (event.vz[j] - event.vz[i])**2)
 }
 
 def getKin(beam, target, electron) {
@@ -120,9 +127,9 @@ def getPKin(beam, target, electron, proton) {
     missing_pro.combine(target, 1)
     missing_pro.combine(electron, -1)
 
-    def dtheta_ele = Math.toDegrees(electron.theta() - missing_ele.theta())
+    def dtheta_ele = electron.theta() - missing_ele.theta()
     def dp_ele = electron.p() - missing_ele.p()
-    def dtheta_pro = Math.toDegrees(proton.theta() - missing_pro.theta())
+    def dtheta_pro = proton.theta() - missing_pro.theta()
     def dp_pro = proton.p() - missing_pro.p()
 
     return [x           : x, y: y, w: w, nu: nu, q2: q2, angle: phi,
@@ -160,7 +167,44 @@ def fillElectronHistos(ele, kin, sector, sphi, rphi, dw, delta_theta, delta_ener
 
     // 2-D
     histos.computeIfAbsent("relphi_dw_" + title + "_" + sector, histoBuilders2.relphi_dw).fill(rphi, dw)
-    histos.computeIfAbsent("theta_dw_" + title + "_" + sector, histoBuilders2.theta_dw).fill(Math.toDegrees(ele.theta()), dw)
+    histos.computeIfAbsent("theta_dw_" + title + "_" + sector, histoBuilders2.theta_dw).fill(
+            Math.toDegrees(ele.theta()), dw)
+}
+
+def fillProtonHistos(ele, pro, kin, sector, dvertex, title) {
+
+    // 1-D
+    histos.computeIfAbsent("opening_angle_ep_" + title, histoBuilders.opening_angle).fill(kin.angle)
+
+    // 2-D
+    histos.computeIfAbsent("p_res_p_ele_" + title, histoBuilders2.p_res_p).fill(kin.dp_ele, ele.p())
+    histos.computeIfAbsent("p_res_theta_ele_" + title, histoBuilders2.p_res_theta).fill(kin.dp_ele, ele.theta())
+    histos.computeIfAbsent("p_res_p_pro_" + title, histoBuilders2.p_res_p).fill(kin.dp_pro, pro.p())
+    histos.computeIfAbsent("p_res_theta_pro_" + title, histoBuilders2.p_res_theta).fill(kin.dp_pro, pro.theta())
+    histos.computeIfAbsent("dvertex_p_ele_" + title, histoBuilders2.dvertex_p).fill(dvertex, ele.p())
+    histos.computeIfAbsent("dvertex_p_pro_" + title, histoBuilders2.dvertex_p).fill(dvertex, pro.p())
+    histos.computeIfAbsent("dvertex_theta_ele_" + title, histoBuilders2.dvertex_theta).fill(dvertex, ele.theta())
+    histos.computeIfAbsent("dvertex_theta_pro_" + title, histoBuilders2.dvertex_theta).fill(dvertex, pro.theta())
+
+    // 1-D (sectors)
+    histos.computeIfAbsent("opening_angle_ep_" + title + "_" + sector, histoBuilders.opening_angle).fill(kin.angle)
+
+    // 2-D (sectors)
+    histos.computeIfAbsent("p_res_p_ele_" + title + "_" + sector, histoBuilders2.p_res_p).fill(kin.dp_ele, ele.p())
+    histos.computeIfAbsent("p_res_theta_ele_" + title + "_" + sector, histoBuilders2.p_res_theta).fill(
+            kin.dp_ele, ele.theta())
+    histos.computeIfAbsent("p_res_p_pro_" + title + "_" + sector, histoBuilders2.p_res_p).fill(kin.dp_pro, pro.p())
+    histos.computeIfAbsent("p_res_theta_pro_" + title + "_" + sector, histoBuilders2.p_res_theta).fill(
+            kin.dp_pro, pro.theta())
+    histos.computeIfAbsent("dvertex_p_ele_" + title + "_" + sector, histoBuilders2.dvertex_p).fill(
+            dvertex, ele.p())
+    histos.computeIfAbsent("dvertex_p_pro_" + title + "_" + sector, histoBuilders2.dvertex_p).fill(
+            dvertex, pro.p())
+    histos.computeIfAbsent("dvertex_theta_ele_" + title + "_" + sector, histoBuilders2.dvertex_theta).fill(
+            dvertex, ele.theta())
+    histos.computeIfAbsent("dvertex_theta_pro_" + title + "_" + sector, histoBuilders2.dvertex_theta).fill(
+            dvertex, pro.theta())
+
 }
 
 GParsPool.withPool 8, {
@@ -180,28 +224,43 @@ GParsPool.withPool 8, {
 
             (0..<event.npart).find {
                 event.pid[it] == 11 && event.status[it] < 0
-            }?.each {
-                def ele = new Particle(11, event.px[it], event.py[it], event.pz[it])
+            }?.each { idx ->
+                def ele = new Particle(11, event.px[idx], event.py[idx], event.pz[idx])
                 def kin = getKin(beam, target, ele)
-                def sector = event.dc_sector[it]
+                def sector = event.dc_sector[idx]
                 def phi = Math.toDegrees(ele.phi())
                 def sphi = shiftPhi(phi)
                 def rphi = relativePhi(sphi, sector)
                 def dw = PDGDatabase.getParticleMass(2212) - kin.w
-                def (delta_theta, delta_e) = getElectronDeltas(beam,ele)
-
+                def (delta_theta, delta_e) = getElectronDeltas(beam, ele)
                 fillElectronHistos(ele, kin, sector, sphi, rphi, dw, delta_theta, delta_e, "base")
-
 
                 (0..<event.npart).findAll { event.pid[it] == 2212 }.each {
                     def pro = new Particle(2212, event.px[it], event.py[it], event.pz[it])
                     def pkin = getPKin(beam, target, ele, pro)
+                    def dvertex = getDeltaVertex(event, idx, it)
 
-                    if (event.tof_status.contains(it)){
+
+                    if (event.tof_status.contains(it)) {
                         fillElectronHistos(ele, kin, sector, sphi, rphi, dw, delta_theta, delta_e, "tof_proton")
-                    } else if (event.ctof_status.contains(it)){
+                        fillProtonHistos(ele, pro, pkin, sector, dvertex, "tof_proton")
+
+                        if (pkin.angle > 175.0) {
+                            fillProtonHistos(ele, pro, pkin, sector, dvertex, "tof_proton_pass_angle")
+                        } else {
+                            fillProtonHistos(ele, pro, pkin, sector, dvertex, "tof_proton_fail_angle")
+                        }
+
+                    } else if (event.ctof_status.contains(it)) {
                         fillElectronHistos(ele, kin, sector, sphi, rphi, dw, delta_theta, delta_e, "ctof_proton")
+                        fillProtonHistos(ele, pro, pkin, sector, dvertex, "ctof_proton")
+                        if (pkin.angle > 175.0) {
+                            fillProtonHistos(ele, pro, pkin, sector, dvertex, "ctof_proton_pass_angle")
+                        } else {
+                            fillProtonHistos(ele, pro, pkin, sector, dvertex, "ctof_proton_fail_angle")
+                        }
                     }
+
                 }
             }
 
