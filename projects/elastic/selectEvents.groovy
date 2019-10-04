@@ -151,8 +151,8 @@ def fillElectronHistos(ele, kin, sector, sphi, rphi, dw, delta_theta, delta_ener
     // 1-D
     histos.computeIfAbsent("w_" + title, histoBuilders.w).fill(kin.w)
     histos.computeIfAbsent("wzoom_" + title, histoBuilders.wzoom).fill(kin.w)
-    histos.computeIfAbsent("dp_ele", histoBuilders.dp).fill(delta_energy)
-    histos.computeIfAbsent("dtheta_ele", histoBuilders.dtheta).fill(delta_theta)
+    //histos.computeIfAbsent("dp_ele", histoBuilders.dp).fill(delta_energy)
+    //histos.computeIfAbsent("dtheta_ele", histoBuilders.dtheta).fill(delta_theta)
 
     // 2-D
     histos.computeIfAbsent("rphi_dw_" + title, histoBuilders2.relphi_dw).fill(rphi, dw)
@@ -162,8 +162,8 @@ def fillElectronHistos(ele, kin, sector, sphi, rphi, dw, delta_theta, delta_ener
     // 1-D
     histos.computeIfAbsent("w_" + title + "_" + sector, histoBuilders.w).fill(kin.w)
     histos.computeIfAbsent("wzoom_" + title + "_" + sector, histoBuilders.wzoom).fill(kin.w)
-    histos.computeIfAbsent("dp_ele_" + title + "_" + sector, histoBuilders.dp).fill(delta_energy)
-    histos.computeIfAbsent("dtheta_ele_" + title + "_" + sector, histoBuilders.dtheta).fill(delta_theta)
+    //histos.computeIfAbsent("dp_ele_" + title + "_" + sector, histoBuilders.dp).fill(delta_energy)
+    //histos.computeIfAbsent("dtheta_ele_" + title + "_" + sector, histoBuilders.dtheta).fill(delta_theta)
 
     // 2-D
     histos.computeIfAbsent("relphi_dw_" + title + "_" + sector, histoBuilders2.relphi_dw).fill(rphi, dw)
@@ -178,32 +178,32 @@ def fillProtonHistos(ele, pro, kin, sector, dvertex, title) {
 
     // 2-D
     histos.computeIfAbsent("p_res_p_ele_" + title, histoBuilders2.p_res_p).fill(kin.dp_ele, ele.p())
-    histos.computeIfAbsent("p_res_theta_ele_" + title, histoBuilders2.p_res_theta).fill(kin.dp_ele, ele.theta())
+    //histos.computeIfAbsent("p_res_theta_ele_" + title, histoBuilders2.p_res_theta).fill(kin.dp_ele, ele.theta())
     histos.computeIfAbsent("p_res_p_pro_" + title, histoBuilders2.p_res_p).fill(kin.dp_pro, pro.p())
-    histos.computeIfAbsent("p_res_theta_pro_" + title, histoBuilders2.p_res_theta).fill(kin.dp_pro, pro.theta())
+    //histos.computeIfAbsent("p_res_theta_pro_" + title, histoBuilders2.p_res_theta).fill(kin.dp_pro, pro.theta())
     histos.computeIfAbsent("dvertex_p_ele_" + title, histoBuilders2.dvertex_p).fill(dvertex, ele.p())
     histos.computeIfAbsent("dvertex_p_pro_" + title, histoBuilders2.dvertex_p).fill(dvertex, pro.p())
-    histos.computeIfAbsent("dvertex_theta_ele_" + title, histoBuilders2.dvertex_theta).fill(dvertex, ele.theta())
-    histos.computeIfAbsent("dvertex_theta_pro_" + title, histoBuilders2.dvertex_theta).fill(dvertex, pro.theta())
+    //histos.computeIfAbsent("dvertex_theta_ele_" + title, histoBuilders2.dvertex_theta).fill(dvertex, ele.theta())
+    //histos.computeIfAbsent("dvertex_theta_pro_" + title, histoBuilders2.dvertex_theta).fill(dvertex, pro.theta())
 
     // 1-D (sectors)
     histos.computeIfAbsent("opening_angle_ep_" + title + "_" + sector, histoBuilders.opening_angle).fill(kin.angle)
 
     // 2-D (sectors)
     histos.computeIfAbsent("p_res_p_ele_" + title + "_" + sector, histoBuilders2.p_res_p).fill(kin.dp_ele, ele.p())
-    histos.computeIfAbsent("p_res_theta_ele_" + title + "_" + sector, histoBuilders2.p_res_theta).fill(
-            kin.dp_ele, ele.theta())
+    //histos.computeIfAbsent("p_res_theta_ele_" + title + "_" + sector, histoBuilders2.p_res_theta).fill(
+    //        kin.dp_ele, ele.theta())
     histos.computeIfAbsent("p_res_p_pro_" + title + "_" + sector, histoBuilders2.p_res_p).fill(kin.dp_pro, pro.p())
-    histos.computeIfAbsent("p_res_theta_pro_" + title + "_" + sector, histoBuilders2.p_res_theta).fill(
-            kin.dp_pro, pro.theta())
+    //histos.computeIfAbsent("p_res_theta_pro_" + title + "_" + sector, histoBuilders2.p_res_theta).fill(
+    //        kin.dp_pro, pro.theta())
     histos.computeIfAbsent("dvertex_p_ele_" + title + "_" + sector, histoBuilders2.dvertex_p).fill(
             dvertex, ele.p())
     histos.computeIfAbsent("dvertex_p_pro_" + title + "_" + sector, histoBuilders2.dvertex_p).fill(
             dvertex, pro.p())
-    histos.computeIfAbsent("dvertex_theta_ele_" + title + "_" + sector, histoBuilders2.dvertex_theta).fill(
-            dvertex, ele.theta())
-    histos.computeIfAbsent("dvertex_theta_pro_" + title + "_" + sector, histoBuilders2.dvertex_theta).fill(
-            dvertex, pro.theta())
+    //histos.computeIfAbsent("dvertex_theta_ele_" + title + "_" + sector, histoBuilders2.dvertex_theta).fill(
+    //        dvertex, ele.theta())
+    //histos.computeIfAbsent("dvertex_theta_pro_" + title + "_" + sector, histoBuilders2.dvertex_theta).fill(
+    //        dvertex, pro.theta())
 
 }
 
@@ -245,22 +245,44 @@ GParsPool.withPool 8, {
                         fillElectronHistos(ele, kin, sector, sphi, rphi, dw, delta_theta, delta_e, "tof_proton")
                         fillProtonHistos(ele, pro, pkin, sector, dvertex, "tof_proton")
 
-                        if (pkin.angle > 175.0) {
+                        if (pkin.angle > 177) {
                             fillProtonHistos(ele, pro, pkin, sector, dvertex, "tof_proton_pass_angle")
                         } else {
                             fillProtonHistos(ele, pro, pkin, sector, dvertex, "tof_proton_fail_angle")
                         }
 
+			if (pkin.w > 0.85 && pkin.w < 1.05) {
+                            fillProtonHistos(ele, pro, pkin, sector, dvertex, "tof_proton_pass_w")
+                        } else {
+                            fillProtonHistos(ele, pro, pkin, sector, dvertex, "tof_proton_fail_w")
+                        }
+			if (pkin.w > 0.85 && pkin.w < 1.05 && pkin.angle > 177) {
+                            fillProtonHistos(ele, pro, pkin, sector, dvertex, "tof_proton_pass_all")
+			}
+			
+
                     } else if (event.ctof_status.contains(it)) {
                         fillElectronHistos(ele, kin, sector, sphi, rphi, dw, delta_theta, delta_e, "ctof_proton")
                         fillProtonHistos(ele, pro, pkin, sector, dvertex, "ctof_proton")
-                        if (pkin.angle > 175.0) {
+                        if (pkin.angle > 177) {
+			    fillElectronHistos(ele, kin, sector, sphi, rphi, dw, delta_theta, delta_e, "ctof_proton_pass_angle")
                             fillProtonHistos(ele, pro, pkin, sector, dvertex, "ctof_proton_pass_angle")
                         } else {
+			    fillElectronHistos(ele, kin, sector, sphi, rphi, dw, delta_theta, delta_e, "ctof_proton_fail_angle")
                             fillProtonHistos(ele, pro, pkin, sector, dvertex, "ctof_proton_fail_angle")
+			}
+			if (pkin.w > 0.85 && pkin.w < 1.05) {
+			    fillElectronHistos(ele, kin, sector, sphi, rphi, dw, delta_theta, delta_e, "ctof_proton_pass_w")
+                            fillProtonHistos(ele, pro, pkin, sector, dvertex, "ctof_proton_pass_w")
+                        } else {
+			    fillElectronHistos(ele, kin, sector, sphi, rphi, dw, delta_theta, delta_e, "ctof_proton_fail_w")
+                            fillProtonHistos(ele, pro, pkin, sector, dvertex, "ctof_proton_fail_w")
                         }
+			if (pkin.w > 0.85 && pkin.w < 1.05 && pkin.angle > 177) {
+                            fillElectronHistos(ele, kin, sector, sphi, rphi, dw, delta_theta, delta_e, "ctof_proton_pass_all")
+                            fillProtonHistos(ele, pro, pkin, sector, dvertex, "ctof_proton_pass_all")
+			}
                     }
-
                 }
             }
 
