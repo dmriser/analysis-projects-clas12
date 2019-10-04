@@ -25,7 +25,7 @@ histoBuilders = [
         ebeam        : { title -> new H1F("$title", "$title", 200, 9.9, 11.2) },
         theta_ep     : { title -> new H1F("$title", "$title", 200, 120, 180) },
         emissing     : { title -> new H1F("$title", "$title", 200, -1, 1) },
-        opening_angle: { title -> new H1F("$title", "$title", 200, 0, 180) },
+        opening_angle: { title -> new H1F("$title", "$title", 200, 120, 180) },
 ]
 
 // 2-D histograms with naming x_y
