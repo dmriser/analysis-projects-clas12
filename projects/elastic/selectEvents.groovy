@@ -26,24 +26,27 @@ histoBuilders = [
         theta_ep     : { title -> new H1F("$title", "$title", 200, 120, 180) },
         emissing     : { title -> new H1F("$title", "$title", 200, -1, 1) },
         opening_angle: { title -> new H1F("$title", "$title", 200, 120, 180) },
+        theta_res    : { title -> new H1F("$title", "$title", 200, -3, 3) },
+        p_res        : { title -> new H1F("$title", "$title", 200, -1, 1) },
 ]
 
 // 2-D histograms with naming x_y
 histoBuilders2 = [
-        phi_dw         : { title -> new H2F("$title", "$title", 200, -30, 330, 200, -0.2, 0.2) },
-        theta_dw       : { title -> new H2F("$title", "$title", 200, 5, 15, 200, -0.2, 0.2) },
-        relphi_dw      : { title -> new H2F("$title", "$title", 200, -30, 30, 200, -0.2, 0.2) },
-        relphi_theta   : { title -> new H2F("$title", "$title", 200, -30, 30, 200, 5, 15) },
-        phi_theta      : { title -> new H2F("$title", "$title", 200, -30, 330, 200, 5, 15) },
-        p_theta        : { title -> new H2F("$title", "$title", 200, 0, 11, 200, 5, 15) },
-        dvertex_p      : { title -> new H2F("$title", "$title", 200, -5, 5, 200, 0, 11) },
-        dvertex_theta  : { title -> new H2F("$title", "$title", 200, -5, 5, 200, 5, 15) },
-        dvertex_rphi   : { title -> new H2F("$title", "$title", 200, -5, 5, 200, -30, 30) },
-        dvertex_phi    : { title -> new H2F("$title", "$title", 200, -5, 5, 200, -30, 330) },
-        p_res_p        : { title -> new H2F("$title", "$title", 200, -3, 3, 200, 0, 11) },
-        p_res_theta    : { title -> new H2F("$title", "$title", 200, -3, 3, 200, 5, 15) },
-        theta_res_p    : { title -> new H2F("$title", "$title", 200, -10, 10, 200, 0, 11) },
-        theta_res_theta: { title -> new H2F("$title", "$title", 200, -10, 10, 200, 5, 15) },
+        phi_dw           : { title -> new H2F("$title", "$title", 200, -30, 330, 200, -0.2, 0.2) },
+        theta_dw         : { title -> new H2F("$title", "$title", 200, 5, 15, 200, -0.2, 0.2) },
+        relphi_dw        : { title -> new H2F("$title", "$title", 200, -30, 30, 200, -0.2, 0.2) },
+        relphi_theta     : { title -> new H2F("$title", "$title", 200, -30, 30, 200, 5, 15) },
+        phi_theta        : { title -> new H2F("$title", "$title", 200, -30, 330, 200, 5, 15) },
+        p_theta          : { title -> new H2F("$title", "$title", 200, 0, 11, 200, 5, 15) },
+        dvertex_p        : { title -> new H2F("$title", "$title", 200, -5, 5, 200, 0, 11) },
+        dvertex_theta    : { title -> new H2F("$title", "$title", 200, -5, 5, 200, 5, 15) },
+        dvertex_rphi     : { title -> new H2F("$title", "$title", 200, -5, 5, 200, -30, 30) },
+        dvertex_phi      : { title -> new H2F("$title", "$title", 200, -5, 5, 200, -30, 330) },
+        p_res_p          : { title -> new H2F("$title", "$title", 200, -3, 3, 200, 0, 11) },
+        p_res_fraction_p : { title -> new H2F("$title", "$title", 200, -0.2, 0.2, 200, 0, 11) },
+        p_res_theta      : { title -> new H2F("$title", "$title", 200, -3, 3, 200, 5, 15) },
+        theta_res_p      : { title -> new H2F("$title", "$title", 200, -10, 10, 200, 0, 11) },
+        theta_res_theta  : { title -> new H2F("$title", "$title", 200, -10, 10, 200, 5, 15) },
 ]
 
 def shiftPhi(phi) {
@@ -175,36 +178,35 @@ def fillProtonHistos(ele, pro, kin, sector, dvertex, title) {
 
     // 1-D
     histos.computeIfAbsent("opening_angle_ep_" + title, histoBuilders.opening_angle).fill(kin.angle)
+    histos.computeIfAbsent("theta_res_ele" + title, histoBuilders.theta_res).fill(kin.dtheta_ele)
+    histos.computeIfAbsent("theta_res_pro" + title, histoBuilders.theta_res).fill(kin.dtheta_pro)
 
     // 2-D
     histos.computeIfAbsent("p_res_p_ele_" + title, histoBuilders2.p_res_p).fill(kin.dp_ele, ele.p())
-    //histos.computeIfAbsent("p_res_theta_ele_" + title, histoBuilders2.p_res_theta).fill(kin.dp_ele, ele.theta())
     histos.computeIfAbsent("p_res_p_pro_" + title, histoBuilders2.p_res_p).fill(kin.dp_pro, pro.p())
-    //histos.computeIfAbsent("p_res_theta_pro_" + title, histoBuilders2.p_res_theta).fill(kin.dp_pro, pro.theta())
+    histos.computeIfAbsent("p_res_fraction_p_ele_" + title, histoBuilders2.p_res_fraction_p).fill(
+            kin.dp_ele / ele.p(), ele.p())
+    histos.computeIfAbsent("p_res_fraction_p_pro_" + title, histoBuilders2.p_res_fraction_p).fill(
+            kin.dp_pro / pro.p(), pro.p())
     histos.computeIfAbsent("dvertex_p_ele_" + title, histoBuilders2.dvertex_p).fill(dvertex, ele.p())
     histos.computeIfAbsent("dvertex_p_pro_" + title, histoBuilders2.dvertex_p).fill(dvertex, pro.p())
-    //histos.computeIfAbsent("dvertex_theta_ele_" + title, histoBuilders2.dvertex_theta).fill(dvertex, ele.theta())
-    //histos.computeIfAbsent("dvertex_theta_pro_" + title, histoBuilders2.dvertex_theta).fill(dvertex, pro.theta())
 
     // 1-D (sectors)
     histos.computeIfAbsent("opening_angle_ep_" + title + "_" + sector, histoBuilders.opening_angle).fill(kin.angle)
+    histos.computeIfAbsent("theta_res_ele" + title + "_" + sector, histoBuilders.theta_res).fill(kin.dtheta_ele)
+    histos.computeIfAbsent("theta_res_pro" + title + "_" + sector, histoBuilders.theta_res).fill(kin.dtheta_pro)
 
     // 2-D (sectors)
     histos.computeIfAbsent("p_res_p_ele_" + title + "_" + sector, histoBuilders2.p_res_p).fill(kin.dp_ele, ele.p())
-    //histos.computeIfAbsent("p_res_theta_ele_" + title + "_" + sector, histoBuilders2.p_res_theta).fill(
-    //        kin.dp_ele, ele.theta())
     histos.computeIfAbsent("p_res_p_pro_" + title + "_" + sector, histoBuilders2.p_res_p).fill(kin.dp_pro, pro.p())
-    //histos.computeIfAbsent("p_res_theta_pro_" + title + "_" + sector, histoBuilders2.p_res_theta).fill(
-    //        kin.dp_pro, pro.theta())
+    histos.computeIfAbsent("p_res_fraction_p_ele_" + title + "_" + sector, histoBuilders2.p_res_fraction_p).fill(
+            kin.dp_ele / ele.p(), ele.p())
+    histos.computeIfAbsent("p_res_fraction_p_pro_" + title + "_" + sector, histoBuilders2.p_res_fraction_p).fill(
+            kin.dp_pro / pro.p(), pro.p())
     histos.computeIfAbsent("dvertex_p_ele_" + title + "_" + sector, histoBuilders2.dvertex_p).fill(
             dvertex, ele.p())
     histos.computeIfAbsent("dvertex_p_pro_" + title + "_" + sector, histoBuilders2.dvertex_p).fill(
             dvertex, pro.p())
-    //histos.computeIfAbsent("dvertex_theta_ele_" + title + "_" + sector, histoBuilders2.dvertex_theta).fill(
-    //        dvertex, ele.theta())
-    //histos.computeIfAbsent("dvertex_theta_pro_" + title + "_" + sector, histoBuilders2.dvertex_theta).fill(
-    //        dvertex, pro.theta())
-
 }
 
 GParsPool.withPool 8, {
