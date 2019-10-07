@@ -153,25 +153,25 @@ def fillElectronHistos(ele, kin, sector, sphi, rphi, dw, delta_theta, delta_ener
 
     // 1-D
     histos.computeIfAbsent("w_" + title, histoBuilders.w).fill(kin.w)
-    histos.computeIfAbsent("wzoom_" + title, histoBuilders.wzoom).fill(kin.w)
+    //histos.computeIfAbsent("wzoom_" + title, histoBuilders.wzoom).fill(kin.w)
     //histos.computeIfAbsent("dp_ele", histoBuilders.dp).fill(delta_energy)
     //histos.computeIfAbsent("dtheta_ele", histoBuilders.dtheta).fill(delta_theta)
 
     // 2-D
-    histos.computeIfAbsent("rphi_dw_" + title, histoBuilders2.relphi_dw).fill(rphi, dw)
-    histos.computeIfAbsent("phi_dw_" + title, histoBuilders2.phi_dw).fill(sphi, dw)
-    histos.computeIfAbsent("theta_dw_" + title, histoBuilders2.theta_dw).fill(Math.toDegrees(ele.theta()), dw)
+    //histos.computeIfAbsent("rphi_dw_" + title, histoBuilders2.relphi_dw).fill(rphi, dw)
+    //histos.computeIfAbsent("phi_dw_" + title, histoBuilders2.phi_dw).fill(sphi, dw)
+    //histos.computeIfAbsent("theta_dw_" + title, histoBuilders2.theta_dw).fill(Math.toDegrees(ele.theta()), dw)
 
     // 1-D
     histos.computeIfAbsent("w_" + title + "_" + sector, histoBuilders.w).fill(kin.w)
-    histos.computeIfAbsent("wzoom_" + title + "_" + sector, histoBuilders.wzoom).fill(kin.w)
+    //histos.computeIfAbsent("wzoom_" + title + "_" + sector, histoBuilders.wzoom).fill(kin.w)
     //histos.computeIfAbsent("dp_ele_" + title + "_" + sector, histoBuilders.dp).fill(delta_energy)
     //histos.computeIfAbsent("dtheta_ele_" + title + "_" + sector, histoBuilders.dtheta).fill(delta_theta)
 
     // 2-D
-    histos.computeIfAbsent("relphi_dw_" + title + "_" + sector, histoBuilders2.relphi_dw).fill(rphi, dw)
-    histos.computeIfAbsent("theta_dw_" + title + "_" + sector, histoBuilders2.theta_dw).fill(
-            Math.toDegrees(ele.theta()), dw)
+    //histos.computeIfAbsent("relphi_dw_" + title + "_" + sector, histoBuilders2.relphi_dw).fill(rphi, dw)
+    //histos.computeIfAbsent("theta_dw_" + title + "_" + sector, histoBuilders2.theta_dw).fill(
+    //        Math.toDegrees(ele.theta()), dw)
 }
 
 def fillProtonHistos(ele, pro, kin, sector, dvertex, title) {
@@ -188,8 +188,8 @@ def fillProtonHistos(ele, pro, kin, sector, dvertex, title) {
             kin.dp_ele / ele.p(), ele.p())
     histos.computeIfAbsent("p_res_fraction_p_pro_" + title, histoBuilders2.p_res_fraction_p).fill(
             kin.dp_pro / pro.p(), pro.p())
-    histos.computeIfAbsent("dvertex_p_ele_" + title, histoBuilders2.dvertex_p).fill(dvertex, ele.p())
-    histos.computeIfAbsent("dvertex_p_pro_" + title, histoBuilders2.dvertex_p).fill(dvertex, pro.p())
+    //histos.computeIfAbsent("dvertex_p_ele_" + title, histoBuilders2.dvertex_p).fill(dvertex, ele.p())
+    //histos.computeIfAbsent("dvertex_p_pro_" + title, histoBuilders2.dvertex_p).fill(dvertex, pro.p())
 
     // 1-D (sectors)
     histos.computeIfAbsent("opening_angle_ep_" + title + "_" + sector, histoBuilders.opening_angle).fill(kin.angle)
@@ -203,10 +203,10 @@ def fillProtonHistos(ele, pro, kin, sector, dvertex, title) {
             kin.dp_ele / ele.p(), ele.p())
     histos.computeIfAbsent("p_res_fraction_p_pro_" + title + "_" + sector, histoBuilders2.p_res_fraction_p).fill(
             kin.dp_pro / pro.p(), pro.p())
-    histos.computeIfAbsent("dvertex_p_ele_" + title + "_" + sector, histoBuilders2.dvertex_p).fill(
-            dvertex, ele.p())
-    histos.computeIfAbsent("dvertex_p_pro_" + title + "_" + sector, histoBuilders2.dvertex_p).fill(
-            dvertex, pro.p())
+    //histos.computeIfAbsent("dvertex_p_ele_" + title + "_" + sector, histoBuilders2.dvertex_p).fill(
+    //        dvertex, ele.p())
+    //histos.computeIfAbsent("dvertex_p_pro_" + title + "_" + sector, histoBuilders2.dvertex_p).fill(
+    //        dvertex, pro.p())
 }
 
 GParsPool.withPool 8, {
@@ -246,7 +246,7 @@ GParsPool.withPool 8, {
                     if (event.tof_status.contains(it)) {
                         fillElectronHistos(ele, kin, sector, sphi, rphi, dw, delta_theta, delta_e, "tof_proton")
                         fillProtonHistos(ele, pro, pkin, sector, dvertex, "tof_proton")
-
+			/* 
                         if (pkin.angle > 177) {
                             fillProtonHistos(ele, pro, pkin, sector, dvertex, "tof_proton_pass_angle")
                         } else {
@@ -255,13 +255,11 @@ GParsPool.withPool 8, {
 
 			if (pkin.w > 0.85 && pkin.w < 1.05) {
                             fillProtonHistos(ele, pro, pkin, sector, dvertex, "tof_proton_pass_w")
-                        } else {
-                            fillProtonHistos(ele, pro, pkin, sector, dvertex, "tof_proton_fail_w")
-                        }
+                        } 
 			if (pkin.w > 0.85 && pkin.w < 1.05 && pkin.angle > 177) {
                             fillProtonHistos(ele, pro, pkin, sector, dvertex, "tof_proton_pass_all")
 			}
-			
+			*/
 
                     } else if (event.ctof_status.contains(it)) {
                         fillElectronHistos(ele, kin, sector, sphi, rphi, dw, delta_theta, delta_e, "ctof_proton")

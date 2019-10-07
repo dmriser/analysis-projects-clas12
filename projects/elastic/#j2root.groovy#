@@ -126,7 +126,6 @@ def addDS(dir, path='', dsets=[:]) {
 def dsout = [:]
 def dsets = addDS(out)
 
-println(dsets.values()*.name)
 dsets.each{
   def className = it.value.getClass().getName()
   if(className.contains('H1F')) {
@@ -147,7 +146,7 @@ zipFile.close()
 
 def pythonCode = '''
 import json, sys
-#sys.argv.append('-b')
+sys.argv.append('-b')
 import ROOT
 from zipfile import ZipFile
 
@@ -192,9 +191,11 @@ with ZipFile(sys.argv[1], 'r') as zip:
 
 
 ff = ROOT.TFile(sys.argv[2]+'.root', "recreate")
+print('Opening root file')
 dsets = []
 for name in data:
   rootname = name[1:].replace('/','_').replace(' ','_')
+  print('Starting write of {}'.format(rootname))
   if 'Graph' in data[name]['type']:
     gr = convertGraph(rootname,data[name])
     dsets.append(gr)
