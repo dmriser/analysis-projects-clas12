@@ -15,29 +15,69 @@ import org.jlab.io.hipo.HipoDataSource
 def beam = new Particle(11, 0.0, 0.0, 10.594)
 def target = new Particle(2212, 0.0, 0.0, 0.0)
 
-histos = new ConcurrentHashMap()
-histoBuilders = [
-        w         : { title -> new H1F("$title", "$title", 200, 0.8, 1.7) },
-        theta_res : { title -> new H1F("$title", "$title", 200, -10, 15) },
-        p_res     : { title -> new H1F("$title", "$title", 200, -0.2, 0.2) },
-        vz        : { title -> new H1F("$title", "$title", 200, -20, 15) }
+orig_kin_bounds = [
+        theta_ele : [5, 30],
+        theta_pro : [50, 90],
+        p_ele     : [0, 11],
+        p_pro     : [0, 3],
+        w         : [0.8, 1.7],
+        q2        : [0, 5],
+        phi       : [-30, 330],
+        vz        : [-20, 15],
+        dp_ele    : [-0.2, 0.2],
+        dp_pro    : [-0.2, 0.2],
+        dtheta_pro: [-10, 15]
 ]
 
-// 2-D histograms with naming x_y
-histoBuilders2 = [
-        w_q2 : { title -> new H2F("$title", "$title", 200, 0.8, 1.7, 200, 0, 5) },
-        phi_w : { title -> new H2F("$title", "$title", 200, -30, 330, 200, 0.8, 1.2) },
-        theta_ele_vz : { title -> new H2F("$title", "$title", 200, 5, 30, 200, -20, 15) },
-        phi_vz : { title -> new H2F("$title", "$title", 200, -30, 330, 200, -20, 15) },
-        theta_ele_dp : { title -> new H2F("$title", "$title", 200, 5, 30, 200, -0.2, 0.2) },
-        theta_ele_dtheta : { title -> new H2F("$title", "$title", 200, 5, 30, 200, -10, 15) },
-        theta_pro_dtheta : { title -> new H2F("$title", "$title", 200, 50, 90, 200, -10, 15) },
-        theta_pro_dp : { title -> new H2F("$title", "$title", 200, 50, 90, 200, -0.2, 0.2) },
-        theta_pro_vz : { title -> new H2F("$title", "$title", 200, 50, 90, 200, -20, 15) },
-        phi_dp : { title -> new H2F("$title", "$title", 200, -30, 330, 200, -0.2, 0.2) },
-        phi_theta : { title -> new H2F("$title", "$title", 200, -30, 330, 200, 5, 30) },
-        p_pro_dp : { title -> new H2F("$title", "$title", 200, 0.1, 1, 200, -0.2, 0.2) }
+
+new_kin_bounds = [
+        theta_ele : [5, 20],
+        theta_pro : [20, 70],
+        p_ele     : [7, 10.5],
+        p_pro     : [0.5, 4.5],
+        w         : [0.8, 1.7],
+        q2        : [1.2, 4.5],
+        phi       : [-30, 330],
+        vz        : [-20, 15],
+        dp_ele    : [-1.2, 1.2],
+        dp_pro    : [-1.2, 1.2],
+        dtheta_pro: [-20, 20]
 ]
+
+lim = new_kin_bounds
+
+def limited_h1 = { title, nbins, lims ->
+    new H1F("$title", "$title", nbins, lims[0], lims[1])
+}
+
+def limited_h2 = { title, nxbins, nybins, xlims, ylims ->
+    new H2F("$title", "$title", nxbins, xlims[0], xlims[1], nybins, ylims[0], ylims[1])
+}
+
+histos = new ConcurrentHashMap()
+
+histoBuilders = [
+        w        : { title -> limited_h1(title, 200, lim.w) },
+        theta_res: { title -> limited_h1(title, 200, lim.dtheta_pro) },
+        p_res    : { title -> limited_h1(title, 200, lim.dp_ele) },
+        vz       : { title -> limited_h1(title, 200, lim.vz) }
+]
+
+histoBuilders2 = [
+        w_q2            : { title -> limited_h2(title, 200, 200, lim.w, lim.q2) },
+        phi_w           : { title -> limited_h2(title, 200, 200, lim.phi, lim.w) },
+        theta_ele_vz    : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.vz) },
+        phi_vz          : { title -> limited_h2(title, 200, 200, lim.phi, lim.vz) },
+        theta_ele_dp    : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.dp_ele) },
+        theta_ele_dtheta: { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.dtheta_pro) },
+        theta_pro_dtheta: { title -> limited_h2(title, 200, 200, lim.theta_pro, lim.dtheta_pro) },
+        theta_pro_dp    : { title -> limited_h2(title, 200, 200, lim.theta_pro, lim.dp_ele) },
+        theta_pro_vz    : { title -> limited_h2(title, 200, 200, lim.theta_pro, lim.vz) },
+        phi_dp          : { title -> limited_h2(title, 200, 200, lim.phi, lim.dp_ele) },
+        phi_theta       : { title -> limited_h2(title, 200, 200, lim.phi, lim.theta_ele) },
+        p_pro_dp        : { title -> limited_h2(title, 200, 200, lim.p_pro, lim.dp_ele) },
+]
+
 
 def shiftPhi(phi) {
     return (phi > 150) ? phi - 180 : phi + 180
@@ -139,6 +179,26 @@ def getElectronDeltas(beam, ele) {
     return [delta_theta, delta_energy]
 }
 
+def predictElasticBasedOnElectronAngle(beam, alpha) {
+    // alpha - electron angle in radians (known)
+    // beta  - proton angle in radians (inferred)
+    //
+    // Don't confuse the beta in this function with the
+    // physics beta, v/c.
+
+    // This is stupid, but it makes the next lines shorter
+    def proton_mass = PDGDatabase.getParticleMass(2212)
+    def cos_alpha = Math.cos(alpha)
+    def sin_alpha = Math.sin(alpha)
+
+    // Kinematics prediction
+    def pred_ele_p = beam.e() / (1 + (beam.e() / proton_mass) * (1 - cos_alpha))
+    def pred_pro_p = Math.sqrt(beam.e()**2 - 2 * beam.e() * pred_ele_p * cos_alpha + pred_ele_p**2)
+    def pred_beta = Math.asin((pred_ele_p * sin_alpha) / pred_pro_p)
+
+    return [pred_ele_p, pred_beta, pred_pro_p]
+}
+
 GParsPool.withPool 8, {
     args.eachParallel { filename ->
 
@@ -164,43 +224,65 @@ GParsPool.withPool 8, {
                 def sphi = shiftPhi(phi)
                 //def rphi = relativePhi(sphi, sector)
                 //def dw = PDGDatabase.getParticleMass(2212) - kin.w
-                def (delta_theta, delta_e) = getElectronDeltas(beam, ele)
+                //def (delta_theta, delta_e) = getElectronDeltas(beam, ele)
 
-                (0..<event.npart).findAll { event.pid[it] == 2212 }.each {
+                // Some histograms need to be filled with all electrons, even if there
+                // are no postive tracks in the central.
+                histos.computeIfAbsent('w_inclusive_' + sector, histoBuilders.w).fill(kin.w)
+                histos.computeIfAbsent('w_q2_inclusive_' + sector, histoBuilders2.w_q2).fill(kin.w, kin.q2)
+
+                // Believe the electron angular measurement and infer the rest of the
+                // event kinematics based on the assumption that it's an elastic scattering.
+                def (pred_ele_p, pred_pro_theta, pred_pro_p) = predictElasticBasedOnElectronAngle(beam, ele.theta())
+
+                (0..<event.npart).findAll { event.charge[it] > 0 && event.ctof_status.contains(it) }.each {
                     def pro = new Particle(2212, event.px[it], event.py[it], event.pz[it])
                     def pkin = getPKin(beam, target, ele, pro)
-                    def dvertex = getDeltaVertex(event, idx, it)
+                    def phi_pro = Math.toDegrees(pro.phi())
+                    def sphi_pro = shiftPhi(phi_pro)
 
-                    if (event.ctof_status.contains(it)) {
+                    if (pkin.angle > 172) {
 
                         // One dimensional
                         histos.computeIfAbsent('w_' + sector, histoBuilders.w).fill(pkin.w)
-                        histos.computeIfAbsent('delta_p_electron_' + sector,  histoBuilders.p_res).fill(delta_e)
-                        //histos.computeIfAbsent('delta_p_proton_' + sector,  histoBuilders.p_res).fill(delta_e_pro)
-                        //histos.computeIfAbsent('delta_theta_proton_' + sector,  histoBuilders.theta_res).fill(delta_theta_pro)
-                        histos.computeIfAbsent('vz_electron_' + sector,  histoBuilders.vz).fill(event.vz[idx])
-                        histos.computeIfAbsent('vz_proton_' + sector,  histoBuilders.vz).fill(event.vz[it])
-                        histos.computeIfAbsent('delta_vz_' + sector,  histoBuilders.vz).fill(event.vz[idx] - event.vz[it])
+                        histos.computeIfAbsent('delta_p_electron_' + sector, histoBuilders.p_res).fill(ele.p() - pred_ele_p)
+                        histos.computeIfAbsent('delta_p_proton_' + sector, histoBuilders.p_res).fill(pro.p() - pred_pro_p)
+                        histos.computeIfAbsent('delta_theta_proton_' + sector, histoBuilders.theta_res).fill(
+                                Math.toDegrees(pro.theta() - pred_pro_theta))
+                        histos.computeIfAbsent('vz_electron_' + sector, histoBuilders.vz).fill(event.vz[idx])
+                        histos.computeIfAbsent('vz_proton_' + sector, histoBuilders.vz).fill(event.vz[it])
+                        histos.computeIfAbsent('delta_vz_' + sector, histoBuilders.vz).fill(event.vz[idx] - event.vz[it])
 
                         // Two dimensional
                         histos.computeIfAbsent('w_q2_' + sector, histoBuilders2.w_q2).fill(pkin.w, pkin.q2)
                         histos.computeIfAbsent('phi_electron_w', histoBuilders2.phi_w).fill(sphi, pkin.w)
                         histos.computeIfAbsent('phi_electron_theta_electron', histoBuilders2.phi_theta).fill(
                                 sphi, Math.toDegrees(ele.theta()))
-                        histos.computeIfAbsent('phi_electron_delta_vz', histoBuilders2.phi_vz).fill(sphi, event.vz[idx]-event.vz[it])
+                        histos.computeIfAbsent('phi_electron_delta_vz', histoBuilders2.phi_vz).fill(sphi, event.vz[idx] - event.vz[it])
                         histos.computeIfAbsent('theta_electron_vz_electron_' + sector, histoBuilders2.theta_ele_vz).fill(
                                 Math.toDegrees(ele.theta()), event.vz[idx])
-                        //histos.computeIfAbsent('theta_electron_delta_p_electron_' + sector,
-                        // histoBuilders2.theta_ele_dp).fill(Math.toDegrees(ele.theta()), delta_p_pro)
-                        //histos.computeIfAbsent('theta_electron_delta_p_proton_' + sector,
-                        //        histoBuilders2.theta_ele_dtheta).fill(Math.toDegrees(ele.theta()), delta_theta_pro)
+                        histos.computeIfAbsent('theta_electron_delta_p_electron_' + sector,
+                                histoBuilders2.theta_ele_dp).fill(Math.toDegrees(ele.theta()), pro.p() - pred_pro_p)
+                        histos.computeIfAbsent('theta_electron_delta_theta_proton_' + sector,
+                                histoBuilders2.theta_ele_dtheta).fill(
+                                Math.toDegrees(ele.theta()), Math.toDegrees(pro.theta() - pred_pro_theta))
+                        histos.computeIfAbsent('theta_proton_delta_p_proton_' + sector,
+                                histoBuilders2.theta_pro_dp).fill(Math.toDegrees(pro.theta()), pro.p() - pred_pro_p)
 
-                        //histos.computeIfAbsent('theta_proton_delta_p_proton_' + sector, histoBuilders2.theta_pro_dp).fill()
-                        //histos.computeIfAbsent('theta_proton_delta_theta_proton_' + sector, histoBuilders2.theta_pro_dtheta).fill()
+                        histos.computeIfAbsent('theta_proton_delta_theta_proton_' + sector,
+                                histoBuilders2.theta_pro_dtheta).fill(
+                                Math.toDegrees(pro.theta()), Math.toDegrees(pro.theta() - pred_pro_theta))
                         histos.computeIfAbsent('theta_proton_vz_proton_' + sector, histoBuilders2.theta_pro_vz).fill(
                                 Math.toDegrees(pro.theta()), event.vz[it])
-                        //histos.computeIfAbsent('p_proton_delta_p_proton_' + sector, histoBuilders2.p_pro_dp).fill(
-                        //        event.p[it], delta_p_pro)
+                        histos.computeIfAbsent('p_proton_delta_p_proton_' + sector, histoBuilders2.p_pro_dp).fill(
+                                event.p[it], event.p[it] - pred_pro_p)
+                        histos.computeIfAbsent('phi_electron_vz_proton', histoBuilders2.phi_vz).fill(
+                                sphi, event.vz[it])
+                        histos.computeIfAbsent('phi_proton_vz_proton', histoBuilders2.phi_vz).fill(
+                                sphi_pro, event.vz[it])
+                        histos.computeIfAbsent('phi_proton_dvz', histoBuilders2.phi_vz).fill(
+                                sphi_pro, event.vz[idx] - event.vz[it])
+
 
                     }
                 }
