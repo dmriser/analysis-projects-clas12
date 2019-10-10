@@ -258,6 +258,8 @@ GParsPool.withPool 8, {
                         histos.computeIfAbsent('phi_electron_w', histoBuilders2.phi_w).fill(sphi, pkin.w)
                         histos.computeIfAbsent('phi_electron_theta_electron', histoBuilders2.phi_theta).fill(
                                 sphi, Math.toDegrees(ele.theta()))
+                        histos.computeIfAbsent('phi_electron_delta_p_electron', histoBuilders2.phi_dp).fill(
+                                sphi, ele.p() - pred_ele_p)
                         histos.computeIfAbsent('phi_electron_delta_vz', histoBuilders2.phi_vz).fill(sphi, event.vz[idx] - event.vz[it])
                         histos.computeIfAbsent('theta_electron_vz_electron_' + sector, histoBuilders2.theta_ele_vz).fill(
                                 Math.toDegrees(ele.theta()), event.vz[idx])
@@ -276,11 +278,13 @@ GParsPool.withPool 8, {
                                 Math.toDegrees(pro.theta()), event.vz[it])
                         histos.computeIfAbsent('p_proton_delta_p_proton_' + sector, histoBuilders2.p_pro_dp).fill(
                                 event.p[it], event.p[it] - pred_pro_p)
+                        histos.computeIfAbsent('phi_electron_vz_electron', histoBuilders2.phi_vz).fill(
+                                sphi, event.vz[idx])
                         histos.computeIfAbsent('phi_electron_vz_proton', histoBuilders2.phi_vz).fill(
                                 sphi, event.vz[it])
                         histos.computeIfAbsent('phi_proton_vz_proton', histoBuilders2.phi_vz).fill(
                                 sphi_pro, event.vz[it])
-                        histos.computeIfAbsent('phi_proton_dvz', histoBuilders2.phi_vz).fill(
+                        histos.computeIfAbsent('phi_proton_delta_vz', histoBuilders2.phi_vz).fill(
                                 sphi_pro, event.vz[idx] - event.vz[it])
 
 
