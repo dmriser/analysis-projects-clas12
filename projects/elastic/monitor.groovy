@@ -241,10 +241,16 @@ GParsPool.withPool 8, {
                     def phi_pro = Math.toDegrees(pro.phi())
                     def sphi_pro = shiftPhi(phi_pro)
 
+                    // One dimensional
+                    histos.computeIfAbsent('w_' + sector, histoBuilders.w).fill(pkin.w)
+
+                    // Two dimensional
+                    histos.computeIfAbsent('w_q2_' + sector, histoBuilders2.w_q2).fill(pkin.w, pkin.q2)
+                    histos.computeIfAbsent('phi_electron_w', histoBuilders2.phi_w).fill(sphi, pkin.w)
+
                     if (pkin.angle > 175 && pkin.w > 0.8 && pkin.w < 1.05) {
 
                         // One dimensional
-                        histos.computeIfAbsent('w_' + sector, histoBuilders.w).fill(pkin.w)
                         histos.computeIfAbsent('delta_p_electron_' + sector, histoBuilders.p_res).fill(ele.p() - pred_ele_p)
                         histos.computeIfAbsent('delta_p_proton_' + sector, histoBuilders.p_res).fill(pro.p() - pred_pro_p)
                         histos.computeIfAbsent('delta_theta_proton_' + sector, histoBuilders.theta_res).fill(
@@ -254,8 +260,6 @@ GParsPool.withPool 8, {
                         histos.computeIfAbsent('delta_vz_' + sector, histoBuilders.vz).fill(event.vz[idx] - event.vz[it])
 
                         // Two dimensional
-                        histos.computeIfAbsent('w_q2_' + sector, histoBuilders2.w_q2).fill(pkin.w, pkin.q2)
-                        histos.computeIfAbsent('phi_electron_w', histoBuilders2.phi_w).fill(sphi, pkin.w)
                         histos.computeIfAbsent('phi_electron_theta_electron', histoBuilders2.phi_theta).fill(
                                 sphi, Math.toDegrees(ele.theta()))
                         histos.computeIfAbsent('phi_electron_delta_p_electron', histoBuilders2.phi_dp).fill(
