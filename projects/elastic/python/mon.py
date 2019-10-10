@@ -76,8 +76,8 @@ def plot_page(canvas, histos, histo_title, label, save_name,
 
 if __name__ == '__main__':
 
-    input_rootfile = 'new_bounds.hipo.root'
-    output_pdfname = 'new_bounds.pdf'
+    input_rootfile = '5038.hipo.root'
+    output_pdfname = '5038.pdf'
     rootfile = TFile(input_rootfile)
     histos = load_histos(rootfile)
 
@@ -107,7 +107,7 @@ if __name__ == '__main__':
                      title='W vs. #phi_{e}', xtitle='#phi_{e}', ytitle='W', log=False)
 
     plot_sector_page(can, histos, 'histos_theta_electron_vz_electron_{}', lab, save_name=output_pdfname,
-                     title='Electron (Forward) and Positive (CTOF)', xtitle='W', ytitle='Q^{2}', log=False)
+                     title='v_{z} (e) vs. #theta_{e}', xtitle='#theta_{e}', ytitle='v_{z} (e)', log=False)
 
     plot_sector_page(can, histos, 'histos_w_inclusive_{}', lab, save_name=output_pdfname,
                      title='Electron (Forward)', xtitle='W')
