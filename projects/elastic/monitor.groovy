@@ -35,7 +35,7 @@ new_kin_bounds = [
         theta_pro : [20, 70],
         p_ele     : [7, 10.5],
         p_pro     : [0.5, 4.5],
-        w         : [0.8, 1.7],
+        w         : [0.6, 1.7],
         q2        : [1.2, 4.5],
         phi       : [-30, 330],
         vz        : [-20, 15],
@@ -241,7 +241,7 @@ GParsPool.withPool 8, {
                     def phi_pro = Math.toDegrees(pro.phi())
                     def sphi_pro = shiftPhi(phi_pro)
 
-                    if (pkin.angle > 172) {
+                    if (pkin.angle > 175 && pkin.w > 0.8 && pkin.w < 1.05) {
 
                         // One dimensional
                         histos.computeIfAbsent('w_' + sector, histoBuilders.w).fill(pkin.w)
