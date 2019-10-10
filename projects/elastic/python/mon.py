@@ -76,7 +76,8 @@ def plot_page(canvas, histos, histo_title, label, save_name,
 
 if __name__ == '__main__':
 
-    input_rootfile = 'histos.root'
+    input_rootfile = 'new_bounds.hipo.root'
+    output_pdfname = 'new_bounds.pdf'
     rootfile = TFile(input_rootfile)
     histos = load_histos(rootfile)
 
@@ -94,80 +95,80 @@ if __name__ == '__main__':
     lab.SetTextSize(0.05)
     lab.SetTextColor(1)
 
-    can.Print('output.pdf[')
+    can.Print('{}['.format(output_pdfname))
 
-    plot_sector_page(can, histos, 'histos_w_{}', lab, save_name='output.pdf',
+    plot_sector_page(can, histos, 'histos_w_{}', lab, save_name=output_pdfname,
                      title='Electron (Forward) and Positive (CTOF)', xtitle='W')
 
-    plot_sector_page(can, histos, 'histos_w_q2_{}', lab, save_name='output.pdf',
+    plot_sector_page(can, histos, 'histos_w_q2_{}', lab, save_name=output_pdfname,
                      title='Electron (Forward) and Positive (CTOF)', xtitle='W', ytitle='Q^{2}', log=False)
 
-    plot_page(can, histos, 'histos_phi_electron_w', lab, save_name='output.pdf',
+    plot_page(can, histos, 'histos_phi_electron_w', lab, save_name=output_pdfname,
                      title='W vs. #phi_{e}', xtitle='#phi_{e}', ytitle='W', log=False)
 
-    plot_sector_page(can, histos, 'histos_theta_electron_vz_electron_{}', lab, save_name='output.pdf',
+    plot_sector_page(can, histos, 'histos_theta_electron_vz_electron_{}', lab, save_name=output_pdfname,
                      title='Electron (Forward) and Positive (CTOF)', xtitle='W', ytitle='Q^{2}', log=False)
 
-    plot_sector_page(can, histos, 'histos_w_inclusive_{}', lab, save_name='output.pdf',
+    plot_sector_page(can, histos, 'histos_w_inclusive_{}', lab, save_name=output_pdfname,
                      title='Electron (Forward)', xtitle='W')
 
-    plot_sector_page(can, histos, 'histos_w_q2_inclusive_{}', lab, save_name='output.pdf',
+    plot_sector_page(can, histos, 'histos_w_q2_inclusive_{}', lab, save_name=output_pdfname,
                      title='Electron (Forward)', xtitle='W', ytitle='Q^{2}', log=False)
 
-    plot_sector_page(can, histos, 'histos_delta_p_electron_{}', lab, save_name='output.pdf',
+    plot_sector_page(can, histos, 'histos_delta_p_electron_{}', lab, save_name=output_pdfname,
                      title='#Delta P_{e} from #theta_{e}', xtitle='#Delta P_{e}', log=False)
 
-    plot_sector_page(can, histos, 'histos_theta_electron_delta_p_electron_{}', lab, save_name='output.pdf',
+    plot_sector_page(can, histos, 'histos_theta_electron_delta_p_electron_{}', lab, save_name=output_pdfname,
                      title='#Delta P_{e} vs #theta_{e} from #theta_{e}', xtitle='#theta_{e}', ytitle='#Delta P_{e}', log=False)
 
-    #plot_page(can, histos, 'histos_phi_electron_delta_p_electron', lab, save_name='output.pdf',
-    #                 title='#Delta P_{e} vs. #phi_{e} from #theta_{e}', xtitle='#phi_{e}', ytitle='#Delta P_{e}', log=False)
+    plot_page(can, histos, 'histos_phi_electron_delta_p_electron', lab, save_name=output_pdfname,
+                     title='#Delta P_{e} vs. #phi_{e} from #theta_{e}', xtitle='#phi_{e}', ytitle='#Delta P_{e}', log=False)
 
-    plot_sector_page(can, histos, 'histos_delta_p_proton_{}', lab, save_name='output.pdf',
+    plot_sector_page(can, histos, 'histos_delta_p_proton_{}', lab, save_name=output_pdfname,
                      title='#Delta P_{p} from #theta_{e}', xtitle='#Delta P_{p}', log=False)
 
-    plot_sector_page(can, histos, 'histos_theta_proton_delta_p_proton_{}', lab, save_name='output.pdf',
+    plot_sector_page(can, histos, 'histos_theta_proton_delta_p_proton_{}', lab, save_name=output_pdfname,
                      title='#Delta P_{p} vs #theta_{p} from #theta_{e}', xtitle='#theta_{p}', ytitle='#Delta P_{p}', log=False)
 
-    plot_sector_page(can, histos, 'histos_p_proton_delta_p_proton_{}', lab, save_name='output.pdf',
+    plot_sector_page(can, histos, 'histos_p_proton_delta_p_proton_{}', lab, save_name=output_pdfname,
                      title='#Delta P_{p} vs P_{p} from #theta_{e}', xtitle='P_{p}', ytitle='#Delta P_{p}', log=False)
     
-    plot_sector_page(can, histos, 'histos_delta_theta_proton_{}', lab, save_name='output.pdf',
+    plot_sector_page(can, histos, 'histos_delta_theta_proton_{}', lab, save_name=output_pdfname,
                      title='#Delta #theta_{p} from #theta_{e}', xtitle='#Delta #theta_{p}', log=False)
 
-    plot_sector_page(can, histos, 'histos_theta_electron_delta_theta_proton_{}', lab, save_name='output.pdf',
+    plot_sector_page(can, histos, 'histos_theta_electron_delta_theta_proton_{}', lab, save_name=output_pdfname,
                      title='#Delta #theta_{p} vs #theta_{e} from #theta_{e}', xtitle='#theta_{e}', ytitle='#Delta #theta_{p}', log=False)
 
-    plot_sector_page(can, histos, 'histos_theta_proton_delta_theta_proton_{}', lab, save_name='output.pdf',
+    plot_sector_page(can, histos, 'histos_theta_proton_delta_theta_proton_{}', lab, save_name=output_pdfname,
                      title='#Delta #theta_{p} vs #theta_{p} from #theta_{e}', xtitle='#theta_{p}', ytitle='#Delta #theta_{p}', log=False)
 
-    plot_sector_page(can, histos, 'histos_theta_electron_vz_electron_{}', lab, save_name='output.pdf',
+    plot_sector_page(can, histos, 'histos_theta_electron_vz_electron_{}', lab, save_name=output_pdfname,
                      title='v_{z} (e) vs #theta_{e}', xtitle='#theta_{e}', ytitle='v_{z} (e)', log=False)
 
-    #plot_page(can, histos, 'histos_phi_electron_vz_electron', lab, save_name='output.pdf',
-    #                 title='v_{z} (e) vs. #phi_{e}', xtitle='#phi_{e}', ytitle='v_{z} (e)', log=False)
+    plot_page(can, histos, 'histos_phi_electron_vz_electron', lab, save_name=output_pdfname,
+                     title='v_{z} (e) vs. #phi_{e}', xtitle='#phi_{e}', ytitle='v_{z} (e)', log=False)
 
-    plot_sector_page(can, histos, 'histos_vz_electron_{}', lab, save_name='output.pdf',
+    plot_sector_page(can, histos, 'histos_vz_electron_{}', lab, save_name=output_pdfname,
                      title='v_{z} (e)', xtitle='v_{z} (e)', log=False)
 
-    plot_sector_page(can, histos, 'histos_theta_proton_vz_proton_{}', lab, save_name='output.pdf',
+    plot_sector_page(can, histos, 'histos_theta_proton_vz_proton_{}', lab, save_name=output_pdfname,
                      title='v_{z} (p) vs #theta_{p}', xtitle='#theta_{p}', ytitle='v_{z} (p)', log=False)
 
-    plot_page(can, histos, 'histos_phi_proton_vz_proton', lab, save_name='output.pdf',
+    plot_page(can, histos, 'histos_phi_proton_vz_proton', lab, save_name=output_pdfname,
                      title='v_{z} (p) vs. #phi_{p}', xtitle='#phi_{p}', ytitle='v_{z} (p)', log=False)
 
-    plot_sector_page(can, histos, 'histos_vz_proton_{}', lab, save_name='output.pdf',
+    plot_sector_page(can, histos, 'histos_vz_proton_{}', lab, save_name=output_pdfname,
                      title='v_{z} (p)', xtitle='v_{z} (p)', log=False)
 
-    plot_page(can, histos, 'histos_phi_electron_delta_vz', lab, save_name='output.pdf',
+    plot_page(can, histos, 'histos_phi_electron_delta_vz', lab, save_name=output_pdfname,
                      title='#Delta v_{z} vs. #phi_{e}', xtitle='#phi_{e}', ytitle='#Delta v_{z}', log=False)
 
-    #plot_page(can, histos, 'histos_phi_proton_delta_vz', lab, save_name='output.pdf',
-    #                 title='#Delta v_{z} vs. #phi_{p}', xtitle='#phi_{p}', ytitle='#Delta v_{z}', log=False)
+    plot_page(can, histos, 'histos_phi_proton_delta_vz', lab, save_name=output_pdfname,
+                     title='#Delta v_{z} vs. #phi_{p}', xtitle='#phi_{p}', ytitle='#Delta v_{z}', log=False)
 
-    plot_sector_page(can, histos, 'histos_delta_vz_{}', lab, save_name='output.pdf',
+    plot_sector_page(can, histos, 'histos_delta_vz_{}', lab, save_name=output_pdfname,
                      title='#Delta v_{z}', xtitle='#Delta v_{z}', log=False)
 
 
     # Close the sucker 
-    can.Print('output.pdf]')
+    can.Print('{}]'.format(output_pdfname))
