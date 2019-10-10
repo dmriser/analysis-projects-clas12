@@ -33,8 +33,10 @@ histoBuilders2 = [
         theta_ele_dtheta : { title -> new H2F("$title", "$title", 200, 5, 30, 200, -10, 15) },
         theta_pro_dtheta : { title -> new H2F("$title", "$title", 200, 50, 90, 200, -10, 15) },
         theta_pro_dp : { title -> new H2F("$title", "$title", 200, 50, 90, 200, -0.2, 0.2) },
+        theta_pro_vz : { title -> new H2F("$title", "$title", 200, 50, 90, 200, -20, 15) },
         phi_dp : { title -> new H2F("$title", "$title", 200, -30, 330, 200, -0.2, 0.2) },
-        phi_theta : { title -> new H2F("$title", "$title", 200, -30, 330, 200, 5, 30) }
+        phi_theta : { title -> new H2F("$title", "$title", 200, -30, 330, 200, 5, 30) },
+        p_pro_dp : { title -> new H2F("$title", "$title", 200, 0.1, 1, 200, -0.2, 0.2) }
 ]
 
 def shiftPhi(phi) {
@@ -160,8 +162,8 @@ GParsPool.withPool 8, {
                 def sector = event.dc_sector[idx]
                 def phi = Math.toDegrees(ele.phi())
                 def sphi = shiftPhi(phi)
-                def rphi = relativePhi(sphi, sector)
-                def dw = PDGDatabase.getParticleMass(2212) - kin.w
+                //def rphi = relativePhi(sphi, sector)
+                //def dw = PDGDatabase.getParticleMass(2212) - kin.w
                 def (delta_theta, delta_e) = getElectronDeltas(beam, ele)
 
                 (0..<event.npart).findAll { event.pid[it] == 2212 }.each {
@@ -188,7 +190,17 @@ GParsPool.withPool 8, {
                         histos.computeIfAbsent('phi_electron_delta_vz', histoBuilders2.phi_vz).fill(sphi, event.vz[idx]-event.vz[it])
                         histos.computeIfAbsent('theta_electron_vz_electron_' + sector, histoBuilders2.theta_ele_vz).fill(
                                 Math.toDegrees(ele.theta()), event.vz[idx])
-                        histos.computeIfAbsent('', histoBuilders2).fill()
+                        //histos.computeIfAbsent('theta_electron_delta_p_electron_' + sector,
+                        // histoBuilders2.theta_ele_dp).fill(Math.toDegrees(ele.theta()), delta_p_pro)
+                        //histos.computeIfAbsent('theta_electron_delta_p_proton_' + sector,
+                        //        histoBuilders2.theta_ele_dtheta).fill(Math.toDegrees(ele.theta()), delta_theta_pro)
+
+                        //histos.computeIfAbsent('theta_proton_delta_p_proton_' + sector, histoBuilders2.theta_pro_dp).fill()
+                        //histos.computeIfAbsent('theta_proton_delta_theta_proton_' + sector, histoBuilders2.theta_pro_dtheta).fill()
+                        histos.computeIfAbsent('theta_proton_vz_proton_' + sector, histoBuilders2.theta_pro_vz).fill(
+                                Math.toDegrees(pro.theta()), event.vz[it])
+                        //histos.computeIfAbsent('p_proton_delta_p_proton_' + sector, histoBuilders2.p_pro_dp).fill(
+                        //        event.p[it], delta_p_pro)
 
                     }
                 }
