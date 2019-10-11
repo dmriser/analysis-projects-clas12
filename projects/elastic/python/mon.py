@@ -76,8 +76,8 @@ def plot_page(canvas, histos, histo_title, label, save_name,
 
 if __name__ == '__main__':
 
-    input_rootfile = '5038.hipo.root'
-    output_pdfname = '5038.pdf'
+    input_rootfile = 'rga.root'
+    output_pdfname = 'rga.pdf'
     rootfile = TFile(input_rootfile)
     histos = load_histos(rootfile)
 
@@ -169,6 +169,19 @@ if __name__ == '__main__':
     plot_sector_page(can, histos, 'histos_delta_vz_{}', lab, save_name=output_pdfname,
                      title='#Delta v_{z}', xtitle='#Delta v_{z}', log=False)
 
+    plot_sector_page(can, histos, 'histos_de_beam_{}', lab, save_name=output_pdfname,
+                     title='#Delta E_{beam} from (#theta_{e}, P_{e})', xtitle='#Delta E_{beam}', log=False)
+
+    plot_sector_page(can, histos, 'histos_de_beam_from_angles{}', lab, save_name=output_pdfname,
+                     title='#Delta E_{beam} from (#theta_{e}, #theta_{p})', xtitle='#Delta E_{beam}', log=False)
+
+    plot_sector_page(can, histos, 'histos_de_beam_de_beam_from_angles{}', lab, save_name=output_pdfname,
+                     title='#Delta E_{beam}', xtitle='#Delta E (#theta_{e}, P_{e})',
+                     ytitle='#Delta E (#theta_{e}, #theta_{p})', log=False)
+
+    plot_sector_page(can, histos, 'histos_theta_ele_de_beam_{}', lab, save_name=output_pdfname,
+                     title='#Delta E_{beam} vs #theta_{e}', xtitle='#theta_{e}',
+                     ytitle='#Delta E (#theta_{e}, P_{e})', log=False)
 
     # Close the sucker 
     can.Print('{}]'.format(output_pdfname))
