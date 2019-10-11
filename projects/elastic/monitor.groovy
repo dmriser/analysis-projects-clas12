@@ -204,7 +204,7 @@ def predictElasticBasedOnElectronAngle(beam, alpha) {
     return [pred_ele_p, pred_beta, pred_pro_p]
 }
 
-GParsPool.withPool 8, {
+GParsPool.withPool 16, {
     args.eachParallel { filename ->
 
         def reader = new HipoDataSource()
