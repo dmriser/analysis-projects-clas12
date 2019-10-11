@@ -258,7 +258,7 @@ GParsPool.withPool 16, {
                     histos.computeIfAbsent('w_q2_' + sector, histoBuilders2.w_q2).fill(pkin.w, pkin.q2)
                     histos.computeIfAbsent('phi_electron_w', histoBuilders2.phi_w).fill(sphi, pkin.w)
 
-                    if (pkin.angle > 175 && pkin.w > 0.75 && pkin.w < 1.15) {
+                    if (pkin.angle > 177.5 && pkin.w < 1.3) {
 
                         // One dimensional
                         histos.computeIfAbsent('delta_p_electron_' + sector, histoBuilders.p_res).fill(ele.p() - pred_ele_p)
