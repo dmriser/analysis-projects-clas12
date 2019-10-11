@@ -27,7 +27,7 @@ orig_kin_bounds = [
         dp_ele    : [-0.2, 0.2],
         dp_pro    : [-0.2, 0.2],
         dtheta_pro: [-10, 15],
-        de_beam    : [-2, 2]
+        de_beam   : [-2, 2]
 ]
 
 
@@ -80,7 +80,7 @@ histoBuilders2 = [
         phi_theta         : { title -> limited_h2(title, 200, 200, lim.phi, lim.theta_ele) },
         p_pro_dp          : { title -> limited_h2(title, 200, 200, lim.p_pro, lim.dp_ele) },
         theta_ele_de_beam : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.de_beam) },
-        de_beam_de_beam   : { title -> limited_h2(title, 200, 200, lim.de_beam, lim.de_beam) }
+        de_beam_de_beam   : { title -> limited_h2(title, 200, 200, lim.de_beam, lim.de_beam) },
 ]
 
 
