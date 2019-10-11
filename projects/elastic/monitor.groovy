@@ -26,7 +26,8 @@ orig_kin_bounds = [
         vz        : [-20, 15],
         dp_ele    : [-0.2, 0.2],
         dp_pro    : [-0.2, 0.2],
-        dtheta_pro: [-10, 15]
+        dtheta_pro: [-10, 15],
+        de_beam    : [-2, 2]
 ]
 
 
@@ -41,7 +42,8 @@ new_kin_bounds = [
         vz        : [-20, 15],
         dp_ele    : [-1.2, 1.2],
         dp_pro    : [-1.2, 1.2],
-        dtheta_pro: [-20, 20]
+        dtheta_pro: [-20, 20],
+        de_beam    : [-2, 2]
 ]
 
 lim = new_kin_bounds
@@ -60,22 +62,25 @@ histoBuilders = [
         w        : { title -> limited_h1(title, 200, lim.w) },
         theta_res: { title -> limited_h1(title, 200, lim.dtheta_pro) },
         p_res    : { title -> limited_h1(title, 200, lim.dp_ele) },
-        vz       : { title -> limited_h1(title, 200, lim.vz) }
+        vz       : { title -> limited_h1(title, 200, lim.vz) },
+        de_beam  : { title -> limited_h1(title, 200, lim.de_beam) }
 ]
 
 histoBuilders2 = [
-        w_q2            : { title -> limited_h2(title, 200, 200, lim.w, lim.q2) },
-        phi_w           : { title -> limited_h2(title, 200, 200, lim.phi, lim.w) },
-        theta_ele_vz    : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.vz) },
-        phi_vz          : { title -> limited_h2(title, 200, 200, lim.phi, lim.vz) },
-        theta_ele_dp    : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.dp_ele) },
-        theta_ele_dtheta: { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.dtheta_pro) },
-        theta_pro_dtheta: { title -> limited_h2(title, 200, 200, lim.theta_pro, lim.dtheta_pro) },
-        theta_pro_dp    : { title -> limited_h2(title, 200, 200, lim.theta_pro, lim.dp_ele) },
-        theta_pro_vz    : { title -> limited_h2(title, 200, 200, lim.theta_pro, lim.vz) },
-        phi_dp          : { title -> limited_h2(title, 200, 200, lim.phi, lim.dp_ele) },
-        phi_theta       : { title -> limited_h2(title, 200, 200, lim.phi, lim.theta_ele) },
-        p_pro_dp        : { title -> limited_h2(title, 200, 200, lim.p_pro, lim.dp_ele) },
+        w_q2              : { title -> limited_h2(title, 200, 200, lim.w, lim.q2) },
+        phi_w             : { title -> limited_h2(title, 200, 200, lim.phi, lim.w) },
+        theta_ele_vz      : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.vz) },
+        phi_vz            : { title -> limited_h2(title, 200, 200, lim.phi, lim.vz) },
+        theta_ele_dp      : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.dp_ele) },
+        theta_ele_dtheta  : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.dtheta_pro) },
+        theta_pro_dtheta  : { title -> limited_h2(title, 200, 200, lim.theta_pro, lim.dtheta_pro) },
+        theta_pro_dp      : { title -> limited_h2(title, 200, 200, lim.theta_pro, lim.dp_ele) },
+        theta_pro_vz      : { title -> limited_h2(title, 200, 200, lim.theta_pro, lim.vz) },
+        phi_dp            : { title -> limited_h2(title, 200, 200, lim.phi, lim.dp_ele) },
+        phi_theta         : { title -> limited_h2(title, 200, 200, lim.phi, lim.theta_ele) },
+        p_pro_dp          : { title -> limited_h2(title, 200, 200, lim.p_pro, lim.dp_ele) },
+        theta_ele_de_beam : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.de_beam) },
+        de_beam_de_beam   : { title -> limited_h2(title, 200, 200, lim.de_beam, lim.de_beam) }
 ]
 
 
@@ -240,6 +245,11 @@ GParsPool.withPool 8, {
                     def pkin = getPKin(beam, target, ele, pro)
                     def phi_pro = Math.toDegrees(pro.phi())
                     def sphi_pro = shiftPhi(phi_pro)
+                    def pred_e_beam = ele.p() / (1 + (ele.p() / PDGDatabase.getParticleMass(2212)) * (Math.cos(ele.theta()) - 1))
+
+                    def a0 = 1 - 1 / (Math.cos(ele.theta()) - Math.sin(ele.theta()) / Math.tan(-1 * pro.theta()))
+                    def a1 = Math.sin(ele.theta()) / Math.sin(ele.theta() + pro.theta())
+                    def pred_e_beam_from_angles = 2 * PDGDatabase.getParticleMass(2212) * a0 / (a1**2 - a0**2)
 
                     // One dimensional
                     histos.computeIfAbsent('w_' + sector, histoBuilders.w).fill(pkin.w)
@@ -248,7 +258,7 @@ GParsPool.withPool 8, {
                     histos.computeIfAbsent('w_q2_' + sector, histoBuilders2.w_q2).fill(pkin.w, pkin.q2)
                     histos.computeIfAbsent('phi_electron_w', histoBuilders2.phi_w).fill(sphi, pkin.w)
 
-                    if (pkin.angle > 175 && pkin.w > 0.8 && pkin.w < 1.05) {
+                    if (pkin.angle > 175 && pkin.w > 0.75 && pkin.w < 1.15) {
 
                         // One dimensional
                         histos.computeIfAbsent('delta_p_electron_' + sector, histoBuilders.p_res).fill(ele.p() - pred_ele_p)
@@ -258,6 +268,9 @@ GParsPool.withPool 8, {
                         histos.computeIfAbsent('vz_electron_' + sector, histoBuilders.vz).fill(event.vz[idx])
                         histos.computeIfAbsent('vz_proton_' + sector, histoBuilders.vz).fill(event.vz[it])
                         histos.computeIfAbsent('delta_vz_' + sector, histoBuilders.vz).fill(event.vz[idx] - event.vz[it])
+                        histos.computeIfAbsent('de_beam_' + sector, histoBuilders.de_beam).fill(beam.e() - pred_e_beam)
+                        histos.computeIfAbsent('de_beam_from_angles' + sector, histoBuilders.de_beam).fill(
+                                beam.e() - pred_e_beam_from_angles)
 
                         // Two dimensional
                         histos.computeIfAbsent('phi_electron_theta_electron', histoBuilders2.phi_theta).fill(
@@ -290,6 +303,12 @@ GParsPool.withPool 8, {
                                 sphi_pro, event.vz[it])
                         histos.computeIfAbsent('phi_proton_delta_vz', histoBuilders2.phi_vz).fill(
                                 sphi_pro, event.vz[idx] - event.vz[it])
+                        histos.computeIfAbsent('theta_ele_de_beam_' + sector, histoBuilders2.theta_ele_de_beam).fill(
+                                Math.toDegrees(ele.theta()), beam.e() - pred_e_beam)
+                        histos.computeIfAbsent('theta_ele_de_beam_from_angles_' + sector, histoBuilders2.theta_ele_de_beam).fill(
+                                Math.toDegrees(ele.theta()), beam.e() - pred_e_beam_from_angles)
+                        histos.computeIfAbsent('de_beam_de_beam_from_angles' + sector, histoBuilders2.de_beam_de_beam).fill(
+                                beam.e() - pred_e_beam, beam.e() - pred_e_beam_from_angles)
 
 
                     }
