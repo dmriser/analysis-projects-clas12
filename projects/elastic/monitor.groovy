@@ -30,7 +30,6 @@ orig_kin_bounds = [
         de_beam   : [-2, 2]
 ]
 
-
 new_kin_bounds = [
         theta_ele : [5, 20],
         theta_pro : [20, 70],
