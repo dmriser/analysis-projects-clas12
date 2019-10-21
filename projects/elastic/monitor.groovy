@@ -27,7 +27,8 @@ orig_kin_bounds = [
         dp_ele    : [-0.2, 0.2],
         dp_pro    : [-0.2, 0.2],
         dtheta_pro: [-10, 15],
-        de_beam   : [-2, 2]
+        de_beam   : [-2, 2],
+        angle_ep  : [125, 180]
 ]
 
 new_kin_bounds = [
@@ -42,7 +43,8 @@ new_kin_bounds = [
         dp_ele    : [-1.2, 1.2],
         dp_pro    : [-1.2, 1.2],
         dtheta_pro: [-20, 20],
-        de_beam    : [-2, 2]
+        de_beam    : [-2, 2],
+        angle_ep  : [125, 180]
 ]
 
 lim = new_kin_bounds
@@ -58,26 +60,28 @@ def limited_h2 = { title, nxbins, nybins, xlims, ylims ->
 histos = new ConcurrentHashMap()
 
 histoBuilders = [
-        w        : { title -> limited_h1(title, 200, lim.w) },
-        theta_res: { title -> limited_h1(title, 200, lim.dtheta_pro) },
-        p_res    : { title -> limited_h1(title, 200, lim.dp_ele) },
-        vz       : { title -> limited_h1(title, 200, lim.vz) },
-        de_beam  : { title -> limited_h1(title, 200, lim.de_beam) }
+        w        : { title -> limited_h1(title, 400, lim.w) },
+        theta_res: { title -> limited_h1(title, 400, lim.dtheta_pro) },
+        p_res    : { title -> limited_h1(title, 400, lim.dp_ele) },
+        vz       : { title -> limited_h1(title, 400, lim.vz) },
+        de_beam  : { title -> limited_h1(title, 400, lim.de_beam) },
+        angle_ep : { title -> limited_h1(title, 400, lim.angle_ep) },
+        theta_p  : { title -> new H1F("$title", "$title", 400, 5, 85) }
 ]
 
 histoBuilders2 = [
-        w_q2              : { title -> limited_h2(title, 200, 200, lim.w, lim.q2) },
-        phi_w             : { title -> limited_h2(title, 200, 200, lim.phi, lim.w) },
-        theta_ele_vz      : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.vz) },
-        phi_vz            : { title -> limited_h2(title, 200, 200, lim.phi, lim.vz) },
-        theta_ele_dp      : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.dp_ele) },
-        theta_ele_dtheta  : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.dtheta_pro) },
-        theta_pro_dtheta  : { title -> limited_h2(title, 200, 200, lim.theta_pro, lim.dtheta_pro) },
-        theta_pro_dp      : { title -> limited_h2(title, 200, 200, lim.theta_pro, lim.dp_ele) },
-        theta_pro_vz      : { title -> limited_h2(title, 200, 200, lim.theta_pro, lim.vz) },
-        phi_dp            : { title -> limited_h2(title, 200, 200, lim.phi, lim.dp_ele) },
-        phi_theta         : { title -> limited_h2(title, 200, 200, lim.phi, lim.theta_ele) },
-        p_pro_dp          : { title -> limited_h2(title, 200, 200, lim.p_pro, lim.dp_ele) },
+        w_q2              : { title -> limited_h2(title, 400, 400, lim.w, lim.q2) },
+        phi_w             : { title -> limited_h2(title, 400, 400, lim.phi, lim.w) },
+        theta_ele_vz      : { title -> limited_h2(title, 400, 400, lim.theta_ele, lim.vz) },
+        phi_vz            : { title -> limited_h2(title, 400, 400, lim.phi, lim.vz) },
+        theta_ele_dp      : { title -> limited_h2(title, 400, 400, lim.theta_ele, lim.dp_ele) },
+        theta_ele_dtheta  : { title -> limited_h2(title, 400, 400, lim.theta_ele, lim.dtheta_pro) },
+        theta_pro_dtheta  : { title -> limited_h2(title, 400, 400, lim.theta_pro, lim.dtheta_pro) },
+        theta_pro_dp      : { title -> limited_h2(title, 400, 400, lim.theta_pro, lim.dp_ele) },
+        theta_pro_vz      : { title -> limited_h2(title, 400, 400, lim.theta_pro, lim.vz) },
+        phi_dp            : { title -> limited_h2(title, 400, 400, lim.phi, lim.dp_ele) },
+        phi_theta         : { title -> limited_h2(title, 400, 400, lim.phi, lim.theta_ele) },
+        p_pro_dp          : { title -> limited_h2(title, 400, 400, lim.p_pro, lim.dp_ele) },
         theta_ele_de_beam : { title -> limited_h2(title, 400, 400, lim.theta_ele, lim.de_beam) },
         de_beam_de_beam   : { title -> limited_h2(title, 400, 400, lim.de_beam, lim.de_beam) },
 ]
@@ -239,7 +243,7 @@ GParsPool.withPool 16, {
                 // event kinematics based on the assumption that it's an elastic scattering.
                 def (pred_ele_p, pred_pro_theta, pred_pro_p) = predictElasticBasedOnElectronAngle(beam, ele.theta())
 
-                (0..<event.npart).findAll { event.charge[it] > 0 && event.ctof_status.contains(it) }.each {
+                (0..<event.npart).findAll { event.charge[it] > 0 }.each {
                     def pro = new Particle(2212, event.px[it], event.py[it], event.pz[it])
                     def pkin = getPKin(beam, target, ele, pro)
                     def phi_pro = Math.toDegrees(pro.phi())
@@ -252,12 +256,39 @@ GParsPool.withPool 16, {
 
                     // One dimensional
                     histos.computeIfAbsent('w_' + sector, histoBuilders.w).fill(pkin.w)
+                    histos.computeIfAbsent('w', histoBuilders.w).fill(pkin.w)
+                    histos.computeIfAbsent('angle_ep', histoBuilders.angle_ep).fill(pkin.angle)
+
+                    // For illustration of selection criteria
+                    if (pkin.angle > 175 && event.ctof_status.contains(it)) {
+                        histos.computeIfAbsent('w_pass_angle_in_ctof', histoBuilders.w).fill(pkin.w)
+                    }
+                    if (pkin.w > 0.8 && pkin.w < 1.12 && event.ctof_status.contains(it)) {
+                        histos.computeIfAbsent('angle_ep_pass_w_in_ctof', histoBuilders.angle_ep).fill(pkin.angle)
+                    }
+
+                    // Elastic protons in forward and central.
+                    if (pkin.w > 0.8 && pkin.w < 1.12 && pkin.angle > 175){
+                        histos.computeIfAbsent('theta_p_combined', histoBuilders.theta_p).fill(Math.toDegrees(pro.theta()))
+
+                        if (event.ctof_status.contains(it)){
+                            histos.computeIfAbsent('theta_p_ctof', histoBuilders.theta_p).fill(Math.toDegrees(pro.theta()))
+                        }
+
+                        // layers = {1: ftof1a, 2: ftof1b, 3: ftof2}
+                        else if (event.tof_status.contains(it)) {
+                            def layer = event.tof_layer[it]
+                            histos.computeIfAbsent('theta_p_tof_' + layer, histoBuilders.theta_p).fill(Math.toDegrees(pro.theta()))
+                        }
+
+                    }
 
                     // Two dimensional
                     histos.computeIfAbsent('w_q2_' + sector, histoBuilders2.w_q2).fill(pkin.w, pkin.q2)
                     histos.computeIfAbsent('phi_electron_w', histoBuilders2.phi_w).fill(sphi, pkin.w)
 
-                    if (pkin.angle > 177.5 && pkin.w < 1.3) {
+                    // Require that the proton is in central detector.
+                    if (pkin.angle > 175 && pkin.w < 1.3 && event.ctof_status.contains(it)) {
 
                         // One dimensional
                         histos.computeIfAbsent('delta_p_electron_' + sector, histoBuilders.p_res).fill(ele.p() - pred_ele_p)
