@@ -78,8 +78,8 @@ histoBuilders2 = [
         phi_dp            : { title -> limited_h2(title, 200, 200, lim.phi, lim.dp_ele) },
         phi_theta         : { title -> limited_h2(title, 200, 200, lim.phi, lim.theta_ele) },
         p_pro_dp          : { title -> limited_h2(title, 200, 200, lim.p_pro, lim.dp_ele) },
-        theta_ele_de_beam : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.de_beam) },
-        de_beam_de_beam   : { title -> limited_h2(title, 200, 200, lim.de_beam, lim.de_beam) },
+        theta_ele_de_beam : { title -> limited_h2(title, 400, 400, lim.theta_ele, lim.de_beam) },
+        de_beam_de_beam   : { title -> limited_h2(title, 400, 400, lim.de_beam, lim.de_beam) },
 ]
 
 
