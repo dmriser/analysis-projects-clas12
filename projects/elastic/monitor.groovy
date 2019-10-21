@@ -259,7 +259,11 @@ GParsPool.withPool 16, {
                     histos.computeIfAbsent('w', histoBuilders.w).fill(pkin.w)
                     histos.computeIfAbsent('angle_ep', histoBuilders.angle_ep).fill(pkin.angle)
 
-                    // For illustration of selection criteria
+
+		    // For illustration of selection criteria
+                    if (event.ctof_status.contains(it)) {
+                        histos.computeIfAbsent('w_in_ctof', histoBuilders.w).fill(pkin.w)
+                    }
                     if (pkin.angle > 175 && event.ctof_status.contains(it)) {
                         histos.computeIfAbsent('w_pass_angle_in_ctof', histoBuilders.w).fill(pkin.w)
                     }

@@ -18,8 +18,13 @@ def plot_sector_momreso(histos, can, lab, tex, tit):
         can.cd(i)
         title = tit.format(i)
 
-        fit = TF1('fit_{}'.format(i), 'gaus')
-        histos[title].Fit(fit)
+        mean = histos[title].GetMean()
+        std = histos[title].GetStdDev()
+        fit = TF1('fit_{}'.format(i), 'gaus', mean - 1.7 * std, mean + 1.7 * std)
+        fit.SetParameter(1, mean)
+        fit.SetParameter(2, std)
+
+        histos[title].Fit(fit, 'brq')
         fit.Draw('same')
 
         histos[title].SetLineColor(1)
@@ -38,7 +43,7 @@ def plot_sector_momreso(histos, can, lab, tex, tit):
     can_tit = 'Momentum Resolution (Electron)' if 'ele' in tit else 'Momentum Resolution (Proton)'
     tex.DrawLatex(0.01, 0.95, can_tit)
 
-    output_title = tit.split('_{}')[0].split('histos_')[-1] + 'sectors.pdf'
+    output_title = tit.split('_{}')[0].split('histos_')[-1] + '_sectors.pdf'
     can.Print(output_title)
 
 def plot_sector_thetareso(histos, can, lab, tex, tit):
@@ -119,7 +124,8 @@ if __name__ == '__main__':
     lab.SetTextFont(42)
     lab.SetTextSize(0.04)
     lab.SetTextColor(1)
-    
+
+    """
     can.cd(1)
     histos['histos_w_ctof_proton'].SetLineColor(1)
     histos['histos_w_ctof_proton'].Draw('same')
@@ -142,7 +148,7 @@ if __name__ == '__main__':
     tex.DrawLatex(0.1, 0.925, 'Elastic electrons #color[55]{CTOF proton} and #color[99]{TOF proton}')
     lab.DrawLatex(0.45, 0.02, 'W (GeV/c^{2})')
     can.Print('w_summary.pdf')
-
+    
     # Show angular spectrum
     can.cd(1)
     histos['histos_opening_angle_ep_ctof_proton'].SetLineColor(1)
@@ -154,19 +160,21 @@ if __name__ == '__main__':
     tex.DrawLatex(0.1, 0.925, 'CTOF proton #color[99]{pass W} and #color[55]{fail W}')
     lab.DrawLatex(0.45, 0.02, '#theta_{ep} (deg)') 
     can.Print('opening_angle.pdf')
+    """
     
     # Show momentum resolution 
-    plot_sector_momreso(histos, can, lab, tex, 'histos_p_res_ele_ctof_proton_pass_all_{}')
-    plot_sector_momreso(histos, can, lab, tex, 'histos_p_res_pro_ctof_proton_pass_all_{}')
-    plot_sector_momreso(histos, can, lab, tex, 'histos_p_res_fraction_ele_ctof_proton_pass_all_{}')
-    plot_sector_momreso(histos, can, lab, tex, 'histos_p_res_fraction_pro_ctof_proton_pass_all_{}')
+    plot_sector_momreso(histos, can, lab, tex, 'histos_delta_p_electron_{}')
+    plot_sector_momreso(histos, can, lab, tex, 'histos_delta_p_proton_{}')
+    #plot_sector_momreso(histos, can, lab, tex, 'histos_p_res_pro_ctof_proton_pass_all_{}')
+    #plot_sector_momreso(histos, can, lab, tex, 'histos_p_res_fraction_ele_ctof_proton_pass_all_{}')
+    #plot_sector_momreso(histos, can, lab, tex, 'histos_p_res_fraction_pro_ctof_proton_pass_all_{}')
 
     # Show angular resolution 
-    plot_sector_thetareso(histos, can, lab, tex, 'histos_theta_res_ele_ctof_proton_pass_all_{}')
-    plot_sector_thetareso(histos, can, lab, tex, 'histos_theta_res_pro_ctof_proton_pass_all_{}')
+    #plot_sector_thetareso(histos, can, lab, tex, 'histos_theta_res_ele_ctof_proton_pass_all_{}')
+    #plot_sector_thetareso(histos, can, lab, tex, 'histos_theta_res_pro_ctof_proton_pass_all_{}')
     
     # Show 2-D resolution as a function of mom
-    plot_sector_reso2d(histos, can, lab, tex, 'histos_p_res_p_ele_ctof_proton_pass_all_{}')
-    plot_sector_reso2d(histos, can, lab, tex, 'histos_p_res_p_pro_ctof_proton_pass_all_{}')
-    plot_sector_reso2d(histos, can, lab, tex, 'histos_p_res_fraction_p_ele_ctof_proton_pass_all_{}')
-    plot_sector_reso2d(histos, can, lab, tex, 'histos_p_res_fraction_p_pro_ctof_proton_pass_all_{}')
+    #plot_sector_reso2d(histos, can, lab, tex, 'histos_p_res_p_ele_ctof_proton_pass_all_{}')
+    #plot_sector_reso2d(histos, can, lab, tex, 'histos_p_res_p_pro_ctof_proton_pass_all_{}')
+    #plot_sector_reso2d(histos, can, lab, tex, 'histos_p_res_fraction_p_ele_ctof_proton_pass_all_{}')
+    #plot_sector_reso2d(histos, can, lab, tex, 'histos_p_res_fraction_p_pro_ctof_proton_pass_all_{}')

@@ -11,4 +11,5 @@ ENV home /home/${username}
 USER ${username}
 WORKDIR /data
 
-CMD ["python", "mon.py"]
+# CMD ["python", "pres.py"]
+CMD ["python", "test.py"]
