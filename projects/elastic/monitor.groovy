@@ -243,7 +243,7 @@ GParsPool.withPool 16, {
                 // event kinematics based on the assumption that it's an elastic scattering.
                 def (pred_ele_p, pred_pro_theta, pred_pro_p) = predictElasticBasedOnElectronAngle(beam, ele.theta())
 
-                (0..<event.npart).findAll { event.charge[it] > 0 }.each {
+                (0..<event.npart).findAll { event.pid[it] == 2212 }.each {
                     def pro = new Particle(2212, event.px[it], event.py[it], event.pz[it])
                     def pkin = getPKin(beam, target, ele, pro)
                     def phi_pro = Math.toDegrees(pro.phi())
@@ -264,15 +264,15 @@ GParsPool.withPool 16, {
                     if (event.ctof_status.contains(it)) {
                         histos.computeIfAbsent('w_in_ctof', histoBuilders.w).fill(pkin.w)
                     }
-                    if (pkin.angle > 175 && event.ctof_status.contains(it)) {
+                    if (pkin.angle > 177 && event.ctof_status.contains(it)) {
                         histos.computeIfAbsent('w_pass_angle_in_ctof', histoBuilders.w).fill(pkin.w)
                     }
-                    if (pkin.w > 0.8 && pkin.w < 1.12 && event.ctof_status.contains(it)) {
+                    if (pkin.w > 0.8 && pkin.w < 1.08 && event.ctof_status.contains(it)) {
                         histos.computeIfAbsent('angle_ep_pass_w_in_ctof', histoBuilders.angle_ep).fill(pkin.angle)
                     }
 
                     // Elastic protons in forward and central.
-                    if (pkin.w > 0.8 && pkin.w < 1.12 && pkin.angle > 175){
+                    if (pkin.w > 0.8 && pkin.w < 1.08 && pkin.angle > 177){
                         histos.computeIfAbsent('theta_p_combined', histoBuilders.theta_p).fill(Math.toDegrees(pro.theta()))
 
                         if (event.ctof_status.contains(it)){
@@ -292,7 +292,7 @@ GParsPool.withPool 16, {
                     histos.computeIfAbsent('phi_electron_w', histoBuilders2.phi_w).fill(sphi, pkin.w)
 
                     // Require that the proton is in central detector.
-                    if (pkin.angle > 175 && pkin.w < 1.3 && event.ctof_status.contains(it)) {
+                    if (pkin.angle > 177 && pkin.w < 1.3 && event.ctof_status.contains(it)) {
 
                         // One dimensional
                         histos.computeIfAbsent('delta_p_electron_' + sector, histoBuilders.p_res).fill(ele.p() - pred_ele_p)
