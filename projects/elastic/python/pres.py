@@ -1,7 +1,11 @@
 #!/usr/bin/env python 
 
+from array import array 
+
 from ROOT import (TH1F, TH2F, TF1, TFile, TCanvas,
-                  gPad, gStyle, TLatex, TLine)
+                  gPad, gStyle, TLatex, TLine, TGraphErrors,
+                  TVector)
+
 
 def load_histos(file):
     ''' Use the ROOT file structure to load a dictionary of histograms. '''
@@ -46,6 +50,35 @@ def plot_sector_beam(canvas, histos, title_formatter, label, save_name):
         label.SetTextAngle(90)
         label.DrawLatex(0.045, 0.5, ytitle)
         label.SetTextAngle(0)
+
+    canvas.Print(save_name)
+
+def plot_reso_theta(canvas, histos, title_formatter,
+                    label, save_name, xtitle=None, ytitle=None, title=None,
+                    theta_range=None):
+    
+    canvas.Clear() 
+    canvas.Divide(3,2)
+    
+    for i in range(1,7):
+        canvas.cd(i)
+
+        if theta_range:
+            histos[title_formatter.format(i)].GetXaxis().SetRangeUser(
+                theta_range[0], theta_range[1])
+        
+        histos[title_formatter.format(i)].Draw('colz')
+
+        if title:
+            label.DrawLatex(0.1, 0.925, '#Delta E_{beam} = E_{beam} - E_{pred}')
+
+        if xtitle:
+            label.DrawLatex(0.5, 0.015, xtitle)
+
+        if ytitle:
+            label.SetTextAngle(90)
+            label.DrawLatex(0.045, 0.5, ytitle)
+            label.SetTextAngle(0)
 
     canvas.Print(save_name)
 
@@ -189,7 +222,101 @@ def plot_theta_p(canvas, histos, save_name, label,
     label.DrawLatex(0.75, 0.75, '#color[99]{FTOF 2}')
     canvas.Print(save_name)
 
+def fit_slices(histo, x_range, x_bin_step):
+    x_start = histo.GetXaxis().FindBin(x_range[0])
+    x_stop =  histo.GetXaxis().FindBin(x_range[1])
+
+    x_values = array('d')
+    slices = [] 
+    fits = [] 
+    for i, x_bin in enumerate(range(x_start, x_stop + 1, x_bin_step)):
+        projec = histo.ProjectionY(histo.GetTitle() + '_proj{}'.format(i) , x_bin, x_bin + x_bin_step)
+        fit = TF1(histo.GetTitle()+'_fit{}'.format(i), 'gaus')
+
+        projec.Fit(fit)
+        
+        slices.append(projec)
+        fits.append(fit)
+        
+        x_low = histo.GetXaxis().GetBinCenter(x_bin)
+        x_high = histo.GetXaxis().GetBinCenter(x_bin + x_bin_step) 
+        x_values.append(0.5 * (x_high + x_low))
+        
+
+
+    means = array('d')
+    means_err = array('d')
+    stds = array('d')
+    stds_err = array('d')
+    zeros = array('d')
+
+    for f in fits:
+        means.append(f.GetParameter(1))
+        means_err.append(f.GetParError(1))
+        stds.append(f.GetParameter(2))
+        stds_err.append(f.GetParError(2))
+        zeros.append(0.0)
+
+    print(x_values)
+    print(means)
+    graph_mean = TGraphErrors(len(x_values), x_values, means, zeros, means_err)
+    #graph_mean.SetTitle(histo.GetTitle() + '_mean')
     
+    graph_std = TGraphErrors(len(x_values), x_values, stds, zeros, stds_err)
+    #graph_std.SetTitle(histo.GetTitle() + '_std')
+    
+    return graph_mean, graph_std
+        
+def plot_fits(canvas, histos, x_range, x_bin_step, title_formatter,
+              save_name, label, y_range=None,
+              title=None, xtitle=None, ytitle=None, draw_mean=False):
+
+    canvas.Clear() 
+    canvas.Divide(3,2)
+
+
+    root_is_dumb = [] 
+    for i in range(1,7):
+        canvas.cd(i)
+        
+        title = title_formatter.format(i)
+        mean, std = fit_slices(histos[title], x_range, x_bin_step)
+        
+        if draw_mean:
+            mean.SetMarkerStyle(21)
+            mean.SetMarkerSize(1)
+
+            if y_range:
+                mean.GetYaxis().SetLimits(y_range[0], y_range[1])
+
+            mean.Draw('AP')
+            root_is_dumb.append(mean)
+
+        else:
+            std.SetMarkerStyle(21)
+            std.SetMarkerSize(1)
+            std.Draw('AP')
+
+            if y_range:
+                std.GetYaxis().SetLimits(y_range[0], y_range[1])
+
+            root_is_dumb.append(std)
+
+        if title:
+            label.DrawLatex(0.1, 0.925, title)
+
+        if xtitle:
+            label.DrawLatex(0.5, 0.015, xtitle)
+
+        if ytitle:
+            label.SetTextAngle(90)
+            label.DrawLatex(0.035, 0.5, ytitle)
+            label.SetTextAngle(0)
+
+            
+    canvas.Print(save_name)
+        
+        
 if __name__ == '__main__':
 
     input_rootfile = 'histos.root'
@@ -218,3 +345,26 @@ if __name__ == '__main__':
 
     plot_phi_vz(can, histos, lab, 'phi_vz.pdf')
     
+    plot_reso_theta(can, histos, 'histos_theta_electron_delta_p_electron_{}', label=lab,
+                    save_name='theta_electron_delta_p_electron.pdf',
+                    xtitle='#theta_{e} (deg)',
+                    ytitle='#Delta p_{e}',
+                    theta_range=[6.0,13.0])
+
+    plot_reso_theta(can, histos, 'histos_theta_proton_delta_p_proton_{}', label=lab,
+                    save_name='theta_proton_delta_p_proton.pdf',
+                    xtitle='#theta_{p} (deg)',
+                    ytitle='#Delta p_{p}',
+                    theta_range=[35.0, 60.0])
+
+    plot_fits(canvas=can, histos=histos,
+              title_formatter='histos_theta_electron_delta_p_electron_{}', label=lab,
+              x_range=[7.0, 11.0], x_bin_step=10, y_range=[-0.2, 0.2],
+              save_name='graph_theta_electron_delta_p_electron_reso.pdf',
+              draw_mean=False, xtitle='#theta_{e} (deg)', ytitle='p_{e} (resolution)')
+
+    plot_fits(canvas=can, histos=histos,
+              title_formatter='histos_theta_proton_delta_p_proton_{}', label=lab,
+              x_range=[40.0, 55.0], x_bin_step=10, y_range=[-0.2, 0.2],
+              save_name='graph_theta_proton_delta_p_proton_reso.pdf',
+              draw_mean=False, xtitle='#theta_{p} (deg)', ytitle='p_{p} (resolution)')
