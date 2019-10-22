@@ -1,7 +1,7 @@
 #!/usr/bin/env python 
 
 from ROOT import (TH1F, TH2F, TF1, TFile, TCanvas,
-                  gPad, gStyle, TLatex)
+                  gPad, gStyle, TLatex, TLine)
 
 def load_histos(file):
     ''' Use the ROOT file structure to load a dictionary of histograms. '''
@@ -14,36 +14,38 @@ def setup_global_options():
     gStyle.SetOptTitle(0)
     gStyle.SetOptStat(0)
 
-def plot_sector_page(canvas, histos, title_formatter, label, save_name,
-                     xtitle=None, ytitle=None, title=None, log=False):
+def plot_sector_beam(canvas, histos, title_formatter, label, save_name):
     
     canvas.Clear() 
     canvas.Divide(3,2)
 
+    vert = TLine(0, -1.2, 0, 1.2)
+    hori = TLine(-1.2, 0, 1.2, 0)
+
+    vert.SetLineStyle(8)
+    vert.SetLineStyle(1)
+    vert.SetLineWidth(1)
+    hori.SetLineStyle(8)
+    hori.SetLineStyle(1)
+    hori.SetLineWidth(1)
+    
+    xtitle = '#Delta E_{beam} (#theta_{e}, p_{e})'
+    ytitle = '#Delta E_{beam} (#theta_{e}, #theta_{p})'
+
     for i in range(1,7):
         canvas.cd(i)
         
-        if isinstance(histos[title_formatter.format(i)], TH1F):
-            histos[title_formatter.format(i)].SetFillColorAlpha(55, 0.65)
-            histos[title_formatter.format(i)].Draw()
-
-        elif isinstance(histos[title_formatter.format(i)], TH2F):
-            histos[title_formatter.format(i)].Draw('colz')
-            if log:
-                gPad.SetLogz() 
-        else:
-            raise NotImplementedException('plot_sector_page only supports TH1F, TH2F')
-            
-        if title:
-            label.DrawLatex(0.1, 0.925, title)
-
-        if xtitle:
-            label.DrawLatex(0.5, 0.015, xtitle)
-
-        if ytitle:
-            label.SetTextAngle(90)
-            label.DrawLatex(0.045, 0.5, ytitle)
-            label.SetTextAngle(0)
+        histos[title_formatter.format(i)].GetXaxis().SetRangeUser(-1.2, 1.2)
+        histos[title_formatter.format(i)].GetYaxis().SetRangeUser(-1.2, 1.2)
+        histos[title_formatter.format(i)].Draw('colz')
+        vert.Draw()
+        hori.Draw()
+        
+        label.DrawLatex(0.1, 0.925, '#Delta E_{beam} = E_{beam} - E_{pred}')
+        label.DrawLatex(0.5, 0.015, xtitle)
+        label.SetTextAngle(90)
+        label.DrawLatex(0.045, 0.5, ytitle)
+        label.SetTextAngle(0)
 
     canvas.Print(save_name)
 
@@ -65,39 +67,80 @@ def plot_beam_energy(canvas, histos, label, save_name):
 
     canvas.Print(save_name)
         
-        
-        
-def plot_w(canvas, histos, save_name, label,
-           title=None, xtitle=None, ytitle=None):
+def plot_phi_vz(canvas, histos, label, save_name):
+    canvas.Clear()
 
-    canvas.Clear() 
+    # Start by styling the histograms
+    histos['histos_phi_electron_delta_vz'].Draw('colz')
 
-    # I need to run the code one more time
-    # and add a histogram for the w after
-    # enforcing CTOF contraints. 
-    #
-    # Style
-    histos['histos_w'].SetLineColor(1)
-    histos['histos_w_pass_angle_in_ctof'].SetLineColor(55)
+    line = TLine(-30, 0, 330, 0)
+    line.SetLineColor(1)
+    line.SetLineWidth(1)
+    line.Draw()
 
-    # Fix missing bins
-    histos['histos_w'].GetXaxis().SetRangeUser(0.7, 1.3)
-    histos['histos_w_pass_angle_in_ctof'].GetXaxis().SetRangeUser(0.7, 1.3)
+    label.DrawLatex(0.45, 0.02, '#phi_{e}')
+    #label.DrawLatex(0.35, 0.925, 'Elastic Vertex Difference')
+    label.SetTextAngle(90)
+    label.DrawLatex(0.04, 0.35, '#Delta v_{z} = v_{z} (e) - v_{z} (p) (cm)')
+    label.SetTextAngle(0)
     
-    histos['histos_w'].Draw()
+    canvas.Print(save_name)
+    
+        
+def plot_event_selection(canvas, histos, save_name, label):
+    
+    canvas.Clear() 
+    canvas.Divide(2,1)
+
+    histos['histos_w_in_ctof'].SetLineColor(1)
+    histos['histos_w_pass_angle_in_ctof'].SetLineColor(1)
+    histos['histos_w_pass_angle_in_ctof'].SetFillColorAlpha(64,1.0)
+
+    histos['histos_angle_ep'].SetLineColor(1)
+    histos['histos_angle_ep_pass_w_in_ctof'].SetLineColor(1)
+    histos['histos_angle_ep_pass_w_in_ctof'].SetFillColorAlpha(64,1.0)
+
+    histos['histos_w_in_ctof'].SetMinimum(0)
+    histos['histos_w_pass_angle_in_ctof'].SetMinimum(0)
+    
+    # Fix missing bins
+    histos['histos_w_in_ctof'].GetXaxis().SetRangeUser(0.7, 1.3)
+    histos['histos_w_pass_angle_in_ctof'].GetXaxis().SetRangeUser(0.7, 1.3)
+
+    wleft = TLine(0.8, histos['histos_w_in_ctof'].GetMinimum(),
+                  0.8, 0.8 * histos['histos_w_in_ctof'].GetMaximum())
+    wright = TLine(1.08, histos['histos_w_in_ctof'].GetMinimum(),
+                   1.08, 0.8 * histos['histos_w_in_ctof'].GetMaximum())
+
+    wleft.SetLineColor(99)
+    wleft.SetLineWidth(1)
+    wright.SetLineColor(99)
+    wright.SetLineWidth(1)
+    
+    canvas.cd(1)
+    histos['histos_w_in_ctof'].Draw()
     histos['histos_w_pass_angle_in_ctof'].Draw('same')
-            
-    if title:
-        label.DrawLatex(0.1, 0.925, title)
+    wleft.Draw()
+    wright.Draw()
+    
+    label.DrawLatex(0.1, 0.925, 'Electron (forward) and Proton (central)')
+    label.DrawLatex(0.5, 0.015, 'W (GeV/c^{2})')
+    label.DrawLatex(0.67, 0.86, '#color[64]{#phi_{ep} > 177}')
+    
+    canvas.cd(2)
+    histos['histos_angle_ep'].Draw()
+    histos['histos_angle_ep_pass_w_in_ctof'].Draw('same')
 
-    if xtitle:
-        label.DrawLatex(0.5, 0.015, xtitle)
-
-    if ytitle:
-        label.SetTextAngle(90)
-        label.DrawLatex(0.04, 0.5, ytitle)
-        label.SetTextAngle(0)
-
+    left = TLine(177, 0.0,
+                 177, 0.8 * histos['histos_angle_ep'].GetMaximum())
+    left.SetLineColor(99)
+    left.SetLineWidth(1)
+    left.Draw()
+    
+    label.DrawLatex(0.1, 0.925, 'Electron (forward) and Proton (central)')
+    label.DrawLatex(0.5, 0.015, '#phi_{ep}')
+    label.DrawLatex(0.57, 0.86, '#color[64]{W \in [0.8, 1.08]}')
+    
     canvas.Print(save_name)
 
 
@@ -163,16 +206,15 @@ if __name__ == '__main__':
     lab.SetTextSize(0.05)
     lab.SetTextColor(1)
 
-    plot_w(can, histos, label=lab, save_name='w_dist.pdf',
-           xtitle='W (GeV/c^2)', title='Electrons (forward)')
+    plot_event_selection(can, histos, label=lab, save_name='event_selection.pdf')
 
     plot_theta_p(can, histos, label=lab, save_name='theta_p.pdf',
-           xtitle='#theta_{p} (deg)', title='Angular Distribution of Elastic Protons')
+           xtitle='#theta_{p} (deg)', title=None)
 
-    plot_sector_page(can, histos, 'histos_de_beam_de_beam_from_angles{}', label=lab,
-                     save_name='de_beam_de_beam_from_angles.pdf',
-                     xtitle='#Delta E_{beam} (#theta_{e}, p_{e})',
-                     ytitle='#Delta E_{beam} (#theta_{e}, #theta_{p})',
-                     title='#Delta E_{beam}', log=False)
+    plot_sector_beam(can, histos, 'histos_de_beam_de_beam_from_angles{}', label=lab,
+                     save_name='de_beam_de_beam_from_angles.pdf')
     
     plot_beam_energy(can, histos, lab, 'de_beam.pdf')
+
+    plot_phi_vz(can, histos, lab, 'phi_vz.pdf')
+    
