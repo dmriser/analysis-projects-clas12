@@ -315,7 +315,7 @@ GParsPool.withPool 16, {
                         histos.computeIfAbsent('theta_electron_vz_electron_' + sector, histoBuilders2.theta_ele_vz).fill(
                                 Math.toDegrees(ele.theta()), event.vz[idx])
                         histos.computeIfAbsent('theta_electron_delta_p_electron_' + sector,
-                                histoBuilders2.theta_ele_dp).fill(Math.toDegrees(ele.theta()), pro.p() - pred_pro_p)
+                                histoBuilders2.theta_ele_dp).fill(Math.toDegrees(ele.theta()), ele.p() - pred_ele_p)
                         histos.computeIfAbsent('theta_electron_delta_theta_proton_' + sector,
                                 histoBuilders2.theta_ele_dtheta).fill(
                                 Math.toDegrees(ele.theta()), Math.toDegrees(pro.theta() - pred_pro_theta))
