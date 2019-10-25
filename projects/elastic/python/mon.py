@@ -78,7 +78,7 @@ def plot_page(canvas, histos, histo_title, label, save_name,
 if __name__ == '__main__':
 
     input_rootfile = 'histos.root'
-    output_pdfname = 'elastic_10_22_19.pdf'
+    output_pdfname = 'elastic_10_23_19.pdf'
     rootfile = TFile(input_rootfile)
     histos = load_histos(rootfile)
 
