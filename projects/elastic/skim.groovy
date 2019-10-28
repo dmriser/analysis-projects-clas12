@@ -4,7 +4,7 @@ import org.jlab.io.hipo.HipoDataSource
 import org.jlab.clas.physics.Particle
 import org.jlab.clas.pdg.PDGDatabase
 
-def beam = new Particle(11, 0.0, 0.0, 10.594)
+def beam = new Particle(11, 0.0, 0.0, 10.646)
 def target = new Particle(2212, 0.0, 0.0, 0.0)
 
 def angleBetween(v1, v2) {
