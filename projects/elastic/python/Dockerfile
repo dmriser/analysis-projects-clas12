@@ -11,5 +11,6 @@ ENV home /home/${username}
 USER ${username}
 WORKDIR /data
 
-CMD ["python", "mon.py"]
+CMD ["python", "mon.py", "-i=rga-in.root", "-o=rga-in"]
+# CMD ["python", "mon.py", "-i=sim0.root", "-o=sim0"]
 # CMD ["python", "test.py"]
