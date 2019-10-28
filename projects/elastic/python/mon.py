@@ -186,3 +186,15 @@ if __name__ == '__main__':
 
     # Close the sucker 
     can.Print('{}]'.format(output_pdfname))
+    
+    # A few one off plots 
+    plot_sector_page(can, histos, 'histos_theta_electron_delta_p_electron_{}',
+                     lab, save_name='theta_ele_dp_ele.pdf',
+                     title='#Delta P_{e} vs #theta_{e} from #theta_{e}',
+                     xtitle='#theta_{e}', ytitle='#Delta P_{e}', log=False)
+
+    plot_sector_page(can, histos, 'histos_theta_proton_delta_p_proton_{}',
+                     lab, save_name='theta_pro_dp_pro.pdf',
+                     title='#Delta P_{p} vs #theta_{p} from #theta_{e}',
+                     xtitle='#theta_{p}', ytitle='#Delta P_{p}', log=False)
+    
