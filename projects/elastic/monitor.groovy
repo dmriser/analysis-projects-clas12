@@ -33,12 +33,28 @@ orig_kin_bounds = [
 ]
 
 new_kin_bounds = [
-        theta_ele : [5, 20],
+        theta_ele : [4, 20],
         theta_pro : [20, 70],
         p_ele     : [7, 10.5],
         p_pro     : [0.5, 4.5],
         w         : [0.6, 1.7],
         q2        : [1.2, 4.5],
+        phi       : [-30, 330],
+        vz        : [-20, 15],
+        dp_ele    : [-1.2, 1.2],
+        dp_pro    : [-1.2, 1.2],
+        dtheta_pro: [-20, 20],
+        de_beam    : [-2, 2],
+        angle_ep  : [125, 180]
+]
+
+outbend_bounds = [
+        theta_ele : [4, 20],
+        theta_pro : [20, 70],
+        p_ele     : [7, 10.5],
+        p_pro     : [0.5, 4.5],
+        w         : [0.6, 1.7],
+        q2        : [0.5, 4.5],
         phi       : [-30, 330],
         vz        : [-20, 15],
         dp_ele    : [-1.2, 1.2],
@@ -64,7 +80,7 @@ rgk_kin_bounds = [
         angle_ep  : [125, 180]
 ]
 
-lim = new_kin_bounds
+lim = outbend_bounds
 
 def limited_h1 = { title, nbins, lims ->
     new H1F("$title", "$title", nbins, lims[0], lims[1])
