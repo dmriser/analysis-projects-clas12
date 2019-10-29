@@ -319,7 +319,7 @@ def plot_fits(canvas, histos, x_range, x_bin_step, title_formatter,
         
 if __name__ == '__main__':
 
-    input_rootfile = 'histos.root'
+    input_rootfile = 'sim04-in.root'
     rootfile = TFile(input_rootfile)
     histos = load_histos(rootfile)
         

@@ -1,11 +1,18 @@
 #!/usr/bin/env python 
 
 import argparse 
+import numpy as np
+
+# Trick for docker install to run headless
+# and never use plt.show() 
+import matplotlib
+matplotlib.use('agg')
+import matplotlib.pyplot as plt 
+
 
 from array import array 
 from ROOT import (TH1F, TH2F, TF1, TFile, TCanvas,
                   gPad, gStyle, TLatex, TGraphErrors)
-
 
 default_histo = TH1F('default', '', 100, 0, 1)
 default_histo2d = TH2F('default', '', 100, 0, 1, 100, 0, 1)
@@ -125,7 +132,10 @@ def fit_slices(histo, x_range, x_bin_step):
 
     graph = TGraphErrors(len(x_values), x_values, means, zeros, stds)
     graph.SetName('g_' + histo.GetName())
-    return graph
+
+    # return graph
+    return np.array(x_values), np.array(means), np.array(stds), slices, fits 
+
 
 def plot_fits(canvas, histos, x_range, x_bin_step, title_formatter,
               save_name, label, y_range=None,
@@ -146,9 +156,12 @@ def plot_fits(canvas, histos, x_range, x_bin_step, title_formatter,
 
         if y_range:
             graph.GetYaxis().SetLimits(y_range[0], y_range[1])
-
             graph.Draw('AP')
             root_is_dumb.append(graph)
+        else:
+            graph.Draw('AP')
+            root_is_dumb.append(graph)
+            
 
         if title:
             label.DrawLatex(0.1, 0.925, title)
@@ -162,6 +175,49 @@ def plot_fits(canvas, histos, x_range, x_bin_step, title_formatter,
             label.SetTextAngle(0)
 
     canvas.Print(save_name)
+
+def plot_fits_mpl(histos, x_range, x_bin_step, title_formatter,
+                  save_name, y_range=None, title=None,
+                  xtitle=None, ytitle=None):
+    
+    fig = plt.figure(figsize=(12,16))
+
+    opts = {'marker':'o', 'color':'k', 'linestyle':''}
+    
+    for i in range(1,7):
+        ax = fig.add_subplot(3, 2, i)
+
+        tit = title_formatter.format(i)
+        x, mu, sig, slices, fits = fit_slices(histos.get(tit, default_histo2d), x_range, x_bin_step)
+
+        label = 'Sector {}'.format(i)
+        
+        if y_range:
+            ax.errorbar(x, mu, sig, label=label, **opts)
+            ax.set_ylim(y_range)
+        else:
+            ax.errorbar(x, mu, sig, label=label, **opts)
+
+        # Add center line
+        ax.axhline(0.0, linestyle='--', linewidth=1, color='k', alpha=0.85)
+
+        # Add a grid
+        ax.grid(alpha=0.2)
+
+        # Legend
+        ax.legend(frameon=False)
+        
+        if title:
+            ax.set_title(title)
+
+        if xtitle:
+            ax.set_xlabel(xtitle)
+
+        if ytitle:
+            ax.set_ylabel(ytitle)
+            
+    fig.tight_layout()
+    fig.savefig(save_name, bbox_inches='tight')
 
 if __name__ == '__main__':
 
@@ -284,6 +340,10 @@ if __name__ == '__main__':
                      title='#Delta E_{beam} vs #theta_{e}', xtitle='#theta_{e}',
                      ytitle='#Delta E (#theta_{e}, P_{e})', log=False)
 
+    plot_sector_page(can, histos, 'histos_w_p_ele_{}', lab, save_name=output_pdfname,
+                     title='P_{e} vs W', xtitle='W',
+                     ytitle='P_{e}', log=False)
+
     # Close the sucker 
     can.Print('{}]'.format(output_pdfname))
     
@@ -300,17 +360,27 @@ if __name__ == '__main__':
     
 
     # Plot fits to the resolutions
-    plot_fits(
-        canvas=can,
+    plot_fits_mpl(
         histos=histos,
-        x_range=[7,11],
-        x_bin_step=5,
+        x_range=[5,14],
+        y_range=[-0.8,0.8],
+        x_bin_step=3,
         title_formatter='histos_theta_electron_delta_p_electron_{}',
         save_name='theta_electron_delta_p_electron_fit_{}.pdf'.format(args.output_prefix),
-        label=lab,
-        y_range=None,
-        title='#Delta P_{e} vs. #theta_{e} (from #theta_{e})',
-        xtitle='#theta_{e}',
-        ytitle='#Delta P_{e}'
+        title='Electron Momentum Resolution (from $\\theta_e$)',
+        xtitle='$\\theta_e$',
+        ytitle='$\Delta P_{e}$'
     ) 
-    
+
+    plot_fits_mpl(
+        histos=histos,
+        x_range=[40,60],
+        y_range=[-0.8,0.8],
+        x_bin_step=3,
+        title_formatter='histos_theta_proton_delta_p_proton_{}',
+        save_name='theta_proton_delta_p_proton_fit_{}.pdf'.format(args.output_prefix),
+        title='Proton Momentum Resolution (from $\\theta_e$)',
+        xtitle='$\\theta_p$',
+        ytitle='$\Delta P_{p}$'
+    ) 
+
