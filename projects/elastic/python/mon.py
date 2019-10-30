@@ -178,7 +178,7 @@ def plot_fits(canvas, histos, x_range, x_bin_step, title_formatter,
 
 def plot_fits_mpl(histos, x_range, x_bin_step, title_formatter,
                   save_name, y_range=None, title=None,
-                  xtitle=None, ytitle=None):
+                  xtitle=None, ytitle=None, max_errorbar=0.5):
     
     fig = plt.figure(figsize=(12,16))
 
@@ -190,8 +190,15 @@ def plot_fits_mpl(histos, x_range, x_bin_step, title_formatter,
         tit = title_formatter.format(i)
         x, mu, sig, slices, fits = fit_slices(histos.get(tit, default_histo2d), x_range, x_bin_step)
 
-        label = 'Sector {}'.format(i)
+        # Here we remove the points with huge resolution, or
+        # no events to fit.  Just leave the slices alone. 
+        condition = np.logical_and(mu != 0, sig < max_errorbar)
+        indices = np.where(condition)[0]
+        x = x[indices]
+        mu = mu[indices]
+        sig = sig[indices]
         
+        label = 'Sector {}'.format(i)
         if y_range:
             ax.errorbar(x, mu, sig, label=label, **opts)
             ax.set_ylim(y_range)
@@ -369,7 +376,8 @@ if __name__ == '__main__':
         save_name='theta_electron_delta_p_electron_fit_{}.pdf'.format(args.output_prefix),
         title='Electron Momentum Resolution (from $\\theta_e$)',
         xtitle='$\\theta_e$',
-        ytitle='$\Delta P_{e}$'
+        ytitle='$\Delta P_{e}$',
+        max_errorbar = 0.4
     ) 
 
     plot_fits_mpl(
@@ -381,6 +389,7 @@ if __name__ == '__main__':
         save_name='theta_proton_delta_p_proton_fit_{}.pdf'.format(args.output_prefix),
         title='Proton Momentum Resolution (from $\\theta_e$)',
         xtitle='$\\theta_p$',
-        ytitle='$\Delta P_{p}$'
+        ytitle='$\Delta P_{p}$',
+        max_errorbar = 0.8
     ) 
 
