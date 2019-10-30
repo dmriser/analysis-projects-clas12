@@ -6,7 +6,7 @@ CPU: 1
 MEMORY: 2 GB
 OS: CENTOS7
 COMMAND: chmod +x run.csh; ./run.csh
-OUTPUT_TEMPLATE:/volatile/clas12/dmriser/farm_out/elastic_skim_04/* 
+OUTPUT_TEMPLATE:/volatile/clas12/dmriser/farm_out/elastic_skim_05/* 
 
 OTHER_FILES: 
 /u/home/dmriser/analysis-projects-clas12/farm_scripts/run.csh
@@ -14,10 +14,10 @@ OTHER_FILES:
 INPUT_DATA:input.hipo
 OUTPUT_DATA:output.hipo
 INPUT_FILES:
-/work/clas12/rg-a/trains/pass1/v1_4/skim04_inclusive/skim4_5425.hipo
-/work/clas12/rg-a/trains/pass1/v1_4/skim04_inclusive/skim4_5426.hipo
-/work/clas12/rg-a/trains/pass1/v1_4/skim04_inclusive/skim4_5428.hipo
-/work/clas12/rg-a/trains/pass1/v1_4/skim04_inclusive/skim4_5429.hipo
-/work/clas12/rg-a/trains/pass1/v1_4/skim04_inclusive/skim4_5434.hipo
-/work/clas12/rg-a/trains/pass1/v1_4/skim04_inclusive/skim4_5435.hipo
-/work/clas12/rg-a/trains/pass1/v1_4/skim04_inclusive/skim4_5436.hipo
+/work/clas12/rg-a/trains/pass1/v1_4/skim08_ep/skim8_5425.hipo
+/work/clas12/rg-a/trains/pass1/v1_4/skim08_ep/skim8_5426.hipo
+/work/clas12/rg-a/trains/pass1/v1_4/skim08_ep/skim8_5428.hipo
+/work/clas12/rg-a/trains/pass1/v1_4/skim08_ep/skim8_5429.hipo
+/work/clas12/rg-a/trains/pass1/v1_4/skim08_ep/skim8_5434.hipo
+/work/clas12/rg-a/trains/pass1/v1_4/skim08_ep/skim8_5435.hipo
+/work/clas12/rg-a/trains/pass1/v1_4/skim08_ep/skim8_5436.hipo

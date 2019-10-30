@@ -271,6 +271,7 @@ GParsPool.withPool 16, {
 		    )
 		    histos.computeIfAbsent('theta_proton_gen', histoBuilders.theta_p).fill(Math.toDegrees(pro.theta()))
 		    histos.computeIfAbsent('theta_electron_gen', histoBuilders.theta_ele).fill(Math.toDegrees(ele.theta()))
+		    histos.computeIfAbsent('angle_ep_gen', histoBuilders.angle_ep).fill(pkin.angle)
 		}
 
 	    }
