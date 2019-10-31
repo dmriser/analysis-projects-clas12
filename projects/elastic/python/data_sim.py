@@ -9,9 +9,10 @@ import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt 
 
+from scipy.optimize import minimize 
 
 from array import array 
-from ROOT import (TH1F, TH2F, TF1, TFile, TCanvas,
+from ROOT import (TH1F, TH2F, TH1D, TF1, TFile, TCanvas,
                   gPad, gStyle, TLatex, TGraphErrors)
 
 default_histo = TH1F('default', '', 100, 0, 1)
@@ -24,6 +25,44 @@ def load_histos(file):
         h[k.GetName()] = file.Get(k.GetName())
     return h
 
+def numpify(histo):
+    """ TH1F to np.arrays. """
+
+    if not isinstance(histo, TH1D):
+        raise NotImplementedError('Can not numpify type {}'.format(type(histo)))
+
+    nbins = histo.GetNbinsX()
+
+    # Setup output 
+    x_lows = np.zeros(nbins)
+    x_highs = np.zeros(nbins)
+    values = np.zeros(nbins)
+    errors = np.zeros(nbins)
+    
+    for i in range(1, nbins + 1):
+        x_lows[i-1] = histo.GetBinLowEdge(i)
+        x_highs[i-1] = histo.GetBinLowEdge(i) + histo.GetBinWidth(i)
+        values[i-1] = histo.GetBinContent(i)
+        errors[i-1] = histo.GetBinError(i)
+
+    return x_lows, x_highs, values, errors
+
+def chi2(data, theory, err):
+    return np.sum((data-theory)**2 / (0.00001 + err**2)) 
+
+def model(x,p):
+    return p[0] * np.exp( -0.5 * (x - p[1])**2 / p[2]**2 )
+
+def scipy_fit_slice(x, y, err, bounds):        
+    
+    p0 = np.random.uniform(-1, 1, 3)    
+    p0[0] = np.max(y)
+    p0[1] = np.mean(x*y)
+    p0[2] = np.std(x*y)
+    
+    res = minimize(lambda p: chi2(y, model(x,p), err), x0=p0, bounds=bounds, method='Nelder-Mead')
+    return res.x
+
 def fit_slices(histo, x_range, x_bin_step):
 
     x_start = histo.GetXaxis().FindBin(x_range[0])
@@ -34,10 +73,15 @@ def fit_slices(histo, x_range, x_bin_step):
     fits = []
     for i, x_bin in enumerate(range(x_start, x_stop + 1, x_bin_step)):
         projec = histo.ProjectionY(histo.GetTitle() + '_proj{}'.format(i) , x_bin, x_bin + x_bin_step)
-        fit = TF1(histo.GetTitle()+'_fit{}'.format(i), 'gaus')
-
-        projec.Fit(fit)
-
+        
+        fmin = projec.GetMean() - 3 * projec.GetStdDev()
+        fmax = projec.GetMean() + 3 * projec.GetStdDev() 
+        fit = TF1(histo.GetTitle() + '_fit{}'.format(i), 'gaus', fmin, fmax)
+        fit.SetTitle(histo.GetTitle() + '_fit{}'.format(i))
+        fit.SetName(histo.GetTitle() + '_fit{}'.format(i))
+        projec.Fit(fit, 'R', '',  fmin, fmax)
+        print('Fitting in {},{}'.format(fmin,fmax))
+        
         slices.append(projec)
         fits.append(fit)
 
@@ -64,6 +108,48 @@ def fit_slices(histo, x_range, x_bin_step):
     # return graph
     return np.array(x_values), np.array(means), np.array(stds), slices, fits 
 
+def plot_slices(slices, fits, output_name):
+    """ Plot slices with fit values. """
+
+    ncols = 3
+    nrows = int(np.ceil(len(slices) / ncols) + 1)
+    
+    fig, axes = plt.subplots(nrows=nrows, ncols=ncols,
+                             figsize=(ncols * 4, nrows * 3))
+
+    i,j = 0, 0
+    for current_slice, current_fit in zip(slices, fits):
+        x_low, x_high, vals, errs = numpify(current_slice)
+        x_cent = 0.5 * (x_low + x_high)
+        width = x_high[0] - x_low[0]
+        #y_fit = np.array([current_fit.Eval(xc) for xc in x_cent])
+
+        mu = np.mean(x_cent * vals)
+        std = np.std(x_cent * vals)
+
+        bounds = [] 
+        bounds.append([0, 2*np.max(vals)])
+        bounds.append([mu - 2 * std, mu + 2 * std])
+        bounds.append([0, 5 * std])
+
+        pars = scipy_fit_slice(x_cent, vals, errs, bounds)
+        y_fit = model(x_cent, pars)
+        print(pars)
+         
+        axes[i,j].bar(x_cent, vals, width=width, edgecolor='')
+        axes[i,j].plot(x_cent, y_fit, linestyle='-', linewidth=1, color='red')
+        axes[i,j].set_xlim([mu-1*std, mu+1*std])
+        axes[i,j].grid(alpha=0.2)
+        axes[i,j].set_title(current_fit.GetTitle())
+        
+        j += 1
+        if j >= ncols:
+            j = 0
+            i += 1 
+
+    fig.tight_layout()
+    fig.savefig(output_name, bbox_inches='tight')
+        
 def plot_fits_mpl(histos1, histos2, config1, config2,
                   x_range, x_bin_step, title_formatter,
                   save_name, y_range=None, title=None,
@@ -76,14 +162,19 @@ def plot_fits_mpl(histos1, histos2, config1, config2,
     opts2 = {'marker':'o', 'linestyle':'', 'color':'red'}
     
     for i in range(1,7):
+
         ax = fig.add_subplot(3, 2, i)
 
         # Get histogram slices for plotting. 
         tit = title_formatter.format(i)
+        print('Fitting: ', tit)
         x1, mu1, sig1, slices1, fits1 = fit_slices(histos1.get(tit, default_histo2d), x_range, x_bin_step)
         x2, mu2, sig2, slices2, fits2 = fit_slices(histos2.get(tit, default_histo2d), x_range, x_bin_step)
         x1, mu1, sig1 = remove_bad_points(x1, mu1, sig1, max_errorbar)
         x2, mu2, sig2 = remove_bad_points(x2, mu2, sig2, max_errorbar)
+        
+        # Experimental
+        plot_slices(slices1, fits1, tit + '_data_slices.pdf')
 
         label1 = 'Sector {} ({})'.format(i, config1)
         label2 = 'Sector {} ({})'.format(i, config2)
@@ -116,6 +207,7 @@ def plot_fits_mpl(histos1, histos2, config1, config2,
     fig.tight_layout()
     fig.savefig(save_name, bbox_inches='tight')
 
+    
 def remove_bad_points(x, mu, sig, max_errorbar):
     condition = np.logical_and(mu != 0, sig < max_errorbar)
     idx = np.where(condition)[0]
@@ -143,6 +235,7 @@ if __name__ == '__main__':
         histos[config_type] = load_histos(file)
     
     # Plot fits to the resolutions
+    """
     plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
         x_range=[6,12], y_range=[-0.8,0.8], x_bin_step=5, title_formatter='histos_theta_electron_delta_p_electron_{}',
         save_name='theta_electron_delta_p_electron_fit_{}.pdf'.format(args.output_prefix),
@@ -163,7 +256,7 @@ if __name__ == '__main__':
         title='Proton Momentum Resolution (from $\\theta_e$)', xtitle='$P_p$', ytitle='$\Delta P_{p}$',
         max_errorbar = 0.8
     ) 
-
+    """
     #plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
     #    x_range=[8,11], y_range=[-0.8,0.8], x_bin_step=6, title_formatter='histos_p_electron_delta_p_electron_{}',
     #    save_name='p_electron_delta_p_electron_fit_{}.pdf'.format(args.output_prefix),
