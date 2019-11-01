@@ -230,14 +230,14 @@ GParsPool.withPool 16, {
                 event.mc_pid[it] == 11
             }?.each { idx ->
                 def ele = new Particle(11, event.mc_px[idx], event.mc_py[idx], event.mc_pz[idx])
-                def sector = getGeneratedSector(Math.toDegrees(ele.phi()))
+                def sector = (int) getGeneratedSector(Math.toDegrees(ele.phi()))
 
                 (0..<event.mc_npart).find {
                     event.mc_pid[it] == 2212
                 }?.each { pidx ->
                     def pro = new Particle(2212, event.mc_px[pidx], event.mc_py[pidx], event.mc_pz[pidx])
                     def pkin = getPKin(beam, target, ele, pro)
-                    fillBasicHistos(pkin, ele, pro, sector, 'gen')
+		    fillBasicHistos(pkin, ele, pro, sector, 'gen')
                     fillResolutions(beam, ele, pro, sector, 'gen')
                 }
             }
@@ -252,6 +252,12 @@ GParsPool.withPool 16, {
                 (0..<event.npart).findAll { event.charge[it] > 0 }.each {
                     def pro = new Particle(2212, event.px[it], event.py[it], event.pz[it])
                     def pkin = getPKin(beam, target, ele, pro)
+
+		    // hack the phi dependence, that doesn't come out
+		    // correctly from elast_gen
+		    if (event.mc_npart > 0){
+			pkin.angle = 179.99
+		    }
 
                     // Passing event selection, in the central detector.
                     if (event.ctof_status.contains(it)){
