@@ -226,6 +226,14 @@ def plot_fits_mpl(histos, x_range, x_bin_step, title_formatter,
     fig.tight_layout()
     fig.savefig(save_name, bbox_inches='tight')
 
+def add_text_page(can, label, text, save_name):
+    """ Write some text onto a page. """
+    can.Clear()
+    can.cd(1)
+    label.DrawLatex(0.5, 0.5, text)
+    can.Print(save_name)
+    
+    
 if __name__ == '__main__':
 
     ap = argparse.ArgumentParser()
@@ -261,50 +269,37 @@ if __name__ == '__main__':
 
     can.Print('{}['.format(output_pdfname))
 
-    plot_sector_page(can, histos, 'histos_w_{}', lab, save_name=output_pdfname,
-                     title='Electron (Forward) and Positive (CTOF)', xtitle='W')
-
-    plot_sector_page(can, histos, 'histos_w_q2_{}', lab, save_name=output_pdfname,
-                     title='Electron (Forward) and Positive (CTOF)', xtitle='W', ytitle='Q^{2}', log=False)
-
-    plot_page(can, histos, 'histos_phi_electron_w', lab, save_name=output_pdfname,
-                     title='W vs. #phi_{e}', xtitle='#phi_{e}', ytitle='W', log=False)
-
-    plot_sector_page(can, histos, 'histos_theta_electron_vz_electron_{}', lab, save_name=output_pdfname,
-                     title='v_{z} (e) vs. #theta_{e}', xtitle='#theta_{e}', ytitle='v_{z} (e)', log=False)
+    add_text_page(can, lab, text='W Monitoring Plots', save_name=output_pdfname)
 
     plot_sector_page(can, histos, 'histos_w_inclusive_{}', lab, save_name=output_pdfname,
                      title='Electron (Forward)', xtitle='W')
-
-    plot_sector_page(can, histos, 'histos_w_q2_inclusive_{}', lab, save_name=output_pdfname,
-                     title='Electron (Forward)', xtitle='W', ytitle='Q^{2}', log=False)
-
-    plot_sector_page(can, histos, 'histos_delta_p_electron_{}', lab, save_name=output_pdfname,
-                     title='#Delta P_{e} from #theta_{e}', xtitle='#Delta P_{e}', log=False)
-
-    plot_sector_page(can, histos, 'histos_theta_electron_delta_p_electron_{}', lab, save_name=output_pdfname,
-                     title='#Delta P_{e} vs #theta_{e} from #theta_{e}', xtitle='#theta_{e}', ytitle='#Delta P_{e}', log=False)
-
-    plot_page(can, histos, 'histos_phi_electron_delta_p_electron', lab, save_name=output_pdfname,
-                     title='#Delta P_{e} vs. #phi_{e} from #theta_{e}', xtitle='#phi_{e}', ytitle='#Delta P_{e}', log=False)
-
-    plot_sector_page(can, histos, 'histos_delta_p_proton_{}', lab, save_name=output_pdfname,
-                     title='#Delta P_{p} from #theta_{e}', xtitle='#Delta P_{p}', log=False)
-
-    plot_sector_page(can, histos, 'histos_theta_proton_delta_p_proton_{}', lab, save_name=output_pdfname,
-                     title='#Delta P_{p} vs #theta_{p} from #theta_{e}', xtitle='#theta_{p}', ytitle='#Delta P_{p}', log=False)
-
-    plot_sector_page(can, histos, 'histos_p_proton_delta_p_proton_{}', lab, save_name=output_pdfname,
-                     title='#Delta P_{p} vs P_{p} from #theta_{e}', xtitle='P_{p}', ytitle='#Delta P_{p}', log=False)
     
-    plot_sector_page(can, histos, 'histos_delta_theta_proton_{}', lab, save_name=output_pdfname,
-                     title='#Delta #theta_{p} from #theta_{e}', xtitle='#Delta #theta_{p}', log=False)
+    plot_sector_page(can, histos, 'histos_w_{}', lab, save_name=output_pdfname,
+                     title='Electron (Forward) and Positive (CTOF)', xtitle='W')
 
-    plot_sector_page(can, histos, 'histos_theta_electron_delta_theta_proton_{}', lab, save_name=output_pdfname,
-                     title='#Delta #theta_{p} vs #theta_{e} from #theta_{e}', xtitle='#theta_{e}', ytitle='#Delta #theta_{p}', log=False)
+    plot_sector_page(can, histos, 'histos_w_pass_angle_in_ctof_{}', lab, save_name=output_pdfname,
+                     title='Electron and Positive w/ #phi_{ep} > 174', xtitle='W')
+ 
+    plot_sector_page(can, histos, 'histos_w_q2_inclusive_{}', lab, save_name=output_pdfname,
+                     title='Electron (Forward)', xtitle='W', ytitle='Q^{2}', log=True)
 
-    plot_sector_page(can, histos, 'histos_theta_proton_delta_theta_proton_{}', lab, save_name=output_pdfname,
-                     title='#Delta #theta_{p} vs #theta_{p} from #theta_{e}', xtitle='#theta_{p}', ytitle='#Delta #theta_{p}', log=False)
+    plot_sector_page(can, histos, 'histos_w_q2_{}', lab, save_name=output_pdfname,
+                     title='Electron (Forward) and Positive (CTOF)', xtitle='W', ytitle='Q^{2}', log=True)
+
+    plot_sector_page(can, histos, 'histos_w_q2_pass_angle_in_ctof_{}', lab, save_name=output_pdfname,
+                     title='Electron and Positive w/ #phi_{ep} > 174', xtitle='W', ytitle='Q^{2}', log=True)
+
+    plot_page(can, histos, 'histos_phi_electron_w', lab, save_name=output_pdfname,
+                     title='W vs. #phi_{e}', xtitle='#phi_{e}', ytitle='W', log=True)
+
+    plot_sector_page(can, histos, 'histos_w_p_ele_{}', lab, save_name=output_pdfname,
+                     title='P_{e} vs W', xtitle='W',
+                     ytitle='P_{e}', log=True)
+
+    add_text_page(can, lab, text='Vertex Monitoring Plots', save_name=output_pdfname)
+    
+    plot_sector_page(can, histos, 'histos_theta_electron_vz_electron_{}', lab, save_name=output_pdfname,
+                     title='v_{z} (e) vs. #theta_{e}', xtitle='#theta_{e}', ytitle='v_{z} (e)', log=False)
 
     plot_sector_page(can, histos, 'histos_theta_electron_vz_electron_{}', lab, save_name=output_pdfname,
                      title='v_{z} (e) vs #theta_{e}', xtitle='#theta_{e}', ytitle='v_{z} (e)', log=False)
@@ -333,6 +328,35 @@ if __name__ == '__main__':
     plot_sector_page(can, histos, 'histos_delta_vz_{}', lab, save_name=output_pdfname,
                      title='#Delta v_{z}', xtitle='#Delta v_{z}', log=False)
 
+    add_text_page(can, lab, text='Resolution Monitoring Plots', save_name=output_pdfname)
+
+    plot_sector_page(can, histos, 'histos_delta_p_electron_{}', lab, save_name=output_pdfname,
+                     title='#Delta P_{e} from #theta_{e}', xtitle='#Delta P_{e}', log=False)
+
+    plot_sector_page(can, histos, 'histos_theta_electron_delta_p_electron_{}', lab, save_name=output_pdfname,
+                     title='#Delta P_{e} vs #theta_{e} from #theta_{e}', xtitle='#theta_{e}', ytitle='#Delta P_{e}', log=False)
+
+    plot_page(can, histos, 'histos_phi_electron_delta_p_electron', lab, save_name=output_pdfname,
+                     title='#Delta P_{e} vs. #phi_{e} from #theta_{e}', xtitle='#phi_{e}', ytitle='#Delta P_{e}', log=False)
+
+    plot_sector_page(can, histos, 'histos_delta_p_proton_{}', lab, save_name=output_pdfname,
+                     title='#Delta P_{p} from #theta_{e}', xtitle='#Delta P_{p}', log=False)
+
+    plot_sector_page(can, histos, 'histos_theta_proton_delta_p_proton_{}', lab, save_name=output_pdfname,
+                     title='#Delta P_{p} vs #theta_{p} from #theta_{e}', xtitle='#theta_{p}', ytitle='#Delta P_{p}', log=False)
+
+    plot_sector_page(can, histos, 'histos_p_proton_delta_p_proton_{}', lab, save_name=output_pdfname,
+                     title='#Delta P_{p} vs P_{p} from #theta_{e}', xtitle='P_{p}', ytitle='#Delta P_{p}', log=False)
+    
+    plot_sector_page(can, histos, 'histos_delta_theta_proton_{}', lab, save_name=output_pdfname,
+                     title='#Delta #theta_{p} from #theta_{e}', xtitle='#Delta #theta_{p}', log=False)
+
+    plot_sector_page(can, histos, 'histos_theta_electron_delta_theta_proton_{}', lab, save_name=output_pdfname,
+                     title='#Delta #theta_{p} vs #theta_{e} from #theta_{e}', xtitle='#theta_{e}', ytitle='#Delta #theta_{p}', log=False)
+
+    plot_sector_page(can, histos, 'histos_theta_proton_delta_theta_proton_{}', lab, save_name=output_pdfname,
+                     title='#Delta #theta_{p} vs #theta_{p} from #theta_{e}', xtitle='#theta_{p}', ytitle='#Delta #theta_{p}', log=False)
+
     plot_sector_page(can, histos, 'histos_de_beam_{}', lab, save_name=output_pdfname,
                      title='#Delta E_{beam} from (#theta_{e}, P_{e})', xtitle='#Delta E_{beam}', log=False)
 
@@ -346,13 +370,6 @@ if __name__ == '__main__':
     plot_sector_page(can, histos, 'histos_theta_ele_de_beam_{}', lab, save_name=output_pdfname,
                      title='#Delta E_{beam} vs #theta_{e}', xtitle='#theta_{e}',
                      ytitle='#Delta E (#theta_{e}, P_{e})', log=False)
-
-    plot_sector_page(can, histos, 'histos_w_p_ele_{}', lab, save_name=output_pdfname,
-                     title='P_{e} vs W', xtitle='W',
-                     ytitle='P_{e}', log=False)
-
-    # Close the sucker 
-    can.Print('{}]'.format(output_pdfname))
     
     # A few one off plots 
     plot_sector_page(can, histos, 'histos_theta_electron_delta_p_electron_{}',
@@ -393,3 +410,5 @@ if __name__ == '__main__':
         max_errorbar = 0.8
     ) 
 
+    # Close the sucker 
+    can.Print('{}]'.format(output_pdfname))
