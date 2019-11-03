@@ -300,6 +300,7 @@ GParsPool.withPool 16, {
                     }
                     if (pkin.angle > 174 && event.ctof_status.contains(it)) {
                         histos.computeIfAbsent('w_pass_angle_in_ctof', histoBuilders.w).fill(pkin.w)
+                        histos.computeIfAbsent('w_pass_angle_in_ctof_' + sector, histoBuilders.w).fill(pkin.w)
                     }
                     if (pkin.w > 0.8 && pkin.w < 1.08 && event.ctof_status.contains(it)) {
                         histos.computeIfAbsent('angle_ep_pass_w_in_ctof', histoBuilders.angle_ep).fill(pkin.angle)
