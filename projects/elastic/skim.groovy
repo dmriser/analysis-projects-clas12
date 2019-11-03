@@ -73,7 +73,7 @@ for (filename in args) {
         }?.with{ i ->
             def ele = new Particle(11, event.px[i], event.py[i], event.pz[i])
             def kin = getKin(beam, target, ele)
-            if (kin.w < 1.3 && kin.w > 0.6){
+            if (kin.w < 2.2 && kin.w > 0.6){
                 writer.writeEvent(dataEvent)
             }
         }
