@@ -1,7 +1,7 @@
 #!/usr/bin/env python 
 
 from array import array 
-
+import argparse
 from ROOT import (TH1F, TH2F, TF1, TFile, TCanvas,
                   gPad, gStyle, TLatex, TLine, TGraphErrors,
                   TVector)
@@ -158,14 +158,14 @@ def plot_event_selection(canvas, histos, save_name, label):
     
     label.DrawLatex(0.1, 0.925, 'Electron (forward) and Proton (central)')
     label.DrawLatex(0.5, 0.015, 'W (GeV/c^{2})')
-    label.DrawLatex(0.67, 0.86, '#color[64]{#phi_{ep} > 177}')
+    label.DrawLatex(0.67, 0.86, '#color[64]{#phi_{ep} > 174}')
     
     canvas.cd(2)
     histos['histos_angle_ep'].Draw()
     histos['histos_angle_ep_pass_w_in_ctof'].Draw('same')
 
-    left = TLine(177, 0.0,
-                 177, 0.8 * histos['histos_angle_ep'].GetMaximum())
+    left = TLine(174, 0.0,
+                 174, 0.8 * histos['histos_angle_ep'].GetMaximum())
     left.SetLineColor(99)
     left.SetLineWidth(1)
     left.Draw()
@@ -319,7 +319,21 @@ def plot_fits(canvas, histos, x_range, x_bin_step, title_formatter,
         
 if __name__ == '__main__':
 
-    input_rootfile = 'sim04-in.root'
+    ap = argparse.ArgumentParser()
+    ap.add_argument(
+        '-i',
+        '--input_file',
+	required=True
+    )
+    ap.add_argument(
+        '-o',
+        '--output_prefix',
+        required=True
+    )
+    args = ap.parse_args()
+
+    input_rootfile = args.input_file
+    output_pdfname = args.output_prefix + '.pdf'
     rootfile = TFile(input_rootfile)
     histos = load_histos(rootfile)
         
