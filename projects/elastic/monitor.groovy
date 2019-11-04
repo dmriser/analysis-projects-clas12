@@ -307,6 +307,9 @@ GParsPool.withPool 16, {
                         histos.computeIfAbsent('w_pass_angle_in_ctof', histoBuilders.w).fill(pkin.w)
                         histos.computeIfAbsent('w_pass_angle_in_ctof_' + sector, histoBuilders.w).fill(pkin.w)
 			histos.computeIfAbsent('w_q2_pass_angle_in_ctof_' + sector, histoBuilders2.w_q2).fill(pkin.w, pkin.q2)
+			histos.computeIfAbsent('p_w_ele_' + sector, histoBuilders2.p_w_ele).fill(ele.p(), pkin.w)
+			histos.computeIfAbsent('theta_w_ele_' + sector, histoBuilders2.theta_w_ele).fill(
+			    Math.toDegrees(ele.theta()), pkin.w)
                     }
                     if (pkin.w > cuts.w[0] && pkin.w < cuts.w[1] && event.ctof_status.contains(it)) {
                         histos.computeIfAbsent('angle_ep_pass_w_in_ctof', histoBuilders.angle_ep).fill(pkin.angle)
@@ -342,9 +345,6 @@ GParsPool.withPool 16, {
                                 beam.e() - pred_e_beam_from_angles)
 
                         // Two dimensional
-			histos.computeIfAbsent('p_w_ele_' + sector, histoBuilders2.p_w_ele).fill(ele.p(), pkin.w)
-			histos.computeIfAbsent('theta_w_ele_' + sector, histoBuilders2.theta_w_ele).fill(
-			    Math.toDegrees(ele.theta()), pkin.w)
                         histos.computeIfAbsent('phi_electron_theta_electron', histoBuilders2.phi_theta).fill(
                                 sphi, Math.toDegrees(ele.theta()))
                         histos.computeIfAbsent('phi_electron_delta_p_electron', histoBuilders2.phi_dp).fill(

@@ -14,8 +14,8 @@ def beam = new Particle(11, 0.0, 0.0, 10.646)
 def target = new Particle(2212, 0.0, 0.0, 0.0)
 
 cuts = [
-        w : [0.7, 1.3],
-        angle_ep : [175, 180]
+        w : [0.8, 1.15],
+        angle_ep : [178, 180]
 ]
 
 new_kin_bounds = [
@@ -170,15 +170,12 @@ def fillEventSelection(pkin, sector, title, cuts){
     }
 }
 
-def fillResolutions(beam, ele, pro, sector, title){
+def fillElectronResolutions(beam, ele, sector, title){
     def (pred_ele_p, pred_pro_theta, pred_pro_p) = predictElasticBasedOnElectronAngle(beam, ele.theta())
     def pred_ele_theta = getElectronPredThetaFromMomentum(beam, ele.p())
     def delta_p_ele = ele.p() - pred_ele_p
     def delta_theta_ele = Math.toDegrees(ele.theta() - pred_ele_theta)
-    def delta_p_pro = pro.p() - pred_pro_p
-    def delta_theta_pro = Math.toDegrees(pro.theta() - pred_pro_theta)
 
-    // Electron Side
     histos.computeIfAbsent('p_electron_delta_p_electron_' + title + '_' + sector,
             histoBuilders2.p_ele_dp).fill(ele.p(), delta_p_ele)
 
@@ -193,8 +190,13 @@ def fillResolutions(beam, ele, pro, sector, title){
 
     histos.computeIfAbsent('p_electron_fracp_electron_' + title + '_' + sector, histoBuilders2.p_ele_fracp).fill(
             ele.p(), delta_p_ele / ele.p())
+}
 
-    // Proton Side
+def fillProtonResolutions(beam, ele, pro, sector, title){
+    def (pred_ele_p, pred_pro_theta, pred_pro_p) = predictElasticBasedOnElectronAngle(beam, ele.theta())
+    def delta_p_pro = pro.p() - pred_pro_p
+    def delta_theta_pro = Math.toDegrees(pro.theta() - pred_pro_theta)
+
     histos.computeIfAbsent('theta_proton_delta_p_proton_' + title + '_' + sector,
             histoBuilders2.theta_pro_dp).fill(Math.toDegrees(pro.theta()), delta_p_pro)
 
@@ -240,7 +242,8 @@ GParsPool.withPool 16, {
                     def pro = new Particle(2212, event.mc_px[pidx], event.mc_py[pidx], event.mc_pz[pidx])
                     def pkin = getPKin(beam, target, ele, pro)
 		    fillBasicHistos(pkin, ele, pro, sector, 'gen')
-                    fillResolutions(beam, ele, pro, sector, 'gen')
+                    fillElectronResolutions(beam, ele, sector, 'gen')
+                    fillProtonResolutions(beam, ele, pro, sector, 'gen')
 		    fillEventSelection(pkin, sector, 'gen', cuts)
                 }
             }
@@ -252,7 +255,7 @@ GParsPool.withPool 16, {
                 def ele = new Particle(11, event.px[idx], event.py[idx], event.pz[idx])
                 def sector = event.dc_sector[idx]
 
-                (0..<event.npart).findAll { event.charge[it] > 0 }.each {
+                (0..<event.npart).findAll { event.pid[it] == 2212 }.each {
                     def pro = new Particle(2212, event.px[it], event.py[it], event.pz[it])
                     def pkin = getPKin(beam, target, ele, pro)
 
@@ -267,9 +270,13 @@ GParsPool.withPool 16, {
                         fillEventSelection(pkin, sector, 'ctof', cuts)
                     }
 
-                    if (pkin.angle > 175 && pkin.w < 1.3 && event.ctof_status.contains(it)) {
+                    if (pkin.angle > cuts.angle_ep[0] && pkin.w < 1.3 && event.ctof_status.contains(it)) {
                         fillBasicHistos(pkin, ele, pro, sector, 'ctof')
-                        fillResolutions(beam, ele, pro, sector, 'ctof')
+			fillElectronResolutions(beam, ele, sector, 'ctof')
+
+			if (pkin.angle > cuts.angle_ep[0] && pkin.w > cuts.w[0] && pkin.w < cuts.w[1]) {
+			    fillProtonResolutions(beam, ele, pro, sector, 'ctof')
+			}
                     }
                 }
             }
