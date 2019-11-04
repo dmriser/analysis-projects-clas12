@@ -230,7 +230,7 @@ def add_text_page(can, label, text, save_name):
     """ Write some text onto a page. """
     can.Clear()
     can.cd(1)
-    label.DrawLatex(0.5, 0.5, text)
+    label.DrawLatex(0.1, 0.5, text)
     can.Print(save_name)
     
     
@@ -275,19 +275,19 @@ if __name__ == '__main__':
                      title='Electron (Forward)', xtitle='W')
     
     plot_sector_page(can, histos, 'histos_w_{}', lab, save_name=output_pdfname,
-                     title='Electron (Forward) and Positive (CTOF)', xtitle='W')
+                     title='Electron (Forward) and Proton (CTOF)', xtitle='W')
 
     plot_sector_page(can, histos, 'histos_w_pass_angle_in_ctof_{}', lab, save_name=output_pdfname,
-                     title='Electron and Positive w/ #phi_{ep} > 174', xtitle='W')
+                     title='Electron and Proton w/ #phi_{ep} > 178', xtitle='W')
  
     plot_sector_page(can, histos, 'histos_w_q2_inclusive_{}', lab, save_name=output_pdfname,
                      title='Electron (Forward)', xtitle='W', ytitle='Q^{2}', log=True)
 
     plot_sector_page(can, histos, 'histos_w_q2_{}', lab, save_name=output_pdfname,
-                     title='Electron (Forward) and Positive (CTOF)', xtitle='W', ytitle='Q^{2}', log=True)
+                     title='Electron (Forward) and Proton (CTOF)', xtitle='W', ytitle='Q^{2}', log=True)
 
     plot_sector_page(can, histos, 'histos_w_q2_pass_angle_in_ctof_{}', lab, save_name=output_pdfname,
-                     title='Electron and Positive w/ #phi_{ep} > 174', xtitle='W', ytitle='Q^{2}', log=True)
+                     title='Electron and Proton w/ #phi_{ep} > 178', xtitle='W', ytitle='Q^{2}', log=True)
 
     plot_page(can, histos, 'histos_phi_electron_w', lab, save_name=output_pdfname,
                      title='W vs. #phi_{e}', xtitle='#phi_{e}', ytitle='W', log=True)
