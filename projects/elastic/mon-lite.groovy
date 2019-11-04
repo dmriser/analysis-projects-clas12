@@ -161,9 +161,11 @@ def fillTwoD(pkin, ele, pro, sector, title){
 
 def fillEventSelection(pkin, sector, title, cuts){
     if (pkin.angle > cuts.angle_ep[0]){
+        histos.computeIfAbsent("w_" + title, histoBuilders.w).fill(pkin.w)
         histos.computeIfAbsent("w_" + title + "_" + sector, histoBuilders.w).fill(pkin.w)
     }
     if (pkin.w > cuts.w[0] && pkin.w < cuts.w[1]) {
+        histos.computeIfAbsent("angle_ep_" + title, histoBuilders.angle_ep).fill(pkin.angle)
         histos.computeIfAbsent("angle_ep_" + title + "_" + sector, histoBuilders.angle_ep).fill(pkin.angle)
     }
 }
@@ -230,7 +232,7 @@ GParsPool.withPool 16, {
                 event.mc_pid[it] == 11
             }?.each { idx ->
                 def ele = new Particle(11, event.mc_px[idx], event.mc_py[idx], event.mc_pz[idx])
-                def sector = (int) getGeneratedSector(Math.toDegrees(ele.phi()))
+                def sector = (int) getGeneratedSector(Math.toDegrees(ele.phi())) + 3
 
                 (0..<event.mc_npart).find {
                     event.mc_pid[it] == 2212
@@ -239,6 +241,7 @@ GParsPool.withPool 16, {
                     def pkin = getPKin(beam, target, ele, pro)
 		    fillBasicHistos(pkin, ele, pro, sector, 'gen')
                     fillResolutions(beam, ele, pro, sector, 'gen')
+		    fillEventSelection(pkin, sector, 'gen', cuts)
                 }
             }
 

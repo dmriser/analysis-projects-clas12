@@ -17,8 +17,8 @@ def beam = new Particle(11, 0.0, 0.0, 10.646)
 def target = new Particle(2212, 0.0, 0.0, 0.0)
 
 cuts = [
-    w:[0.8,1.15], 
-    angle:[178,180]
+    w: [0.8, 1.15], 
+    angle: [178, 180]
 ]
 
 orig_kin_bounds = [
@@ -108,7 +108,6 @@ histoBuilders = [
 ]
 
 histoBuilders2 = [
-        w_p_ele           : { title -> limited_h2(title, 200, 200, lim.w, lim.p_ele) },
         w_q2              : { title -> limited_h2(title, 200, 200, lim.w, lim.q2) },
         phi_w             : { title -> limited_h2(title, 200, 200, lim.phi, lim.w) },
         theta_ele_vz      : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.vz) },
@@ -123,6 +122,8 @@ histoBuilders2 = [
         p_pro_dp          : { title -> limited_h2(title, 200, 200, lim.p_pro, lim.dp_ele) },
         theta_ele_de_beam : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.de_beam) },
         de_beam_de_beam   : { title -> limited_h2(title, 200, 200, lim.de_beam, lim.de_beam) },
+        p_w_ele           : { title -> limited_h2(title, 200, 200, lim.p_ele, lim.w) },
+        theta_w_ele       : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.w) },
 ]
 
 
@@ -145,7 +146,6 @@ def relativePhi(phi, sector) {
         return phi - 300
     }
 }
-
 
 def angleBetween(v1, v2) {
     v1.unit()
@@ -342,7 +342,9 @@ GParsPool.withPool 16, {
                                 beam.e() - pred_e_beam_from_angles)
 
                         // Two dimensional
-			histos.computeIfAbsent('w_p_ele_' + sector, histoBuilders2.w_p_ele).fill(pkin.w, ele.p())
+			histos.computeIfAbsent('p_w_ele_' + sector, histoBuilders2.p_w_ele).fill(ele.p(), pkin.w)
+			histos.computeIfAbsent('theta_w_ele_' + sector, histoBuilders2.theta_w_ele).fill(
+			    Math.toDegrees(ele.theta()), pkin.w)
                         histos.computeIfAbsent('phi_electron_theta_electron', histoBuilders2.phi_theta).fill(
                                 sphi, Math.toDegrees(ele.theta()))
                         histos.computeIfAbsent('phi_electron_delta_p_electron', histoBuilders2.phi_dp).fill(
