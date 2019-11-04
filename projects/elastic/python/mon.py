@@ -291,10 +291,14 @@ if __name__ == '__main__':
 
     plot_page(can, histos, 'histos_phi_electron_w', lab, save_name=output_pdfname,
                      title='W vs. #phi_{e}', xtitle='#phi_{e}', ytitle='W', log=True)
+ 
+    plot_sector_page(can, histos, 'histos_p_w_ele_{}', lab, save_name=output_pdfname,
+                     title='W vs. P_{e}', ytitle='W',
+                     xtitle='P_{e}', log=True)
 
-    plot_sector_page(can, histos, 'histos_w_p_ele_{}', lab, save_name=output_pdfname,
-                     title='P_{e} vs W', xtitle='W',
-                     ytitle='P_{e}', log=True)
+    plot_sector_page(can, histos, 'histos_theta_w_ele_{}', lab, save_name=output_pdfname,
+                     title='W vs. #theta_{e}', ytitle='W',
+                     xtitle='#theta_{e}', log=True)
 
     add_text_page(can, lab, text='Vertex Monitoring Plots', save_name=output_pdfname)
     
