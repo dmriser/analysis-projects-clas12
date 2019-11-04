@@ -9,10 +9,10 @@ import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt 
 
-
 from array import array 
 from ROOT import (TH1F, TH2F, TF1, TFile, TCanvas,
-                  gPad, gStyle, TLatex, TGraphErrors)
+                  gPad, gStyle, TLatex, TGraphErrors,
+                  TLine)
 
 default_histo = TH1F('default', '', 100, 0, 1)
 default_histo2d = TH2F('default', '', 100, 0, 1, 100, 0, 1)
@@ -29,7 +29,8 @@ def setup_global_options():
     gStyle.SetOptStat(0)
 
 def plot_sector_page(canvas, histos, title_formatter, label, save_name,
-                     xtitle=None, ytitle=None, title=None, log=False):
+                     xtitle=None, ytitle=None, title=None, log=False,
+                     y_fit_range=None):
     
     canvas.Clear() 
     canvas.Divide(2,3)
@@ -39,11 +40,17 @@ def plot_sector_page(canvas, histos, title_formatter, label, save_name,
         
         #if isinstance(histos[title_formatter.format(i)], TH1F):
         if isinstance(histos.get(title_formatter.format(i), default_histo), TH1F):
+ 
+            if y_fit_range:
+                fit = TF1(title_formatter.format(i) + '_fit', 'gaus')
+                histos.get(title_formatter.format(i), default_histo).Fit(fit, '', 'R', y_fit_range[0], y_fit_range[1])
+                
             histos.get(title_formatter.format(i), default_histo).SetFillColorAlpha(55, 0.65)
             histos.get(title_formatter.format(i), default_histo).Draw()
-            #histos[title_formatter.format(i)].SetFillColorAlpha(55, 0.65)
-            #histos[title_formatter.format(i)].Draw()
 
+            if y_fit_range:
+                label.DrawLatex(0.15, 0.86, '#mu = {0:6.4f}, #sigma = {1:6.4f}'.format(fit.GetParameter(1), fit.GetParameter(2)))
+            
         #elif isinstance(histos[title_formatter.format(i)], TH2F):
         elif isinstance(histos.get(title_formatter.format(i), default_histo), TH2F):
             # histos[title_formatter.format(i)].Draw('colz')
@@ -96,7 +103,7 @@ def plot_page(canvas, histos, histo_title, label, save_name,
     canvas.Print(save_name)
 
 
-def fit_slices(histo, x_range, x_bin_step):
+def fit_slices(histo, x_range, x_bin_step, y_fit_range):
 
     x_start = histo.GetXaxis().FindBin(x_range[0])
     x_stop =  histo.GetXaxis().FindBin(x_range[1])
@@ -106,9 +113,15 @@ def fit_slices(histo, x_range, x_bin_step):
     fits = []
     for i, x_bin in enumerate(range(x_start, x_stop + 1, x_bin_step)):
         projec = histo.ProjectionY(histo.GetTitle() + '_proj{}'.format(i) , x_bin, x_bin + x_bin_step)
-        fit = TF1(histo.GetTitle()+'_fit{}'.format(i), 'gaus')
 
-        projec.Fit(fit)
+        fit = TF1(histo.GetTitle() + '_fit{}'.format(i), 'gaus')
+        fit.SetTitle(histo.GetTitle() + '_fit{}'.format(i))
+        fit.SetName(histo.GetTitle() + '_fit{}'.format(i))
+
+        if y_fit_range:
+            fit.SetParameter(1, 0.5 * (y_fit_range[0] + y_fit_range[1]))
+ 
+        projec.Fit(fit, 'R', '',  y_fit_range[0], y_fit_range[1])
 
         slices.append(projec)
         fits.append(fit)
@@ -133,36 +146,42 @@ def fit_slices(histo, x_range, x_bin_step):
     graph = TGraphErrors(len(x_values), x_values, means, zeros, stds)
     graph.SetName('g_' + histo.GetName())
 
-    # return graph
-    return np.array(x_values), np.array(means), np.array(stds), slices, fits 
+    return graph, slices, fits
+    # return np.array(x_values), np.array(means), np.array(stds), slices, fits 
 
-
+ 
 def plot_fits(canvas, histos, x_range, x_bin_step, title_formatter,
-              save_name, label, y_range=None,
-              title=None, xtitle=None, ytitle=None):
+              save_name, label, y_fit_range, y_range=None,
+              title=None, xtitle=None, ytitle=None, hline=None):
 
     canvas.Clear()
-    canvas.Divide(3,2)
+    canvas.Divide(2,3)
 
     root_is_dumb = []
     for i in range(1,7):
         canvas.cd(i)
 
         title = title_formatter.format(i)
-        graph = fit_slices(histos.get(title, default_histo2d), x_range, x_bin_step)
-
-        graph.SetMarkerStyle(21)
+        graph, slices, fits = fit_slices(histos.get(title, default_histo2d), x_range, x_bin_step, y_fit_range=y_fit_range)
+        graph.SetMarkerStyle(8)
         graph.SetMarkerSize(1)
-
+        
         if y_range:
-            graph.GetYaxis().SetLimits(y_range[0], y_range[1])
+            graph.GetHistogram().SetMinimum(y_range[0])
+            graph.GetHistogram().SetMaximum(y_range[1])
             graph.Draw('AP')
             root_is_dumb.append(graph)
         else:
             graph.Draw('AP')
             root_is_dumb.append(graph)
             
-
+        if hline:
+            line = TLine(x_range[0], hline, x_range[1], hline)
+            line.SetLineStyle(8)
+            line.SetLineWidth(1)
+            line.Draw()
+            root_is_dumb.append(line)
+            
         if title:
             label.DrawLatex(0.1, 0.925, title)
 
@@ -176,6 +195,28 @@ def plot_fits(canvas, histos, x_range, x_bin_step, title_formatter,
 
     canvas.Print(save_name)
 
+    # For the slices 
+    slice_can = TCanvas('slice_can', 'slice_can', 1200, 1600)
+    slice_pdfname = title_formatter.split('_{}')[0] + '_slices.pdf'
+    slice_can.Print(slice_pdfname + '[')
+    for i in range(1,7):
+        title = title_formatter.format(i)
+        graph, slices, fits = fit_slices(histos.get(title, default_histo2d), x_range, x_bin_step, y_fit_range)
+
+        # Size of slices page
+        nrows = 5
+        ncols = int(np.ceil(len(slices) / nrows) + 1)
+        slice_can.Clear() 
+        slice_can.Divide(ncols, nrows)
+        for j, (s,f) in enumerate(zip(slices, fits)):
+            slice_can.cd(j+1)
+            s.Draw()
+            lab.DrawLatex(0.15, 0.88, '#mu = {0:6.4f}, #sigma = {1:6.4f}'.format(f.GetParameter(1), f.GetParameter(2)))
+            
+        slice_can.Print(slice_pdfname)
+    slice_can.Print(slice_pdfname + ']')
+
+    
 def plot_fits_mpl(histos, x_range, x_bin_step, title_formatter,
                   save_name, y_range=None, title=None,
                   xtitle=None, ytitle=None, max_errorbar=0.5):
@@ -272,13 +313,14 @@ if __name__ == '__main__':
     add_text_page(can, lab, text='W Monitoring Plots', save_name=output_pdfname)
 
     plot_sector_page(can, histos, 'histos_w_inclusive_{}', lab, save_name=output_pdfname,
-                     title='Electron (Forward)', xtitle='W')
+                     title='Electron (Forward)', xtitle='W', y_fit_range=[0.85, 1.08])
     
     plot_sector_page(can, histos, 'histos_w_{}', lab, save_name=output_pdfname,
-                     title='Electron (Forward) and Proton (CTOF)', xtitle='W')
+                     title='Electron (Forward) and Proton (CTOF)', xtitle='W',
+                     y_fit_range=[0.85, 1.08])
 
     plot_sector_page(can, histos, 'histos_w_pass_angle_in_ctof_{}', lab, save_name=output_pdfname,
-                     title='Electron and Proton w/ #phi_{ep} > 178', xtitle='W')
+                     title='Electron and Proton w/ #phi_{ep} > 178', xtitle='W', y_fit_range=[0.85, 1.08])
  
     plot_sector_page(can, histos, 'histos_w_q2_inclusive_{}', lab, save_name=output_pdfname,
                      title='Electron (Forward)', xtitle='W', ytitle='Q^{2}', log=True)
@@ -299,6 +341,14 @@ if __name__ == '__main__':
     plot_sector_page(can, histos, 'histos_theta_w_ele_{}', lab, save_name=output_pdfname,
                      title='W vs. #theta_{e}', ytitle='W',
                      xtitle='#theta_{e}', log=True)
+
+    plot_fits(can, histos, x_range=[8.8,10.0], x_bin_step=3, title_formatter='histos_p_w_ele_{}',
+              save_name=output_pdfname, label=lab, y_range=[0.6, 1.5],
+              title='W vs. p_{e}', xtitle='p_{e}', ytitle='W', hline=0.938, y_fit_range=[0.85, 1.1])
+
+    plot_fits(can, histos, x_range=[6.0,12.0], x_bin_step=3, title_formatter='histos_theta_w_ele_{}',
+              save_name=output_pdfname, label=lab, y_range=[0.6, 1.5],
+              title='W vs. #theta_{e}', xtitle='#theta_{e}', ytitle='W', hline=0.938, y_fit_range=[0.85, 1.1])
 
     add_text_page(can, lab, text='Vertex Monitoring Plots', save_name=output_pdfname)
     
@@ -335,7 +385,7 @@ if __name__ == '__main__':
     add_text_page(can, lab, text='Resolution Monitoring Plots', save_name=output_pdfname)
 
     plot_sector_page(can, histos, 'histos_delta_p_electron_{}', lab, save_name=output_pdfname,
-                     title='#Delta P_{e} from #theta_{e}', xtitle='#Delta P_{e}', log=False)
+                     title='#Delta P_{e} from #theta_{e}', xtitle='#Delta P_{e}', log=False, y_fit_range=[-0.15, 0.15])
 
     plot_sector_page(can, histos, 'histos_theta_electron_delta_p_electron_{}', lab, save_name=output_pdfname,
                      title='#Delta P_{e} vs #theta_{e} from #theta_{e}', xtitle='#theta_{e}', ytitle='#Delta P_{e}', log=False)
@@ -344,7 +394,7 @@ if __name__ == '__main__':
                      title='#Delta P_{e} vs. #phi_{e} from #theta_{e}', xtitle='#phi_{e}', ytitle='#Delta P_{e}', log=False)
 
     plot_sector_page(can, histos, 'histos_delta_p_proton_{}', lab, save_name=output_pdfname,
-                     title='#Delta P_{p} from #theta_{e}', xtitle='#Delta P_{p}', log=False)
+                     title='#Delta P_{p} from #theta_{e}', xtitle='#Delta P_{p}', log=False, y_fit_range=[-0.5, 0.5])
 
     plot_sector_page(can, histos, 'histos_theta_proton_delta_p_proton_{}', lab, save_name=output_pdfname,
                      title='#Delta P_{p} vs #theta_{p} from #theta_{e}', xtitle='#theta_{p}', ytitle='#Delta P_{p}', log=False)
@@ -353,7 +403,7 @@ if __name__ == '__main__':
                      title='#Delta P_{p} vs P_{p} from #theta_{e}', xtitle='P_{p}', ytitle='#Delta P_{p}', log=False)
     
     plot_sector_page(can, histos, 'histos_delta_theta_proton_{}', lab, save_name=output_pdfname,
-                     title='#Delta #theta_{p} from #theta_{e}', xtitle='#Delta #theta_{p}', log=False)
+                     title='#Delta #theta_{p} from #theta_{e}', xtitle='#Delta #theta_{p}', log=False, y_fit_range=[-2,2])
 
     plot_sector_page(can, histos, 'histos_theta_electron_delta_theta_proton_{}', lab, save_name=output_pdfname,
                      title='#Delta #theta_{p} vs #theta_{e} from #theta_{e}', xtitle='#theta_{e}', ytitle='#Delta #theta_{p}', log=False)
@@ -362,7 +412,8 @@ if __name__ == '__main__':
                      title='#Delta #theta_{p} vs #theta_{p} from #theta_{e}', xtitle='#theta_{p}', ytitle='#Delta #theta_{p}', log=False)
 
     plot_sector_page(can, histos, 'histos_de_beam_{}', lab, save_name=output_pdfname,
-                     title='#Delta E_{beam} from (#theta_{e}, P_{e})', xtitle='#Delta E_{beam}', log=False)
+                     title='#Delta E_{beam} from (#theta_{e}, P_{e})', xtitle='#Delta E_{beam}', log=False,
+                     y_fit_range=[-0.4, 0.4])
 
     plot_sector_page(can, histos, 'histos_de_beam_from_angles{}', lab, save_name=output_pdfname,
                      title='#Delta E_{beam} from (#theta_{e}, #theta_{p})', xtitle='#Delta E_{beam}', log=False)
@@ -376,43 +427,15 @@ if __name__ == '__main__':
                      ytitle='#Delta E (#theta_{e}, P_{e})', log=False)
     
     # A few one off plots 
-    plot_sector_page(can, histos, 'histos_theta_electron_delta_p_electron_{}',
-                     lab, save_name='theta_ele_dp_ele_{}.pdf'.format(args.output_prefix),
-                     title='#Delta P_{e} vs #theta_{e} from #theta_{e}',
-                     xtitle='#theta_{e}', ytitle='#Delta P_{e}', log=False)
+    #plot_sector_page(can, histos, 'histos_theta_electron_delta_p_electron_{}',
+    #                 lab, save_name='theta_ele_dp_ele_{}.pdf'.format(args.output_prefix),
+    #                 title='#Delta P_{e} vs #theta_{e} from #theta_{e}',
+    #                 xtitle='#theta_{e}', ytitle='#Delta P_{e}', log=False)
 
-    plot_sector_page(can, histos, 'histos_theta_proton_delta_p_proton_{}',
-                     lab, save_name='theta_pro_dp_pro_{}.pdf'.format(args.output_prefix),
-                     title='#Delta P_{p} vs #theta_{p} from #theta_{e}',
-                     xtitle='#theta_{p}', ytitle='#Delta P_{p}', log=False)
+    #plot_sector_page(can, histos, 'histos_theta_proton_delta_p_proton_{}',
+    #                 lab, save_name='theta_pro_dp_pro_{}.pdf'.format(args.output_prefix),
+    #                 title='#Delta P_{p} vs #theta_{p} from #theta_{e}',
+    #                 xtitle='#theta_{p}', ytitle='#Delta P_{p}', log=False)
     
-
-    # Plot fits to the resolutions
-    plot_fits_mpl(
-        histos=histos,
-        x_range=[5,14],
-        y_range=[-0.8,0.8],
-        x_bin_step=3,
-        title_formatter='histos_theta_electron_delta_p_electron_{}',
-        save_name='theta_electron_delta_p_electron_fit_{}.pdf'.format(args.output_prefix),
-        title='Electron Momentum Resolution (from $\\theta_e$)',
-        xtitle='$\\theta_e$',
-        ytitle='$\Delta P_{e}$',
-        max_errorbar = 0.4
-    ) 
-
-    plot_fits_mpl(
-        histos=histos,
-        x_range=[40,60],
-        y_range=[-0.8,0.8],
-        x_bin_step=3,
-        title_formatter='histos_theta_proton_delta_p_proton_{}',
-        save_name='theta_proton_delta_p_proton_fit_{}.pdf'.format(args.output_prefix),
-        title='Proton Momentum Resolution (from $\\theta_e$)',
-        xtitle='$\\theta_p$',
-        ytitle='$\Delta P_{p}$',
-        max_errorbar = 0.8
-    ) 
-
     # Close the sucker 
     can.Print('{}]'.format(output_pdfname))
