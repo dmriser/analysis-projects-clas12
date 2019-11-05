@@ -306,8 +306,8 @@ if __name__ == '__main__':
         val_sim /= np.max(val_sim)
 
         plt.subplot(2,3,i)
-        plt.bar(x_cent_dat, val_dat, width=width_dat, edgecolor='', alpha=0.5, label='Data')
-        plt.bar(x_cent_sim, val_sim, width=width_sim, edgecolor='', alpha=0.5, label='Sim')
+        plt.step(x_low_dat, val_dat, where='post', label='Data', color='k')
+        plt.step(x_low_sim, val_sim, where='post', label='Sim', color='red')
         plt.xlabel('$p_e$')
         plt.grid(alpha=0.2)
         plt.legend(frameon=False)
@@ -331,8 +331,8 @@ if __name__ == '__main__':
         val_sim /= np.max(val_sim)
 
         plt.subplot(2,3,i)
-        plt.bar(x_cent_dat, val_dat, width=width_dat, edgecolor='', alpha=0.5, label='Data')
-        plt.bar(x_cent_sim, val_sim, width=width_sim, edgecolor='', alpha=0.5, label='Sim')
+        plt.step(x_low_dat, val_dat, where='post', label='Data', color='k')
+        plt.step(x_low_sim, val_sim, where='post', label='Sim', color='red')
         plt.xlabel('$\\theta_e$')
         plt.grid(alpha=0.2)
         plt.legend(frameon=False)
@@ -357,8 +357,8 @@ if __name__ == '__main__':
         val_sim /= np.max(val_sim)
 
         plt.subplot(2,3,i)
-        plt.bar(x_cent_dat, val_dat, width=width_dat, edgecolor='', alpha=0.5, label='Data')
-        plt.bar(x_cent_sim, val_sim, width=width_sim, edgecolor='', alpha=0.5, label='Sim')
+        plt.step(x_low_dat, val_dat, where='post', label='Data', color='k')
+        plt.step(x_low_sim, val_sim, where='post', label='Sim', color='red')
         plt.xlabel('$\\theta_p$')
         plt.grid(alpha=0.2)
         plt.legend(frameon=False)
@@ -383,8 +383,8 @@ if __name__ == '__main__':
         val_sim /= np.max(val_sim)
 
         plt.subplot(2,3,i)
-        plt.bar(x_cent_dat, val_dat, width=width_dat, edgecolor='', alpha=0.5, label='Data')
-        plt.bar(x_cent_sim, val_sim, width=width_sim, edgecolor='', alpha=0.5, label='Sim')
+        plt.step(x_low_dat, val_dat, where='post', label='Data', color='k')
+        plt.step(x_low_sim, val_sim, where='post', label='Sim', color='red')
         plt.xlabel('$p_p$')
         plt.grid(alpha=0.2)
         plt.legend(frameon=False)

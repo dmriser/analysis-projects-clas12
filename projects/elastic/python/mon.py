@@ -30,10 +30,15 @@ def setup_global_options():
 
 def plot_sector_page(canvas, histos, title_formatter, label, save_name,
                      xtitle=None, ytitle=None, title=None, log=False,
-                     y_fit_range=None):
+                     y_fit_range=None, landscape=False, x_range=None, vline=None):
+
+    root_garbage_can = []
     
     canvas.Clear() 
-    canvas.Divide(2,3)
+    if landscape:
+        canvas.Divide(3,2)
+    else:
+        canvas.Divide(2,3)
 
     for i in range(1,7):
         canvas.cd(i)
@@ -44,6 +49,9 @@ def plot_sector_page(canvas, histos, title_formatter, label, save_name,
             if y_fit_range:
                 fit = TF1(title_formatter.format(i) + '_fit', 'gaus')
                 histos.get(title_formatter.format(i), default_histo).Fit(fit, '', 'R', y_fit_range[0], y_fit_range[1])
+
+            if x_range:
+                histos.get(title_formatter.format(i), default_histo).GetXaxis().SetRangeUser(x_range[0], x_range[1])
                 
             histos.get(title_formatter.format(i), default_histo).SetFillColorAlpha(55, 0.65)
             histos.get(title_formatter.format(i), default_histo).Draw()
@@ -60,7 +68,14 @@ def plot_sector_page(canvas, histos, title_formatter, label, save_name,
         else:
             #raise NotImplementedException('plot_sector_page only supports TH1F, TH2F')
             pass
-        
+
+        if vline:
+            line = TLine(vline, 0, vline, histos.get(title_formatter.format(i), default_histo).GetMaximum())
+            line.SetLineColor(1)
+            line.SetLineStyle(1)
+            line.Draw('same')
+            root_garbage_can.append(line)
+            
         if title:
             label.DrawLatex(0.1, 0.925, title)
 
@@ -342,11 +357,11 @@ if __name__ == '__main__':
                      title='W vs. #theta_{e}', ytitle='W',
                      xtitle='#theta_{e}', log=True)
 
-    plot_fits(can, histos, x_range=[8.8,10.0], x_bin_step=3, title_formatter='histos_p_w_ele_{}',
+    plot_fits(can, histos, x_range=[8.8,10.0], x_bin_step=6, title_formatter='histos_p_w_ele_{}',
               save_name=output_pdfname, label=lab, y_range=[0.6, 1.5],
               title='W vs. p_{e}', xtitle='p_{e}', ytitle='W', hline=0.938, y_fit_range=[0.85, 1.1])
 
-    plot_fits(can, histos, x_range=[6.0,12.0], x_bin_step=3, title_formatter='histos_theta_w_ele_{}',
+    plot_fits(can, histos, x_range=[6.0,12.0], x_bin_step=6, title_formatter='histos_theta_w_ele_{}',
               save_name=output_pdfname, label=lab, y_range=[0.6, 1.5],
               title='W vs. #theta_{e}', xtitle='#theta_{e}', ytitle='W', hline=0.938, y_fit_range=[0.85, 1.1])
 
@@ -426,16 +441,32 @@ if __name__ == '__main__':
                      title='#Delta E_{beam} vs #theta_{e}', xtitle='#theta_{e}',
                      ytitle='#Delta E (#theta_{e}, P_{e})', log=False)
     
-    # A few one off plots 
-    #plot_sector_page(can, histos, 'histos_theta_electron_delta_p_electron_{}',
-    #                 lab, save_name='theta_ele_dp_ele_{}.pdf'.format(args.output_prefix),
-    #                 title='#Delta P_{e} vs #theta_{e} from #theta_{e}',
-    #                 xtitle='#theta_{e}', ytitle='#Delta P_{e}', log=False)
-
-    #plot_sector_page(can, histos, 'histos_theta_proton_delta_p_proton_{}',
-    #                 lab, save_name='theta_pro_dp_pro_{}.pdf'.format(args.output_prefix),
-    #                 title='#Delta P_{p} vs #theta_{p} from #theta_{e}',
-    #                 xtitle='#theta_{p}', ytitle='#Delta P_{p}', log=False)
-    
     # Close the sucker 
     can.Print('{}]'.format(output_pdfname))
+
+    # single plots on landscape canvas 
+    lcan = TCanvas('can', 'can', 1100, 800)
+    plot_sector_page(lcan, histos, 'histos_w_inclusive_{}', lab, save_name='w_inclusive_{}.pdf'.format(args.output_prefix),
+                     title='Electron (Forward)', xtitle='W', y_fit_range=[0.85, 1.08], landscape=True, vline=0.938)
+    
+    plot_sector_page(lcan, histos, 'histos_w_{}', lab, save_name='w_ctof_proton_{}.pdf'.format(args.output_prefix),
+                     title='Electron (Forward) and Proton (CTOF)', xtitle='W',
+                     y_fit_range=[0.85, 1.08], landscape=True, vline=0.938)
+
+    plot_sector_page(lcan, histos, 'histos_w_pass_angle_in_ctof_{}', lab, save_name='w_ctof_proton_pass_angle_{}.pdf'.format(args.output_prefix),
+                     title='Electron and Proton w/ #phi_{ep} > 178', xtitle='W', y_fit_range=[0.85, 1.08],
+                     landscape=True, vline=0.938)
+
+    plot_sector_page(lcan, histos, 'histos_angle_ep_pass_w_in_ctof_{}', lab, save_name='angle_ep_pass_w_{}.pdf'.format(args.output_prefix),
+                     title='Events Passing W Cut', xtitle='#phi_{ep} (deg)',
+                     landscape=True, x_range=[160, 180], vline=178)
+ 
+    plot_sector_page(lcan, histos, 'histos_theta_proton_delta_theta_proton_{}', lab,
+                     save_name='theta_proton_delta_theta_proton_{}.pdf'.format(args.output_prefix),
+                     title='#Delta #theta_{p} vs #theta_{p} from #theta_{e}', xtitle='#theta_{p}', ytitle='#Delta #theta_{p}', log=False,
+                     landscape=True)
+
+    plot_sector_page(lcan, histos, 'histos_theta_electron_delta_theta_electron_{}', lab,
+                     save_name='theta_proton_delta_theta_proton_{}.pdf'.format(args.output_prefix),
+                     title='#Delta #theta_{e} vs #theta_{e} from #P_{e}', xtitle='#theta_{e}', ytitle='#Delta #theta_{e}', log=False,
+                     landscape=True)

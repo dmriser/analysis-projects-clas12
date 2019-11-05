@@ -63,7 +63,7 @@ def scipy_fit_slice(x, y, err, bounds):
     res = minimize(lambda p: chi2(y, model(x,p), err), x0=p0, bounds=bounds, method='Nelder-Mead')
     return res.x
 
-def fit_slices(histo, x_range, x_bin_step):
+def fit_slices(histo, x_range, x_bin_step, y_fit_range):
 
     x_start = histo.GetXaxis().FindBin(x_range[0])
     x_stop =  histo.GetXaxis().FindBin(x_range[1])
@@ -73,15 +73,16 @@ def fit_slices(histo, x_range, x_bin_step):
     fits = []
     for i, x_bin in enumerate(range(x_start, x_stop + 1, x_bin_step)):
         projec = histo.ProjectionY(histo.GetTitle() + '_proj{}'.format(i) , x_bin, x_bin + x_bin_step)
-        
-        fmin = projec.GetMean() - 3 * projec.GetStdDev()
-        fmax = projec.GetMean() + 3 * projec.GetStdDev() 
-        fit = TF1(histo.GetTitle() + '_fit{}'.format(i), 'gaus', fmin, fmax)
+
+        fit = TF1(histo.GetTitle() + '_fit{}'.format(i), 'gaus')
         fit.SetTitle(histo.GetTitle() + '_fit{}'.format(i))
         fit.SetName(histo.GetTitle() + '_fit{}'.format(i))
-        projec.Fit(fit, 'R', '',  fmin, fmax)
-        print('Fitting in {},{}'.format(fmin,fmax))
-        
+
+        if y_fit_range:
+            fit.SetParameter(1, 0.5 * (y_fit_range[0] + y_fit_range[1]))
+
+        projec.Fit(fit, 'R', '',  y_fit_range[0], y_fit_range[1])
+
         slices.append(projec)
         fits.append(fit)
 
@@ -105,57 +106,15 @@ def fit_slices(histo, x_range, x_bin_step):
     graph = TGraphErrors(len(x_values), x_values, means, zeros, stds)
     graph.SetName('g_' + histo.GetName())
 
-    # return graph
-    return np.array(x_values), np.array(means), np.array(stds), slices, fits 
-
-def plot_slices(slices, fits, output_name):
-    """ Plot slices with fit values. """
-
-    ncols = 3
-    nrows = int(np.ceil(len(slices) / ncols) + 1)
+    # return graph, slices, fits
+    return np.array(x_values), np.array(means), np.array(stds), slices, fits
     
-    fig, axes = plt.subplots(nrows=nrows, ncols=ncols,
-                             figsize=(ncols * 4, nrows * 3))
-
-    i,j = 0, 0
-    for current_slice, current_fit in zip(slices, fits):
-        x_low, x_high, vals, errs = numpify(current_slice)
-        x_cent = 0.5 * (x_low + x_high)
-        width = x_high[0] - x_low[0]
-        #y_fit = np.array([current_fit.Eval(xc) for xc in x_cent])
-
-        mu = np.mean(x_cent * vals)
-        std = np.std(x_cent * vals)
-
-        bounds = [] 
-        bounds.append([0, 2*np.max(vals)])
-        bounds.append([mu - 2 * std, mu + 2 * std])
-        bounds.append([0, 5 * std])
-
-        pars = scipy_fit_slice(x_cent, vals, errs, bounds)
-        y_fit = model(x_cent, pars)
-        print(pars)
-         
-        axes[i,j].bar(x_cent, vals, width=width, edgecolor='')
-        axes[i,j].plot(x_cent, y_fit, linestyle='-', linewidth=1, color='red')
-        axes[i,j].set_xlim([mu-1*std, mu+1*std])
-        axes[i,j].grid(alpha=0.2)
-        axes[i,j].set_title(current_fit.GetTitle())
-        
-        j += 1
-        if j >= ncols:
-            j = 0
-            i += 1 
-
-    fig.tight_layout()
-    fig.savefig(output_name, bbox_inches='tight')
-        
 def plot_fits_mpl(histos1, histos2, config1, config2,
-                  x_range, x_bin_step, title_formatter,
+                  x_range, x_bin_step, title_formatter, y_fit_range,
                   save_name, y_range=None, title=None,
                   xtitle=None, ytitle=None, max_errorbar=0.5):
     
-    fig = plt.figure(figsize=(12,16))
+    fig = plt.figure(figsize=(16,12))
 
     # Plot options for each type. 
     opts1 = {'marker':'o', 'linestyle':'', 'color':'k'}
@@ -163,19 +122,19 @@ def plot_fits_mpl(histos1, histos2, config1, config2,
     
     for i in range(1,7):
 
-        ax = fig.add_subplot(3, 2, i)
+        ax = fig.add_subplot(2, 3, i)
 
         # Get histogram slices for plotting. 
         tit = title_formatter.format(i)
         print('Fitting: ', tit)
-        x1, mu1, sig1, slices1, fits1 = fit_slices(histos1.get(tit, default_histo2d), x_range, x_bin_step)
-        x2, mu2, sig2, slices2, fits2 = fit_slices(histos2.get(tit, default_histo2d), x_range, x_bin_step)
+        x1, mu1, sig1, slices1, fits1 = fit_slices(histos1.get(tit, default_histo2d), x_range, x_bin_step, y_fit_range)
+        x2, mu2, sig2, slices2, fits2 = fit_slices(histos2.get(tit, default_histo2d), x_range, x_bin_step, y_fit_range)
         x1, mu1, sig1 = remove_bad_points(x1, mu1, sig1, max_errorbar)
         x2, mu2, sig2 = remove_bad_points(x2, mu2, sig2, max_errorbar)
         
         # Experimental
-        plot_slices(slices1, fits1, tit + '_data_slices.pdf')
-
+        #plot_slices(slices1, fits1, tit + '_data_slices.pdf')
+        
         label1 = 'Sector {} ({})'.format(i, config1)
         label2 = 'Sector {} ({})'.format(i, config2)
 
@@ -207,11 +166,93 @@ def plot_fits_mpl(histos1, histos2, config1, config2,
     fig.tight_layout()
     fig.savefig(save_name, bbox_inches='tight')
 
+    output_slice_pdf(histos1, title_formatter, 'data', x_range, x_bin_step, y_fit_range)
+    output_slice_pdf(histos2, title_formatter, 'sim', x_range, x_bin_step, y_fit_range)    
+
+def output_slice_pdf(histos, title_formatter, sub_title, x_range, x_bin_step, y_fit_range):
+    """ Debugging of the fits for slices. """
+
+    lab = TLatex()
+    lab.SetNDC()
+    lab.SetTextSize(0.03)
+    
+    slice_can = TCanvas('slice_can', 'slice_can', 1200, 1600)
+    slice_pdfname = title_formatter.split('_{}')[0] + '_' + sub_title + '_slices.pdf'
+    slice_can.Print(slice_pdfname + '[')
+    for i in range(1,7):
+        title = title_formatter.format(i)
+        x, mu, sig, slices, fits = fit_slices(histos.get(title, default_histo2d), x_range, x_bin_step, y_fit_range)
+
+        nrows = 5
+        ncols = int(np.ceil(len(slices) / nrows) + 1)
+        slice_can.Clear()
+        slice_can.Divide(ncols, nrows)
+        for j, (s,f) in enumerate(zip(slices, fits)):
+            slice_can.cd(j+1)
+            s.Draw()
+            lab.DrawLatex(0.15, 0.88, '#mu = {0:6.4f}, #sigma = {1:6.4f}'.format(f.GetParameter(1), f.GetParameter(2)))
+
+        slice_can.Print(slice_pdfname)
+    slice_can.Print(slice_pdfname + ']')
+    
     
 def remove_bad_points(x, mu, sig, max_errorbar):
     condition = np.logical_and(mu != 0, sig < max_errorbar)
     idx = np.where(condition)[0]
     return x[idx], mu[idx], sig[idx]
+
+def plot_sector_page(canvas, histos1, histos2, config1, config2, title_formatter,
+                     save_name, xtitle=None, ytitle=None, title=None, x_range=None):
+    """ Compare two distributions in one plot, using root. """
+    
+    label = TLatex()
+    label.SetNDC()
+    label.SetTextSize(0.045)
+    
+    canvas.Clear()
+    canvas.Divide(3,2)
+
+    for i in range(1,7):
+        canvas.cd(i)
+
+        histos1.get(title_formatter.format(i), default_histo).SetLineColor(1)
+        histos1.get(title_formatter.format(i), default_histo).Scale(1 / histos1.get(title_formatter.format(i), default_histo).GetMaximum())
+
+        histos2.get(title_formatter.format(i), default_histo).SetLineColor(99)
+        histos2.get(title_formatter.format(i), default_histo).Scale(1 / histos2.get(title_formatter.format(i), default_histo).GetMaximum())
+
+        hmax = max(histos1.get(title_formatter.format(i), default_histo).GetMaximum(),
+                   histos2.get(title_formatter.format(i), default_histo).GetMaximum())
+        
+        histos1.get(title_formatter.format(i), default_histo).SetMaximum(hmax * 1.1)
+        histos2.get(title_formatter.format(i), default_histo).SetMaximum(hmax * 1.1)
+
+        if x_range:
+            histos1.get(title_formatter.format(i), default_histo).GetXaxis().SetRangeUser(x_range[0], x_range[1])
+            histos2.get(title_formatter.format(i), default_histo).GetXaxis().SetRangeUser(x_range[0], x_range[1])
+        
+        histos1.get(title_formatter.format(i), default_histo).Draw('hist')
+        histos2.get(title_formatter.format(i), default_histo).Draw('histsame')
+
+        # Annotate the figure with the configuration names.
+        caption1 = '#color[1]({0})'.format(config1).replace('(', '{').replace(')', '}')
+        caption2 = '#color[99]({0})'.format(config2).replace('(', '{').replace(')', '}')
+
+        label.DrawLatex(0.75, 0.86, caption1)
+        label.DrawLatex(0.75, 0.825, caption2)
+        
+        if title:
+            label.DrawLatex(0.1, 0.925, title)
+
+        if xtitle:
+            label.DrawLatex(0.45, 0.015, xtitle)
+
+        if ytitle:
+            label.SetTextAngle(90)
+            label.DrawLatex(0.02, 0.65, ytitle)
+            label.SetTextAngle(0)
+
+    canvas.Print(save_name)
     
 if __name__ == '__main__':
 
@@ -235,28 +276,27 @@ if __name__ == '__main__':
         histos[config_type] = load_histos(file)
     
     # Plot fits to the resolutions
-    """
-    plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
-        x_range=[6,12], y_range=[-0.8,0.8], x_bin_step=5, title_formatter='histos_theta_electron_delta_p_electron_{}',
-        save_name='theta_electron_delta_p_electron_fit_{}.pdf'.format(args.output_prefix),
-        title='Electron Momentum Resolution (from $\\theta_e$)', xtitle='$\\theta_e$', ytitle='$\Delta P_{e}$',
-        max_errorbar = 0.4
-    ) 
+    #plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
+    #    x_range=[7,10.5], y_range=[-0.8,0.8], x_bin_step=3, title_formatter='histos_theta_electron_delta_p_electron_{}',
+    #    save_name='theta_electron_delta_p_electron_fit_{}.pdf'.format(args.output_prefix),
+    #    title='Electron Momentum Resolution (from $\\theta_e$)', xtitle='$\\theta_e$', ytitle='$\Delta P_{e}$',
+    #    max_errorbar = 0.4, y_fit_range=[-0.5, 0.5]
+    #) 
 
-    plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
-        x_range=[40,55], y_range=[-0.8,0.8], x_bin_step=6, title_formatter='histos_theta_proton_delta_p_proton_{}',
-        save_name='theta_proton_delta_p_proton_fit_{}.pdf'.format(args.output_prefix),
-        title='Proton Momentum Resolution (from $\\theta_e$)', xtitle='$\\theta_p$', ytitle='$\Delta P_{p}$',
-        max_errorbar = 0.8
-    ) 
+    #plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
+    #    x_range=[40,53], y_range=[-0.8,0.8], x_bin_step=4, title_formatter='histos_theta_proton_delta_p_proton_{}',
+    #    save_name='theta_proton_delta_p_proton_fit_{}.pdf'.format(args.output_prefix),
+    #    title='Proton Momentum Resolution (from $\\theta_e$)', xtitle='$\\theta_p$', ytitle='$\Delta P_{p}$',
+    #    max_errorbar = 0.8, y_fit_range=[-0.8, 0.8]
+    #) 
  
     plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
-        x_range=[0.3,2.5], y_range=[-0.8,0.8], x_bin_step=6, title_formatter='histos_p_proton_delta_p_proton_{}',
+        x_range=[1.35,2.50], y_range=[-0.8,0.8], x_bin_step=4, title_formatter='histos_p_proton_delta_p_proton_{}',
         save_name='p_proton_delta_p_proton_fit_{}.pdf'.format(args.output_prefix),
         title='Proton Momentum Resolution (from $\\theta_e$)', xtitle='$P_p$', ytitle='$\Delta P_{p}$',
-        max_errorbar = 0.8
+        max_errorbar = 0.8, y_fit_range=[-0.8, 0.8]
     ) 
-    """
+
     #plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
     #    x_range=[8,11], y_range=[-0.8,0.8], x_bin_step=6, title_formatter='histos_p_electron_delta_p_electron_{}',
     #    save_name='p_electron_delta_p_electron_fit_{}.pdf'.format(args.output_prefix),
@@ -265,10 +305,10 @@ if __name__ == '__main__':
     #) 
  
     plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
-        x_range=[44,55], y_range=[-5,5], x_bin_step=6, title_formatter='histos_theta_proton_delta_theta_proton_{}',
+        x_range=[40,53], y_range=[-5,5], x_bin_step=6, title_formatter='histos_theta_proton_delta_theta_proton_{}',
         save_name='theta_proton_delta_theta_proton_fit_{}.pdf'.format(args.output_prefix),
         title='Proton $\\theta$ Resolution (from $\\theta_e$)', xtitle='$\\theta_p$', ytitle='$\Delta \\theta_{p}$',
-        max_errorbar = 3
+        max_errorbar = 3, y_fit_range=[-3,3]
     ) 
 
     #plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
@@ -278,9 +318,56 @@ if __name__ == '__main__':
     #    max_errorbar = 3
     #) 
 
-    plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
-        x_range=[6.5,11.5], y_range=[-0.5,0.5], x_bin_step=6, title_formatter='histos_theta_ele_de_beam_{}',
-        save_name='theta_electron_de_beam_fit_{}.pdf'.format(args.output_prefix),
-        title='Beam Energy (from $\\theta_e$, $P_e$)', xtitle='$\\theta_e$', ytitle='$\Delta E_{beam}$',
-        max_errorbar = 3
-    ) 
+    #plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
+    #    x_range=[6.5,11.5], y_range=[-0.5,0.5], x_bin_step=6, title_formatter='histos_theta_ele_de_beam_{}',
+    #    save_name='theta_electron_de_beam_fit_{}.pdf'.format(args.output_prefix),
+    #    title='Beam Energy (from $\\theta_e$, $P_e$)', xtitle='$\\theta_e$', ytitle='$\Delta E_{beam}$',
+    #              max_errorbar = 3, y_fit_range=[-0.3,0.3]
+    #) 
+
+
+    gStyle.SetOptStat(0)
+    gStyle.SetOptTitle(0)
+    can = TCanvas('can', 'can', 1600, 1200)
+
+    plot_sector_page(can, histos['data'], histos['sim'],
+                     config1='Data', config2='Sim', title_formatter='histos_p_pro__{}',
+                     save_name='histos_p_proton_compare.pdf',
+                     xtitle='P_{p} (GeV/c)', title='P_{p}')
+
+    plot_sector_page(can, histos['data'], histos['sim'],
+                     config1='Data', config2='Sim', title_formatter='histos_p_ele__{}',
+                     save_name='histos_p_electron_compare.pdf',
+                     xtitle='P_{e} (GeV/c)', title='P_{e}')
+
+    plot_sector_page(can, histos['data'], histos['sim'],
+                     config1='Data', config2='Sim', title_formatter='histos_theta_electron__{}',
+                     save_name='histos_theta_electron_compare.pdf',
+                     xtitle='#theta_{e}', title='#theta_{e}')
+
+    plot_sector_page(can, histos['data'], histos['sim'],
+                     config1='Data', config2='Sim', title_formatter='histos_theta_proton__{}',
+                     save_name='histos_theta_proton_compare.pdf',
+                     xtitle='#theta_{p}', title='#theta_{p}')
+
+    plot_sector_page(can, histos['data'], histos['sim'],
+                     config1='Data', config2='Sim', title_formatter='histos_delta_p_proton_{}',
+                     save_name='histos_delta_p_proton_compare.pdf',
+                     xtitle='#Delta P_{p} (GeV/c)', title='#Delta P_{p}')
+
+    plot_sector_page(can, histos['data'], histos['sim'],
+                     config1='Data', config2='Sim', title_formatter='histos_delta_theta_proton_{}',
+                     save_name='histos_delta_theta_proton_compare.pdf',
+                     xtitle='#Delta #theta_{p} (deg)', title='#Delta #theta_{p}')
+
+    plot_sector_page(can, histos['data'], histos['sim'],
+                     config1='Data', config2='Sim', title_formatter='histos_angle_ep_pass_w_in_ctof_{}',
+                     save_name='histos_angle_ep_compare.pdf',
+                     xtitle='#phi_{ep} (deg)', title='#phi_{ep}', x_range=[172, 180])
+
+    plot_sector_page(can, histos['data'], histos['sim'],
+                     config1='Data', config2='Sim', title_formatter='histos_w_pass_angle_in_ctof_{}',
+                     save_name='histos_w_compare.pdf',
+                     xtitle='W (GeV/c^{2})', title='W', x_range=[0.6, 1.35])
+
+    
