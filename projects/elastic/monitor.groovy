@@ -85,7 +85,26 @@ rgk_kin_bounds = [
         angle_ep  : [125, 180]
 ]
 
-lim = new_kin_bounds
+tighter_kin_bounds = [
+        theta_ele : [5, 15],
+        theta_pro : [30, 70],
+        p_ele     : [7.8, 10.5],
+        p_pro     : [0.5, 3.5],
+        w         : [0.6, 1.7],
+        phi       : [-30, 330],
+        dp_ele    : [-0.6, 0.6],
+        dp_pro    : [-1.6, 1.6],
+        dtheta_ele: [-2, 2],
+        dtheta_pro: [-4, 4],
+        angle_ep  : [130, 180],
+        fracp_ele : [-0.1, 0.1],
+        fracp_pro : [-0.5, 0.5],
+        q2        : [1.2, 4.5],
+        vz        : [-20, 15],
+        de_beam    : [-2, 2]
+]
+
+lim = tighter_kin_bounds
 
 def limited_h1 = { title, nbins, lims ->
     new H1F("$title", "$title", nbins, lims[0], lims[1])
@@ -98,32 +117,43 @@ def limited_h2 = { title, nxbins, nybins, xlims, ylims ->
 histos = new ConcurrentHashMap()
 
 histoBuilders = [
-        w        : { title -> limited_h1(title, 400, lim.w) },
-        theta_res: { title -> limited_h1(title, 400, lim.dtheta_pro) },
-        p_res    : { title -> limited_h1(title, 400, lim.dp_ele) },
-        vz       : { title -> limited_h1(title, 400, lim.vz) },
-        de_beam  : { title -> limited_h1(title, 400, lim.de_beam) },
-        angle_ep : { title -> limited_h1(title, 400, lim.angle_ep) },
-        theta_p  : { title -> new H1F("$title", "$title", 400, 5, 85) }
+        w        : { title -> limited_h1(title, 200, lim.w) },
+        theta_res: { title -> limited_h1(title, 200, lim.dtheta_pro) },
+        p_res    : { title -> limited_h1(title, 200, lim.dp_ele) },
+        p_ele    : { title -> limited_h1(title, 200, lim.p_ele) },
+        p_pro    : { title -> limited_h1(title, 200, lim.p_pro) },
+        vz       : { title -> limited_h1(title, 200, lim.vz) },
+        de_beam  : { title -> limited_h1(title, 200, lim.de_beam) },
+        angle_ep : { title -> limited_h1(title, 200, lim.angle_ep) },
+        theta_p  : { title -> limited_h1(title, 200, lim.theta_pro) },
+        theta_ele: { title -> limited_h1(title, 200, lim.theta_ele) }
 ]
 
 histoBuilders2 = [
-        w_q2              : { title -> limited_h2(title, 200, 200, lim.w, lim.q2) },
-        phi_w             : { title -> limited_h2(title, 200, 200, lim.phi, lim.w) },
-        theta_ele_vz      : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.vz) },
+        de_beam_de_beam   : { title -> limited_h2(title, 200, 200, lim.de_beam, lim.de_beam) },
+        p_pro_dp         : { title -> limited_h2(title, 100, 100, lim.p_pro, lim.dp_pro) },
+        p_ele_dp         : { title -> limited_h2(title, 100, 100, lim.p_ele, lim.dp_ele) },
+        p_pro_dtheta     : { title -> limited_h2(title, 100, 100, lim.p_pro, lim.dtheta_pro) },
+        p_ele_dtheta     : { title -> limited_h2(title, 100, 100, lim.p_ele, lim.dtheta_ele) },
+        p_ele_fracp : { title -> limited_h2(title, 100, 100, lim.p_ele, lim.fracp_ele) },
+        p_pro_fracp : { title -> limited_h2(title, 100, 100, lim.p_pro, lim.fracp_pro) },
+        p_w_ele           : { title -> limited_h2(title, 200, 200, lim.p_ele, lim.w) },
         phi_vz            : { title -> limited_h2(title, 200, 200, lim.phi, lim.vz) },
+        phi_dp           : { title -> limited_h2(title, 100, 100, lim.phi, lim.dp_ele) },
+        phi_theta        : { title -> limited_h2(title, 100, 100, lim.phi, lim.theta_ele) },
+        phi_w             : { title -> limited_h2(title, 200, 200, lim.phi, lim.w) },
+        phi_theta_proton : { title -> limited_h2(title, 100, 100, lim.phi, lim.theta_pro) },
+        theta_ele_de_beam : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.de_beam) },
         theta_ele_dp      : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.dp_ele) },
         theta_ele_dtheta  : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.dtheta_pro) },
         theta_pro_dtheta  : { title -> limited_h2(title, 200, 200, lim.theta_pro, lim.dtheta_pro) },
         theta_pro_dp      : { title -> limited_h2(title, 200, 200, lim.theta_pro, lim.dp_ele) },
+        theta_ele_vz      : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.vz) },
         theta_pro_vz      : { title -> limited_h2(title, 200, 200, lim.theta_pro, lim.vz) },
-        phi_dp            : { title -> limited_h2(title, 200, 200, lim.phi, lim.dp_ele) },
-        phi_theta         : { title -> limited_h2(title, 200, 200, lim.phi, lim.theta_ele) },
-        p_pro_dp          : { title -> limited_h2(title, 200, 200, lim.p_pro, lim.dp_ele) },
-        theta_ele_de_beam : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.de_beam) },
-        de_beam_de_beam   : { title -> limited_h2(title, 200, 200, lim.de_beam, lim.de_beam) },
-        p_w_ele           : { title -> limited_h2(title, 200, 200, lim.p_ele, lim.w) },
         theta_w_ele       : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.w) },
+        theta_ele_dp     : { title -> limited_h2(title, 100, 100, lim.theta_ele, lim.dp_ele) },
+        theta_pro_dp     : { title -> limited_h2(title, 100, 100, lim.theta_pro, lim.dp_pro) },
+        w_q2              : { title -> limited_h2(title, 200, 200, lim.w, lim.q2) },
 ]
 
 
@@ -269,9 +299,6 @@ GParsPool.withPool 16, {
                 def sector = event.dc_sector[idx]
                 def phi = Math.toDegrees(ele.phi())
                 def sphi = shiftPhi(phi)
-                //def rphi = relativePhi(sphi, sector)
-                //def dw = PDGDatabase.getParticleMass(2212) - kin.w
-                //def (delta_theta, delta_e) = getElectronDeltas(beam, ele)
 
                 // Some histograms need to be filled with all electrons, even if there
                 // are no postive tracks in the central.
@@ -297,12 +324,15 @@ GParsPool.withPool 16, {
                     histos.computeIfAbsent('w_' + sector, histoBuilders.w).fill(pkin.w)
                     histos.computeIfAbsent('w', histoBuilders.w).fill(pkin.w)
                     histos.computeIfAbsent('angle_ep', histoBuilders.angle_ep).fill(pkin.angle)
+                    histos.computeIfAbsent('angle_ep_' + sector, histoBuilders.angle_ep).fill(pkin.angle)
 
 
 		    // For illustration of selection criteria
                     if (event.ctof_status.contains(it)) {
                         histos.computeIfAbsent('w_in_ctof', histoBuilders.w).fill(pkin.w)
                     }
+
+		    // Pass phi but no cut on W 
                     if (pkin.angle > cuts.angle[0] && event.ctof_status.contains(it)) {
                         histos.computeIfAbsent('w_pass_angle_in_ctof', histoBuilders.w).fill(pkin.w)
                         histos.computeIfAbsent('w_pass_angle_in_ctof_' + sector, histoBuilders.w).fill(pkin.w)
@@ -311,8 +341,11 @@ GParsPool.withPool 16, {
 			histos.computeIfAbsent('theta_w_ele_' + sector, histoBuilders2.theta_w_ele).fill(
 			    Math.toDegrees(ele.theta()), pkin.w)
                     }
+
+		    // Pass W but no cut on phi 
                     if (pkin.w > cuts.w[0] && pkin.w < cuts.w[1] && event.ctof_status.contains(it)) {
                         histos.computeIfAbsent('angle_ep_pass_w_in_ctof', histoBuilders.angle_ep).fill(pkin.angle)
+                        histos.computeIfAbsent('angle_ep_pass_w_in_ctof_' + sector, histoBuilders.angle_ep).fill(pkin.angle)
                     }
 
                     // Elastic protons in forward and central.
@@ -371,6 +404,10 @@ GParsPool.withPool 16, {
 			// We can go tight on protons 
 			if (pkin.w > cuts.w[0] && pkin.w < cuts.w[1]){
 
+			    histos.computeIfAbsent("theta_proton_" + "_" + sector, histoBuilders.theta_p).fill(Math.toDegrees(pro.theta()))
+			    histos.computeIfAbsent("theta_electron_" + "_" + sector, histoBuilders.theta_ele).fill(Math.toDegrees(ele.theta()))
+			    histos.computeIfAbsent("p_ele_" + "_" + sector, histoBuilders.p_ele).fill(ele.p())
+			    histos.computeIfAbsent("p_pro_" + "_" + sector, histoBuilders.p_pro).fill(pro.p())
                             histos.computeIfAbsent('delta_p_proton_' + sector, histoBuilders.p_res).fill(pro.p() - pred_pro_p)
 
                             histos.computeIfAbsent('delta_theta_proton_' + sector, histoBuilders.theta_res).fill(
