@@ -1,5 +1,5 @@
-B#!/bin/bash
-1;95;0c
+!/bin/bash
+
 source `dirname $0`/env.sh 
 
 CLARA_HOME=`dirname $0`/..
