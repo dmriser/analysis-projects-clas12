@@ -241,9 +241,10 @@ GParsPool.withPool 16, {
                 }?.each { pidx ->
                     def pro = new Particle(2212, event.mc_px[pidx], event.mc_py[pidx], event.mc_pz[pidx])
                     def pkin = getPKin(beam, target, ele, pro)
+		    
 		    fillBasicHistos(pkin, ele, pro, sector, 'gen')
-                    fillElectronResolutions(beam, ele, sector, 'gen')
-                    fillProtonResolutions(beam, ele, pro, sector, 'gen')
+		    fillElectronResolutions(beam, ele, sector, 'gen')
+		    fillProtonResolutions(beam, ele, pro, sector, 'gen')
 		    fillEventSelection(pkin, sector, 'gen', cuts)
                 }
             }
@@ -258,12 +259,6 @@ GParsPool.withPool 16, {
                 (0..<event.npart).findAll { event.pid[it] == 2212 }.each {
                     def pro = new Particle(2212, event.px[it], event.py[it], event.pz[it])
                     def pkin = getPKin(beam, target, ele, pro)
-
-		    // hack the phi dependence, that doesn't come out
-		    // correctly from elast_gen
-		    if (event.mc_npart > 0){
-			pkin.angle = 179.99
-		    }
 
                     // Passing event selection, in the central detector.
                     if (event.ctof_status.contains(it)){
