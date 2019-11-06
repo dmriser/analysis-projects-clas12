@@ -328,14 +328,14 @@ if __name__ == '__main__':
     add_text_page(can, lab, text='W Monitoring Plots', save_name=output_pdfname)
 
     plot_sector_page(can, histos, 'histos_w_inclusive_{}', lab, save_name=output_pdfname,
-                     title='Electron (Forward)', xtitle='W', y_fit_range=[0.85, 1.08])
+                     title='Electron (Forward)', xtitle='W', y_fit_range=[0.85, 1.05])
     
     plot_sector_page(can, histos, 'histos_w_{}', lab, save_name=output_pdfname,
                      title='Electron (Forward) and Proton (CTOF)', xtitle='W',
                      y_fit_range=[0.85, 1.08])
 
     plot_sector_page(can, histos, 'histos_w_pass_angle_in_ctof_{}', lab, save_name=output_pdfname,
-                     title='Electron and Proton w/ #phi_{ep} > 178', xtitle='W', y_fit_range=[0.85, 1.08])
+                     title='Electron and Proton w/ #phi_{ep} > 178', xtitle='W', y_fit_range=[0.85, 1.02])
  
     plot_sector_page(can, histos, 'histos_w_q2_inclusive_{}', lab, save_name=output_pdfname,
                      title='Electron (Forward)', xtitle='W', ytitle='Q^{2}', log=True)
@@ -447,14 +447,14 @@ if __name__ == '__main__':
     # single plots on landscape canvas 
     lcan = TCanvas('can', 'can', 1100, 800)
     plot_sector_page(lcan, histos, 'histos_w_inclusive_{}', lab, save_name='w_inclusive_{}.pdf'.format(args.output_prefix),
-                     title='Electron (Forward)', xtitle='W', y_fit_range=[0.85, 1.08], landscape=True, vline=0.938)
+                     title='Electron (Forward)', xtitle='W', y_fit_range=[0.85, 1.05], landscape=True, vline=0.938)
     
     plot_sector_page(lcan, histos, 'histos_w_{}', lab, save_name='w_ctof_proton_{}.pdf'.format(args.output_prefix),
                      title='Electron (Forward) and Proton (CTOF)', xtitle='W',
                      y_fit_range=[0.85, 1.08], landscape=True, vline=0.938)
 
     plot_sector_page(lcan, histos, 'histos_w_pass_angle_in_ctof_{}', lab, save_name='w_ctof_proton_pass_angle_{}.pdf'.format(args.output_prefix),
-                     title='Electron and Proton w/ #phi_{ep} > 178', xtitle='W', y_fit_range=[0.85, 1.08],
+                     title='Electron and Proton w/ #phi_{ep} > 178', xtitle='W', y_fit_range=[0.85, 1.02],
                      landscape=True, vline=0.938)
 
     plot_sector_page(lcan, histos, 'histos_angle_ep_pass_w_in_ctof_{}', lab, save_name='angle_ep_pass_w_{}.pdf'.format(args.output_prefix),
@@ -467,6 +467,16 @@ if __name__ == '__main__':
                      landscape=True)
 
     plot_sector_page(lcan, histos, 'histos_theta_electron_delta_theta_electron_{}', lab,
-                     save_name='theta_proton_delta_theta_proton_{}.pdf'.format(args.output_prefix),
-                     title='#Delta #theta_{e} vs #theta_{e} from #P_{e}', xtitle='#theta_{e}', ytitle='#Delta #theta_{e}', log=False,
+                     save_name='theta_electron_delta_theta_electron_{}.pdf'.format(args.output_prefix),
+                     title='#Delta #theta_{e} vs #theta_{e} from P_{e}', xtitle='#theta_{e}', ytitle='#Delta #theta_{e}', log=False,
+                     landscape=True)
+
+    plot_sector_page(lcan, histos, 'histos_p_proton_delta_p_proton_{}', lab,
+                     save_name='p_proton_delta_p_proton_{}.pdf'.format(args.output_prefix),
+                     title='#Delta P_{p} vs P_{p} from #theta_{e}', xtitle='P_{p}', ytitle='#Delta P_{p}', log=False,
+                     landscape=True)
+
+    plot_sector_page(lcan, histos, 'histos_p_electron_delta_p_electron_{}', lab,
+                     save_name='p_electron_delta_p_electron_{}.pdf'.format(args.output_prefix),
+                     title='#Delta P_{e} vs P_{e} from #theta_{e}', xtitle='P_{e}', ytitle='#Delta P_{e}', log=False,
                      landscape=True)
