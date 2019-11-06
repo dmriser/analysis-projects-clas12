@@ -96,12 +96,12 @@ tighter_kin_bounds = [
         dp_pro    : [-1.6, 1.6],
         dtheta_ele: [-2, 2],
         dtheta_pro: [-4, 4],
-        angle_ep  : [130, 180],
+        angle_ep  : [160, 180],
         fracp_ele : [-0.1, 0.1],
         fracp_pro : [-0.5, 0.5],
         q2        : [1.2, 4.5],
         vz        : [-20, 15],
-        de_beam    : [-2, 2]
+        de_beam   : [-2, 2]
 ]
 
 lim = tighter_kin_bounds
@@ -145,7 +145,7 @@ histoBuilders2 = [
         phi_theta_proton : { title -> limited_h2(title, 100, 100, lim.phi, lim.theta_pro) },
         theta_ele_de_beam : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.de_beam) },
         theta_ele_dp      : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.dp_ele) },
-        theta_ele_dtheta  : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.dtheta_pro) },
+        theta_ele_dtheta  : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.dtheta_ele) },
         theta_pro_dtheta  : { title -> limited_h2(title, 200, 200, lim.theta_pro, lim.dtheta_pro) },
         theta_pro_dp      : { title -> limited_h2(title, 200, 200, lim.theta_pro, lim.dp_ele) },
         theta_ele_vz      : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.vz) },
@@ -187,6 +187,11 @@ def angleBetween(v1, v2) {
 
 def getDeltaVertex(event, i, j) {
     return Math.sqrt((event.vx[j] - event.vx[i])**2 + (event.vy[j] - event.vy[i])**2 + (event.vz[j] - event.vz[i])**2)
+}
+
+def getElectronPredThetaFromMomentum(beam, mom) {
+    def pred_theta = Math.acos(1 - PDGDatabase.getParticleMass(2212) * ((beam.e() - mom) / (beam.e() * mom)))
+    return pred_theta
 }
 
 def getKin(beam, target, electron) {
@@ -300,6 +305,8 @@ GParsPool.withPool 16, {
                 def phi = Math.toDegrees(ele.phi())
                 def sphi = shiftPhi(phi)
 
+
+
                 // Some histograms need to be filled with all electrons, even if there
                 // are no postive tracks in the central.
                 histos.computeIfAbsent('w_inclusive_' + sector, histoBuilders.w).fill(kin.w)
@@ -308,6 +315,7 @@ GParsPool.withPool 16, {
                 // Believe the electron angular measurement and infer the rest of the
                 // event kinematics based on the assumption that it's an elastic scattering.
                 def (pred_ele_p, pred_pro_theta, pred_pro_p) = predictElasticBasedOnElectronAngle(beam, ele.theta())
+		def pred_ele_theta = getElectronPredThetaFromMomentum(beam, ele.p())
 
                 (0..<event.npart).findAll { event.pid[it] == 2212 }.each {
                     def pro = new Particle(2212, event.px[it], event.py[it], event.pz[it])
@@ -378,18 +386,28 @@ GParsPool.withPool 16, {
                                 beam.e() - pred_e_beam_from_angles)
 
                         // Two dimensional
+			histos.computeIfAbsent('p_electron_delta_p_electron_' + sector, histoBuilders2.p_ele_dp).fill(
+			    ele.p(), ele.p() - pred_ele_p
+			)
+
                         histos.computeIfAbsent('phi_electron_theta_electron', histoBuilders2.phi_theta).fill(
                                 sphi, Math.toDegrees(ele.theta()))
+
                         histos.computeIfAbsent('phi_electron_delta_p_electron', histoBuilders2.phi_dp).fill(
                                 sphi, ele.p() - pred_ele_p)
+
                         histos.computeIfAbsent('phi_electron_delta_vz', histoBuilders2.phi_vz).fill(sphi, event.vz[idx] - event.vz[it])
+
                         histos.computeIfAbsent('theta_electron_vz_electron_' + sector, histoBuilders2.theta_ele_vz).fill(
                                 Math.toDegrees(ele.theta()), event.vz[idx])
+
                         histos.computeIfAbsent('theta_electron_delta_p_electron_' + sector,
                                 histoBuilders2.theta_ele_dp).fill(Math.toDegrees(ele.theta()), ele.p() - pred_ele_p)
-                        histos.computeIfAbsent('theta_electron_delta_theta_proton_' + sector,
-                                histoBuilders2.theta_ele_dtheta).fill(
-                                Math.toDegrees(ele.theta()), Math.toDegrees(pro.theta() - pred_pro_theta))
+
+                        histos.computeIfAbsent('theta_electron_delta_theta_electron_' + sector,
+                                histoBuilders2.theta_ele_dtheta).fill( 
+                                Math.toDegrees(ele.theta()), Math.toDegrees(ele.theta() - pred_ele_theta))
+
                         histos.computeIfAbsent('phi_electron_vz_electron', histoBuilders2.phi_vz).fill(
                                 sphi, event.vz[idx])
                         histos.computeIfAbsent('phi_electron_vz_proton', histoBuilders2.phi_vz).fill(
