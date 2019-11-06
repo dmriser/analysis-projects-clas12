@@ -27,10 +27,12 @@ def load_histos(file):
 def setup_global_options():
     gStyle.SetOptTitle(0)
     gStyle.SetOptStat(0)
-
+    gStyle.SetPalette(55)
+    
 def plot_sector_page(canvas, histos, title_formatter, label, save_name,
                      xtitle=None, ytitle=None, title=None, log=False,
-                     y_fit_range=None, landscape=False, x_range=None, vline=None):
+                     y_fit_range=None, landscape=False, x_range=None, vline=None,
+                     hline=None):
 
     root_garbage_can = []
     
@@ -71,6 +73,15 @@ def plot_sector_page(canvas, histos, title_formatter, label, save_name,
 
         if vline:
             line = TLine(vline, 0, vline, histos.get(title_formatter.format(i), default_histo).GetMaximum())
+            line.SetLineColor(1)
+            line.SetLineStyle(1)
+            line.Draw('same')
+            root_garbage_can.append(line)
+
+        if hline:
+            xmin = histos.get(title_formatter.format(i)).GetXaxis().GetXmin()
+            xmax = histos.get(title_formatter.format(i)).GetXaxis().GetXmax() 
+            line = TLine(xmin, hline, xmax, hline)
             line.SetLineColor(1)
             line.SetLineStyle(1)
             line.Draw('same')
@@ -464,19 +475,27 @@ if __name__ == '__main__':
     plot_sector_page(lcan, histos, 'histos_theta_proton_delta_theta_proton_{}', lab,
                      save_name='theta_proton_delta_theta_proton_{}.pdf'.format(args.output_prefix),
                      title='#Delta #theta_{p} vs #theta_{p} from #theta_{e}', xtitle='#theta_{p}', ytitle='#Delta #theta_{p}', log=False,
-                     landscape=True)
+                     landscape=True, hline=0.0001)
 
     plot_sector_page(lcan, histos, 'histos_theta_electron_delta_theta_electron_{}', lab,
                      save_name='theta_electron_delta_theta_electron_{}.pdf'.format(args.output_prefix),
                      title='#Delta #theta_{e} vs #theta_{e} from P_{e}', xtitle='#theta_{e}', ytitle='#Delta #theta_{e}', log=False,
-                     landscape=True)
+                     landscape=True, hline=0.0001)
 
     plot_sector_page(lcan, histos, 'histos_p_proton_delta_p_proton_{}', lab,
                      save_name='p_proton_delta_p_proton_{}.pdf'.format(args.output_prefix),
                      title='#Delta P_{p} vs P_{p} from #theta_{e}', xtitle='P_{p}', ytitle='#Delta P_{p}', log=False,
-                     landscape=True)
-
+                     landscape=True, hline=0.00001)
+ 
     plot_sector_page(lcan, histos, 'histos_p_electron_delta_p_electron_{}', lab,
                      save_name='p_electron_delta_p_electron_{}.pdf'.format(args.output_prefix),
                      title='#Delta P_{e} vs P_{e} from #theta_{e}', xtitle='P_{e}', ytitle='#Delta P_{e}', log=False,
-                     landscape=True)
+                     landscape=True, hline=0.00001)
+
+    plot_sector_page(lcan, histos, 'histos_p_w_ele_{}', lab, save_name='p_w_electron_{}.pdf'.format(args.output_prefix), 
+                     title='W vs. P_{e}', ytitle='W',
+                     xtitle='P_{e}', log=True, landscape=True, hline=0.938)
+
+    plot_sector_page(lcan, histos, 'histos_theta_w_ele_{}', lab, save_name='theta_w_electron_{}.pdf'.format(args.output_prefix), 
+                     title='W vs. #theta_{e}', ytitle='W',
+                     xtitle='#theta_{e}', log=True, landscape=True, hline=0.938)
