@@ -10,12 +10,18 @@ import org.jlab.groot.data.H1F
 import org.jlab.groot.data.H2F
 import org.jlab.io.hipo.HipoDataSource
 
+// Additional class members to make the object
+// more useful for CLAS12 analysis.
+Particle.metaClass.pindex = null
+Particle.metaClass.sphi = null
+Particle.metaClass.sector = null
 
 def beam = new Particle(11, 0.0, 0.0, 10.646)
 def target = new Particle(2212, 0.0, 0.0, 0.0)
 
 cuts = [
-        w    : [0.8, 1.15],
+        w: [0.8, 1.15],
+        w_loose: [0.8, 1.30],
         angle: [178, 180]
 ]
 
@@ -182,23 +188,8 @@ def getPKin(beam, target, electron, proton) {
     def pnorm = proton.vector().vect().cross(zaxis)
     def phi = enorm.theta(pnorm)
 
-    def missing_ele = new Particle(beam)
-    missing_ele.combine(target, 1)
-    missing_ele.combine(proton, -1)
-
-    def missing_pro = new Particle(beam)
-    missing_pro.combine(target, 1)
-    missing_pro.combine(electron, -1)
-
-    def dtheta_ele = Math.toDegrees(electron.theta() - missing_ele.theta())
-    def dp_ele = electron.p() - missing_ele.p()
-    def dtheta_pro = Math.toDegrees(proton.theta() - missing_pro.theta())
-    def dp_pro = proton.p() - missing_pro.p()
-
-    return [x           : x, y: y, w: w, nu: nu, q2: q2, angle: phi,
-            missing_mass: missing_mass, missing_energy: missing.e(),
-            dtheta_ele  : dtheta_ele, dtheta_pro: dtheta_pro,
-            dp_ele      : dp_ele, dp_pro: dp_pro]
+    return [x: x, y: y, w: w, nu: nu, q2: q2, angle: phi,
+            missing_mass: missing_mass, missing_energy: missing.e()]
 }
 
 def predictElectronThetaFromMomentum(beam, mom) {
@@ -240,82 +231,82 @@ def fillInclusiveHistograms(histos, kin, sector){
     histos.computeIfAbsent('w_q2_inclusive_' + sector, histoBuilders2.w_q2).fill(kin.w, kin.q2)
 }
 
-def fillProtonResolutions(histos, event, sector, ele, pro, idx, it, pred_pro_theta, pred_pro_p, sphi_pro){
+def fillProtonResolutions(histos, event, ele, pro, pred_pro_theta, pred_pro_p){
 
-    histos.computeIfAbsent("theta_proton_" + "_" + sector, histoBuilders.theta_p).fill(Math.toDegrees(pro.theta()))
-    histos.computeIfAbsent("theta_electron_" + "_" + sector, histoBuilders.theta_ele).fill(Math.toDegrees(ele.theta()))
-    histos.computeIfAbsent("p_ele_" + "_" + sector, histoBuilders.p_ele).fill(ele.p())
-    histos.computeIfAbsent("p_pro_" + "_" + sector, histoBuilders.p_pro).fill(pro.p())
-    histos.computeIfAbsent('delta_p_proton_' + sector, histoBuilders.p_res).fill(pro.p() - pred_pro_p)
+    histos.computeIfAbsent("theta_proton_" + "_" + ele.sector, histoBuilders.theta_p).fill(Math.toDegrees(pro.theta()))
+    histos.computeIfAbsent("theta_electron_" + "_" + ele.sector, histoBuilders.theta_ele).fill(Math.toDegrees(ele.theta()))
+    histos.computeIfAbsent("p_ele_" + "_" + ele.sector, histoBuilders.p_ele).fill(ele.p())
+    histos.computeIfAbsent("p_pro_" + "_" + ele.sector, histoBuilders.p_pro).fill(pro.p())
+    histos.computeIfAbsent('delta_p_proton_' + ele.sector, histoBuilders.p_res).fill(pro.p() - pred_pro_p)
 
-    histos.computeIfAbsent('delta_theta_proton_' + sector, histoBuilders.theta_res).fill(
+    histos.computeIfAbsent('delta_theta_proton_' + ele.sector, histoBuilders.theta_res).fill(
             Math.toDegrees(pro.theta() - pred_pro_theta))
 
     histos.computeIfAbsent('phi_proton_vz_proton', histoBuilders2.phi_vz).fill(
-            sphi_pro, event.vz[it])
+            pro.sphi, event.vz[pro.pindex])
 
     histos.computeIfAbsent('phi_proton_delta_vz', histoBuilders2.phi_vz).fill(
-            sphi_pro, event.vz[idx] - event.vz[it])
+            pro.sphi, event.vz[ele.pindex] - event.vz[pro.pindex])
 
-    histos.computeIfAbsent('vz_electron_' + sector, histoBuilders.vz).fill(event.vz[idx])
-    histos.computeIfAbsent('vz_proton_' + sector, histoBuilders.vz).fill(event.vz[it])
-    histos.computeIfAbsent('delta_vz_' + sector, histoBuilders.vz).fill(event.vz[idx] - event.vz[it])
+    histos.computeIfAbsent('vz_electron_' + ele.sector, histoBuilders.vz).fill(event.vz[ele.pindex])
+    histos.computeIfAbsent('vz_proton_' + ele.sector, histoBuilders.vz).fill(event.vz[pro.pindex])
+    histos.computeIfAbsent('delta_vz_' + ele.sector, histoBuilders.vz).fill(event.vz[ele.pindex] - event.vz[pro.pindex])
 
-    histos.computeIfAbsent('theta_proton_delta_p_proton_' + sector,
+    histos.computeIfAbsent('theta_proton_delta_p_proton_' + ele.sector,
             histoBuilders2.theta_pro_dp).fill(Math.toDegrees(pro.theta()), pro.p() - pred_pro_p)
 
-    histos.computeIfAbsent('theta_proton_delta_theta_proton_' + sector,
+    histos.computeIfAbsent('theta_proton_delta_theta_proton_' + ele.sector,
             histoBuilders2.theta_pro_dtheta).fill(
             Math.toDegrees(pro.theta()), Math.toDegrees(pro.theta() - pred_pro_theta))
-    histos.computeIfAbsent('theta_proton_vz_proton_' + sector, histoBuilders2.theta_pro_vz).fill(
-            Math.toDegrees(pro.theta()), event.vz[it])
-    histos.computeIfAbsent('p_proton_delta_p_proton_' + sector, histoBuilders2.p_pro_dp).fill(
-            event.p[it], event.p[it] - pred_pro_p)
+    histos.computeIfAbsent('theta_proton_vz_proton_' + ele.sector, histoBuilders2.theta_pro_vz).fill(
+            Math.toDegrees(pro.theta()), event.vz[pro.pindex])
+    histos.computeIfAbsent('p_proton_delta_p_proton_' + ele.sector, histoBuilders2.p_pro_dp).fill(
+            event.p[pro.pindex], event.p[pro.pindex] - pred_pro_p)
 
 }
 
-def fillElectronResolutions(histos, event, sector, beam, ele, pro, idx, it,
-                            pred_e_beam, pred_e_beam_from_angles, pred_ele_p, pred_ele_theta,
-                            sphi, sphi_pro){
+def fillElectronResolutions(histos, event, beam, ele, pro, pred_e_beam,
+                            pred_e_beam_from_angles, pred_ele_p, pred_ele_theta){
 
     // One dimensional
-    histos.computeIfAbsent('delta_p_electron_' + sector, histoBuilders.p_res).fill(ele.p() - pred_ele_p)
-    histos.computeIfAbsent('de_beam_' + sector, histoBuilders.de_beam).fill(beam.e() - pred_e_beam)
-    histos.computeIfAbsent('de_beam_from_angles' + sector, histoBuilders.de_beam).fill(
+    histos.computeIfAbsent('delta_p_electron_' + ele.sector, histoBuilders.p_res).fill(ele.p() - pred_ele_p)
+    histos.computeIfAbsent('de_beam_' + ele.sector, histoBuilders.de_beam).fill(beam.e() - pred_e_beam)
+    histos.computeIfAbsent('de_beam_from_angles' + ele.sector, histoBuilders.de_beam).fill(
             beam.e() - pred_e_beam_from_angles)
 
     // Two dimensional
-    histos.computeIfAbsent('p_electron_delta_p_electron_' + sector, histoBuilders2.p_ele_dp).fill(
+    histos.computeIfAbsent('p_electron_delta_p_electron_' + ele.sector, histoBuilders2.p_ele_dp).fill(
             ele.p(), ele.p() - pred_ele_p
     )
 
     histos.computeIfAbsent('phi_electron_theta_electron', histoBuilders2.phi_theta).fill(
-            sphi, Math.toDegrees(ele.theta()))
+            ele.sphi, Math.toDegrees(ele.theta()))
 
     histos.computeIfAbsent('phi_electron_delta_p_electron', histoBuilders2.phi_dp).fill(
-            sphi, ele.p() - pred_ele_p)
+            ele.sphi, ele.p() - pred_ele_p)
 
-    histos.computeIfAbsent('phi_electron_delta_vz', histoBuilders2.phi_vz).fill(sphi, event.vz[idx] - event.vz[it])
+    histos.computeIfAbsent('phi_electron_delta_vz', histoBuilders2.phi_vz).fill(
+            ele.sphi, event.vz[ele.pindex] - event.vz[pro.pindex])
 
-    histos.computeIfAbsent('theta_electron_vz_electron_' + sector, histoBuilders2.theta_ele_vz).fill(
-            Math.toDegrees(ele.theta()), event.vz[idx])
+    histos.computeIfAbsent('theta_electron_vz_electron_' + ele.sector, histoBuilders2.theta_ele_vz).fill(
+            Math.toDegrees(ele.theta()), event.vz[ele.pindex])
 
-    histos.computeIfAbsent('theta_electron_delta_p_electron_' + sector,
+    histos.computeIfAbsent('theta_electron_delta_p_electron_' + ele.sector,
             histoBuilders2.theta_ele_dp).fill(Math.toDegrees(ele.theta()), ele.p() - pred_ele_p)
 
-    histos.computeIfAbsent('theta_electron_delta_theta_electron_' + sector,
+    histos.computeIfAbsent('theta_electron_delta_theta_electron_' + ele.sector,
             histoBuilders2.theta_ele_dtheta).fill(
             Math.toDegrees(ele.theta()), Math.toDegrees(ele.theta() - pred_ele_theta))
 
     histos.computeIfAbsent('phi_electron_vz_electron', histoBuilders2.phi_vz).fill(
-            sphi, event.vz[idx])
+            ele.sphi, event.vz[ele.pindex])
     histos.computeIfAbsent('phi_electron_vz_proton', histoBuilders2.phi_vz).fill(
-            sphi, event.vz[it])
-    histos.computeIfAbsent('theta_ele_de_beam_' + sector, histoBuilders2.theta_ele_de_beam).fill(
+            ele.sphi, event.vz[pro.pindex])
+    histos.computeIfAbsent('theta_ele_de_beam_' + ele.sector, histoBuilders2.theta_ele_de_beam).fill(
             Math.toDegrees(ele.theta()), beam.e() - pred_e_beam)
-    histos.computeIfAbsent('theta_ele_de_beam_from_angles_' + sector, histoBuilders2.theta_ele_de_beam).fill(
+    histos.computeIfAbsent('theta_ele_de_beam_from_angles_' + ele.sector, histoBuilders2.theta_ele_de_beam).fill(
             Math.toDegrees(ele.theta()), beam.e() - pred_e_beam_from_angles)
-    histos.computeIfAbsent('de_beam_de_beam_from_angles' + sector, histoBuilders2.de_beam_de_beam).fill(
+    histos.computeIfAbsent('de_beam_de_beam_from_angles' + ele.sector, histoBuilders2.de_beam_de_beam).fill(
             beam.e() - pred_e_beam, beam.e() - pred_e_beam_from_angles)
 
 }
@@ -338,11 +329,12 @@ GParsPool.withPool 16, {
             (0..<event.npart).find {
                 event.pid[it] == 11 && event.status[it] < 0
             }?.each { idx ->
-                def ele = new Particle(11, event.px[idx], event.py[idx], event.pz[idx])
-                def kin = getKin(beam, target, ele)
                 def sector = event.dc_sector[idx]
-                def phi = Math.toDegrees(ele.phi())
-                def sphi = shiftPhi(phi)
+                def ele = new Particle(11, event.px[idx], event.py[idx], event.pz[idx])
+                ele.sector = sector
+                ele.pindex = idx
+                ele.sphi = shiftPhi(Math.toDegrees(ele.phi()))
+                def kin = getKin(beam, target, ele)
 
                 fillInclusiveHistograms(histos, kin, sector)
 
@@ -352,9 +344,9 @@ GParsPool.withPool 16, {
 
                 (0..<event.npart).findAll { event.pid[it] == 2212 }.each {
                     def pro = new Particle(2212, event.px[it], event.py[it], event.pz[it])
+                    pro.pindex = it
+                    pro.sphi = shiftPhi(Math.toDegrees(pro.phi()))
                     def pkin = getPKin(beam, target, ele, pro)
-                    def phi_pro = Math.toDegrees(pro.phi())
-                    def sphi_pro = shiftPhi(phi_pro)
 
                     def (pred_e_beam, pred_e_beam_from_angles) = predictBeamEnergy(ele, pro)
 
@@ -402,19 +394,16 @@ GParsPool.withPool 16, {
                     }
 
                     histos.computeIfAbsent('w_q2_' + sector, histoBuilders2.w_q2).fill(pkin.w, pkin.q2)
-                    histos.computeIfAbsent('phi_electron_w', histoBuilders2.phi_w).fill(sphi, pkin.w)
+                    histos.computeIfAbsent('phi_electron_w', histoBuilders2.phi_w).fill(ele.sphi, pkin.w)
 
-                    if (pkin.angle > cuts.angle[0] && pkin.w < 1.3 && event.ctof_status.contains(it)) {
-                        fillElectronResolutions(histos, event, sector, beam, ele, pro, idx, it,
-                                pred_e_beam, pred_e_beam_from_angles, pred_ele_p, pred_ele_theta,
-                                sphi, sphi_pro)
+                    if (pkin.angle > cuts.angle[0] && pkin.w < cuts.w_loose[1] && event.ctof_status.contains(it)) {
+                        fillElectronResolutions(histos, event, beam, ele, pro, pred_e_beam,
+                                pred_e_beam_from_angles, pred_ele_p, pred_ele_theta)
 
                         // We can go tight on protons
                         if (pkin.w > cuts.w[0] && pkin.w < cuts.w[1]) {
-                            fillProtonResolutions(histos, event, sector, ele, pro,
-                                    idx, it, pred_pro_theta, pred_pro_p, sphi_pro)
+                            fillProtonResolutions(histos, event, ele, pro, pred_pro_theta, pred_pro_p)
                         }
-
                     }
                 }
             }
