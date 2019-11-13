@@ -21,8 +21,28 @@ def target = new Particle(2212, 0.0, 0.0, 0.0)
 
 histos = new ConcurrentHashMap()
 histoBuilders = [
-        p_beta: { title -> new H2F(title, title, 200, 0, 11, 200, 0, 1.3)}
+    p_beta: { title -> new H2F(title, title, 200, 0, 11, 200, 0, 1.3)},
+    beta_avg: { title -> new H1F(title, title, 200, 0, 1.3) },
+    beta_std: { title -> new H1F(title, title, 200, 0, 1.3) }
 ]
+
+def collectPositives(event){
+    return (0 ..< event.npart).findResults{ 
+	(event.charge[it] > 0) ? [
+	    index:it, 
+	    beta:event.beta[it], 
+	    p:event.p[it] 
+	] : null
+    }
+}
+
+def calcBeta(path, time){
+    return (path / time / 29.999)
+}
+
+def findBestShift(event, pos, minshift, maxshift){
+    return 0.0
+}
 
 GParsPool.withPool 16, {
     args.eachParallel { filename ->
@@ -31,7 +51,7 @@ GParsPool.withPool 16, {
         reader.open(filename)
 
         def eventIndex = 0
-        while (reader.hasEvent()) {
+        while (reader.hasEvent() && eventIndex < 250000) {
             if (eventIndex % 5000 == 0) {
                 println("Processing " + eventIndex)
             }
@@ -42,14 +62,16 @@ GParsPool.withPool 16, {
             (0..<event.npart).find {
                 event.pid[it] == 11 && event.status[it] < 0
             }?.each { idx ->
-                (0 ..< event.npart).findResults{ i ->
-                    return (i != idx && event.charge[i] > 0 && event.tof_status.contains(i)) ? i : null
-                }.each{ i ->
-                    histos.computeIfAbsent('p_beta_positive', histoBuilders.p_beta).fill(
-                            event.p[i], event.beta[i]
-                    )
-                }
-            }
+		
+		def pos = collectPositives(event)
+                pos.each{ i -> 
+		    histos.computeIfAbsent('p_beta_positive', histoBuilders.p_beta).fill(
+			event.p[i], event.beta[i])
+		}
+		
+		def shift = findBestShift(event, pos, -10, 10)
+
+	    }
 
             eventIndex++
         }
