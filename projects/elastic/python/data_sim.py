@@ -128,13 +128,19 @@ def plot_fits_mpl(histos1, histos2, config1, config2,
         # Get histogram slices for plotting. 
         tit = title_formatter.format(i)
         print('Fitting: ', tit)
-        x1, mu1, sig1, slices1, fits1 = fit_slices(histos1.get(tit, default_histo2d), x_range, x_bin_step, y_fit_range)
-        x2, mu2, sig2, slices2, fits2 = fit_slices(histos2.get(tit, default_histo2d), x_range, x_bin_step, y_fit_range)
+
+        # Somebody wants that we should get the histograms ourselves
+        if isinstance(histos1, dict) and isinstance(histos2, dict):
+            x1, mu1, sig1, slices1, fits1 = fit_slices(histos1.get(tit, default_histo2d), x_range, x_bin_step, y_fit_range)
+            x2, mu2, sig2, slices2, fits2 = fit_slices(histos2.get(tit, default_histo2d), x_range, x_bin_step, y_fit_range)
+            
+        # Somebody passed actual histograms, should be six of them 
+        elif isinstance(histos1, list) and isinstance(histos2, list):
+            x1, mu1, sig1, slices1, fits1 = fit_slices(histos1[i-1], x_range, x_bin_step, y_fit_range)
+            x2, mu2, sig2, slices2, fits2 = fit_slices(histos2[i-1], x_range, x_bin_step, y_fit_range)
+
         x1, mu1, sig1 = remove_bad_points(x1, mu1, sig1, max_errorbar)
         x2, mu2, sig2 = remove_bad_points(x2, mu2, sig2, max_errorbar)
-        
-        # Experimental
-        #plot_slices(slices1, fits1, tit + '_data_slices.pdf')
         
         label1 = 'Sector {} ({})'.format(i, config1)
         label2 = 'Sector {} ({})'.format(i, config2)
@@ -183,8 +189,12 @@ def output_slice_pdf(histos, title_formatter, sub_title, x_range, x_bin_step, y_
     slice_can.Print(slice_pdfname + '[')
     for i in range(1,7):
         title = title_formatter.format(i)
-        x, mu, sig, slices, fits = fit_slices(histos.get(title, default_histo2d), x_range, x_bin_step, y_fit_range)
 
+        if isinstance(histos, dict):
+            x, mu, sig, slices, fits = fit_slices(histos.get(title, default_histo2d), x_range, x_bin_step, y_fit_range)
+        elif isinstance(histos, list):
+            x, mu, sig, slices, fits = fit_slices(histos[i-1], x_range, x_bin_step, y_fit_range)
+            
         nrows = 5
         ncols = int(np.ceil(len(slices) / nrows) + 1)
         slice_can.Clear()
@@ -202,6 +212,41 @@ def remove_bad_points(x, mu, sig, max_errorbar):
     condition = np.logical_and(mu != 0, sig < max_errorbar)
     idx = np.where(condition)[0]
     return x[idx], mu[idx], sig[idx]
+
+def plot_sector_page_single(canvas, histos, title_formatter, save_name, xtitle=None,
+                            ytitle=None, title=None, x_range=None, log=False):
+    """ Plot one histogram for each sector. """
+    
+    label = TLatex()
+    label.SetNDC()
+    label.SetTextSize(0.045)
+    
+    canvas.Clear()
+    canvas.Divide(3,2)
+
+    for i in range(1,7):
+        canvas.cd(i)
+
+        if x_range:
+            histos.get(title_formatter.format(i), default_histo2d).GetXaxis().SetRangeUser(x_range[0], x_range[1])
+
+        histos.get(title_formatter.format(i), default_histo2d).Draw('colz')
+        if log:
+            gPad.SetLogz()
+        
+        if title:
+            label.DrawLatex(0.1, 0.925, title)
+
+        if xtitle:
+            label.DrawLatex(0.45, 0.015, xtitle)
+
+        if ytitle:
+            label.SetTextAngle(90)
+            label.DrawLatex(0.0325, 0.65, ytitle)
+            label.SetTextAngle(0)
+
+    canvas.Print(save_name)
+    
 
 def plot_sector_page(canvas, histos1, histos2, config1, config2, title_formatter,
                      save_name, xtitle=None, ytitle=None, title=None, x_range=None):
@@ -276,21 +321,6 @@ if __name__ == '__main__':
     histos = {}
     for config_type, file in files.items():
         histos[config_type] = load_histos(file)
-    
-    # Plot fits to the resolutions
-    #plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
-    #    x_range=[7,10.5], y_range=[-0.8,0.8], x_bin_step=3, title_formatter='histos_theta_electron_delta_p_electron_{}',
-    #    save_name='theta_electron_delta_p_electron_fit_{}.pdf'.format(args.output_prefix),
-    #    title='Electron Momentum Resolution (from $\\theta_e$)', xtitle='$\\theta_e$', ytitle='$\Delta P_{e}$',
-    #    max_errorbar = 0.4, y_fit_range=[-0.5, 0.5]
-    #) 
-
-    #plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
-    #    x_range=[40,53], y_range=[-0.8,0.8], x_bin_step=4, title_formatter='histos_theta_proton_delta_p_proton_{}',
-    #    save_name='theta_proton_delta_p_proton_fit_{}.pdf'.format(args.output_prefix),
-    #    title='Proton Momentum Resolution (from $\\theta_e$)', xtitle='$\\theta_p$', ytitle='$\Delta P_{p}$',
-    #    max_errorbar = 0.8, y_fit_range=[-0.8, 0.8]
-    #) 
  
     plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
                   x_range=[1.35,2.50], y_range=[-0.8,0.8], x_bin_step=4, title_formatter='histos_p_proton_delta_p_proton_{}',
@@ -332,6 +362,16 @@ if __name__ == '__main__':
                   save_name='theta_w_ele_fit_{}.pdf'.format(args.output_prefix),
                   title='W Resolution (from $\\theta_e$)', xtitle='$\\theta_{e}$', ytitle='$W$',
                   max_errorbar = 3, y_fit_range=[0.8, 1.1], hline=0.938
+    ) 
+
+    # Do the same thing but this time we're directly passing histos
+    histos1 = [histos['sim']['histos_p_electron_dp_electron_simulation_{}'.format(h)] for h in range(1,7)]
+    histos2 = [histos['sim']['histos_p_electron_delta_p_electron_{}'.format(h)] for h in range(1,7)]
+    plot_fits_mpl(histos1=histos1, histos2=histos2, config1='Sim (using gen)', config2='Sim (using rec only)',
+                  x_range=[8.5,10.2], y_range=[-0.8,0.8], x_bin_step=6, title_formatter='doesnt_matter',
+                  save_name='p_ele_dp_sim_{}.pdf'.format(args.output_prefix),
+                  title='Momentum Resolution', xtitle='$p_e$', ytitle='$\Delta p_e$',
+                  max_errorbar = 3, y_fit_range=[-0.2, 0.2], hline=0.0001
     ) 
     
     gStyle.SetOptStat(0)
@@ -378,4 +418,18 @@ if __name__ == '__main__':
                      save_name='histos_w_compare.pdf',
                      xtitle='W (GeV/c^{2})', title='W', x_range=[0.6, 1.35])
 
-    
+    plot_sector_page_single(can, histos['sim'], title_formatter='histos_p_electron_dp_electron_simulation_{}',
+                            save_name='p_electron_dp_electron_simulation.pdf', xtitle='p_{e} (gen)',
+                            title='#Delta p_{e} vs p_{e}', ytitle='#Delta p_{e}')
+
+    plot_sector_page_single(can, histos['sim'], title_formatter='histos_theta_electron_dtheta_electron_simulation_{}',
+                            save_name='theta_electron_dtheta_electron_simulation.pdf', xtitle='#theta_{e} (gen)',
+                            title='#Delta #theta_{e} vs #theta_{e}', ytitle='#Delta #theta_{e}')
+
+    plot_sector_page_single(can, histos['sim'], title_formatter='histos_p_proton_dp_proton_simulation_{}',
+                            save_name='p_proton_dp_proton_simulation.pdf', xtitle='p_{p} (gen)',
+                            title='#Delta p_{p} vs p_{p}', ytitle='#Delta p_{p}')
+
+    plot_sector_page_single(can, histos['sim'], title_formatter='histos_theta_proton_dtheta_proton_simulation_{}',
+                            save_name='theta_proton_dtheta_proton_simulation.pdf', xtitle='#theta_{p} (gen)',
+                            title='#Delta #theta_{p} vs #theta_{p}', ytitle='#Delta #theta_{p}')
