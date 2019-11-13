@@ -470,7 +470,7 @@ if __name__ == '__main__':
 
     plot_sector_page(lcan, histos, 'histos_angle_ep_pass_w_in_ctof_{}', lab, save_name='angle_ep_pass_w_{}.pdf'.format(args.output_prefix),
                      title='Events Passing W Cut', xtitle='#phi_{ep} (deg)',
-                     landscape=True, x_range=[160, 180], vline=178)
+                     landscape=True, x_range=[174, 180], vline=178)
  
     plot_sector_page(lcan, histos, 'histos_theta_proton_delta_theta_proton_{}', lab,
                      save_name='theta_proton_delta_theta_proton_{}.pdf'.format(args.output_prefix),

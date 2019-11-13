@@ -113,7 +113,7 @@ def plot_fits_mpl(histos1, histos2, config1, config2,
                   x_range, x_bin_step, title_formatter, y_fit_range,
                   save_name, y_range=None, title=None,
                   xtitle=None, ytitle=None, max_errorbar=0.5,
-                  hline=None):
+                  hline=None, x_shift=None):
     
     fig = plt.figure(figsize=(16,12))
 
@@ -132,6 +132,9 @@ def plot_fits_mpl(histos1, histos2, config1, config2,
         x2, mu2, sig2, slices2, fits2 = fit_slices(histos2.get(tit, default_histo2d), x_range, x_bin_step, y_fit_range)
         x1, mu1, sig1 = remove_bad_points(x1, mu1, sig1, max_errorbar)
         x2, mu2, sig2 = remove_bad_points(x2, mu2, sig2, max_errorbar)
+
+        if x_shift:
+            x2 += 0.5 * (x2[1]-x2[0])
         
         # Experimental
         #plot_slices(slices1, fits1, tit + '_data_slices.pdf')
@@ -296,42 +299,42 @@ if __name__ == '__main__':
                   x_range=[1.35,2.50], y_range=[-0.8,0.8], x_bin_step=4, title_formatter='histos_p_proton_delta_p_proton_{}',
                   save_name='p_proton_delta_p_proton_fit_{}.pdf'.format(args.output_prefix),
                   title='Proton Momentum Resolution (from $\\theta_e$)', xtitle='$P_p$', ytitle='$\Delta P_{p}$',
-                  max_errorbar = 0.8, y_fit_range=[-0.8, 0.8], hline=0.00001
+                  max_errorbar = 0.8, y_fit_range=[-0.8, 0.8], hline=0.00001, x_shift=True
     ) 
 
     plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
-        x_range=[8.7,9.8], y_range=[-0.8,0.8], x_bin_step=6, title_formatter='histos_p_electron_delta_p_electron_{}',
+        x_range=[8.7,9.8], y_range=[-0.35,0.35], x_bin_step=6, title_formatter='histos_p_electron_delta_p_electron_{}',
         save_name='p_electron_delta_p_electron_fit_{}.pdf'.format(args.output_prefix),
         title='Electron Momentum Resolution (from $\\theta_e$)', xtitle='$P_e$', ytitle='$\Delta P_{e}$',
-        max_errorbar = 0.8, y_fit_range=[-0.2, 0.2], hline=0.00001
+        max_errorbar = 0.8, y_fit_range=[-0.2, 0.2], hline=0.00001, x_shift=True
     ) 
  
     plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
-        x_range=[40,53], y_range=[-5,5], x_bin_step=6, title_formatter='histos_theta_proton_delta_theta_proton_{}',
+        x_range=[40,53], y_range=[-2,2], x_bin_step=6, title_formatter='histos_theta_proton_delta_theta_proton_{}',
         save_name='theta_proton_delta_theta_proton_fit_{}.pdf'.format(args.output_prefix),
         title='Proton $\\theta$ Resolution (from $\\theta_e$)', xtitle='$\\theta_p$', ytitle='$\Delta \\theta_{p}$',
-        max_errorbar = 3, y_fit_range=[-3,3], hline=0.00001
+        max_errorbar = 3, y_fit_range=[-3,3], hline=0.00001, x_shift=True
     ) 
 
     plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
-                  x_range=[7.5,11.2], y_range=[-5,5], x_bin_step=6, title_formatter='histos_theta_electron_delta_theta_electron_{}',
+                  x_range=[7.5,11.2], y_range=[-1,1], x_bin_step=6, title_formatter='histos_theta_electron_delta_theta_electron_{}',
                   save_name='theta_electron_delta_theta_electron_fit_{}.pdf'.format(args.output_prefix),
                   title='Electron $\\theta$ Resolution (from $\\theta_e$)', xtitle='$\\theta_e$', ytitle='$\Delta \\theta_{e}$',
-                  max_errorbar = 3, y_fit_range=[-1,1], hline=0.00001
+                  max_errorbar = 3, y_fit_range=[-1,1], hline=0.00001, x_shift=True
     ) 
     
     plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
-                  x_range=[8.7, 9.8], y_range=[0.6,1.6], x_bin_step=6, title_formatter='histos_p_w_ele_{}',
+                  x_range=[8.7, 9.8], y_range=[0.8,1.2], x_bin_step=6, title_formatter='histos_p_w_ele_{}',
                   save_name='p_w_ele_fit_{}.pdf'.format(args.output_prefix),
                   title='W Resolution (from $\\theta_e$)', xtitle='$P_{e}$', ytitle='$W$',
-                  max_errorbar = 3, y_fit_range=[0.8, 1.1], hline=0.938
+                  max_errorbar = 3, y_fit_range=[0.8, 1.1], hline=0.938, x_shift=True
     ) 
     
     plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
-                  x_range=[7.5,11.2], y_range=[0.6,1.6], x_bin_step=6, title_formatter='histos_theta_w_ele_{}',
+                  x_range=[7.5,11.2], y_range=[0.8,1.2], x_bin_step=6, title_formatter='histos_theta_w_ele_{}',
                   save_name='theta_w_ele_fit_{}.pdf'.format(args.output_prefix),
                   title='W Resolution (from $\\theta_e$)', xtitle='$\\theta_{e}$', ytitle='$W$',
-                  max_errorbar = 3, y_fit_range=[0.8, 1.1], hline=0.938
+                  max_errorbar = 3, y_fit_range=[0.8, 1.1], hline=0.938, x_shift=True
     ) 
     
     gStyle.SetOptStat(0)
