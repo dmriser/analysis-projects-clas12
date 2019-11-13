@@ -13,7 +13,7 @@ from scipy.optimize import minimize
 
 from array import array 
 from ROOT import (TH1F, TH2F, TH1D, TF1, TFile, TCanvas,
-                  gPad, gStyle, TLatex, TGraphErrors)
+                  gPad, gStyle, TLatex, TGraphErrors, TLine)
 
 default_histo = TH1F('default', '', 100, 0, 1)
 default_histo2d = TH2F('default', '', 100, 0, 1, 100, 0, 1)
@@ -28,7 +28,7 @@ def load_histos(file):
 def numpify(histo):
     """ TH1F to np.arrays. """
 
-    if not isinstance(histo, TH1D):
+    if type(histo) not in [TH1F, TH1D]:
         raise NotImplementedError('Can not numpify type {}'.format(type(histo)))
 
     nbins = histo.GetNbinsX()
@@ -217,7 +217,7 @@ def remove_bad_points(x, mu, sig, max_errorbar):
     return x[idx], mu[idx], sig[idx]
 
 def plot_sector_page_single(canvas, histos, title_formatter, save_name, xtitle=None,
-                            ytitle=None, title=None, x_range=None, log=False):
+                            ytitle=None, title=None, x_range=None, log=False, hline=None):
     """ Plot one histogram for each sector. """
     
     label = TLatex()
@@ -227,6 +227,7 @@ def plot_sector_page_single(canvas, histos, title_formatter, save_name, xtitle=N
     canvas.Clear()
     canvas.Divide(3,2)
 
+    root_garbage_can = [] 
     for i in range(1,7):
         canvas.cd(i)
 
@@ -248,6 +249,15 @@ def plot_sector_page_single(canvas, histos, title_formatter, save_name, xtitle=N
             label.DrawLatex(0.0325, 0.65, ytitle)
             label.SetTextAngle(0)
 
+        if hline:
+            xmin = histos.get(title_formatter.format(i)).GetXaxis().GetXmin()
+            xmax = histos.get(title_formatter.format(i)).GetXaxis().GetXmax()
+            line = TLine(xmin, hline, xmax, hline)
+            line.SetLineColor(1)
+            line.SetLineStyle(1)
+            line.Draw('same')
+            root_garbage_can.append(line)
+            
     canvas.Print(save_name)
     
 
@@ -265,11 +275,17 @@ def plot_sector_page(canvas, histos1, histos2, config1, config2, title_formatter
     for i in range(1,7):
         canvas.cd(i)
 
+        #_, __, values1, errors1 = numpify(histos1.get(title_formatter.format(i), default_histo))
+        #_, __, values2, errors2 = numpify(histos2.get(title_formatter.format(i), default_histo))
+
+        #scale = np.sum(values1 * values2) / np.sum(values2**2)
+        
         histos1.get(title_formatter.format(i), default_histo).SetLineColor(1)
         histos1.get(title_formatter.format(i), default_histo).Scale(1 / histos1.get(title_formatter.format(i), default_histo).GetMaximum())
-
+        
         histos2.get(title_formatter.format(i), default_histo).SetLineColor(99)
         histos2.get(title_formatter.format(i), default_histo).Scale(1 / histos2.get(title_formatter.format(i), default_histo).GetMaximum())
+        #histos2.get(title_formatter.format(i), default_histo).Scale(scale)
 
         hmax = max(histos1.get(title_formatter.format(i), default_histo).GetMaximum(),
                    histos2.get(title_formatter.format(i), default_histo).GetMaximum())
@@ -327,42 +343,42 @@ if __name__ == '__main__':
  
     plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
                   x_range=[1.35,2.50], y_range=[-0.8,0.8], x_bin_step=4, title_formatter='histos_p_proton_delta_p_proton_{}',
-                  save_name='p_proton_delta_p_proton_fit_{}.pdf'.format(args.output_prefix),
+                  save_name='p_proton_delta_p_proton_fit_{}.png'.format(args.output_prefix),
                   title='Proton Momentum Resolution (from $\\theta_e$)', xtitle='$P_p$', ytitle='$\Delta P_{p}$',
                   max_errorbar = 0.8, y_fit_range=[-0.8, 0.8], hline=0.00001, x_shift=True
     ) 
 
     plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
         x_range=[8.7,9.8], y_range=[-0.35,0.35], x_bin_step=6, title_formatter='histos_p_electron_delta_p_electron_{}',
-        save_name='p_electron_delta_p_electron_fit_{}.pdf'.format(args.output_prefix),
+        save_name='p_electron_delta_p_electron_fit_{}.png'.format(args.output_prefix),
         title='Electron Momentum Resolution (from $\\theta_e$)', xtitle='$P_e$', ytitle='$\Delta P_{e}$',
         max_errorbar = 0.8, y_fit_range=[-0.2, 0.2], hline=0.00001, x_shift=True
     ) 
  
     plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
         x_range=[40,53], y_range=[-2,2], x_bin_step=6, title_formatter='histos_theta_proton_delta_theta_proton_{}',
-        save_name='theta_proton_delta_theta_proton_fit_{}.pdf'.format(args.output_prefix),
+        save_name='theta_proton_delta_theta_proton_fit_{}.png'.format(args.output_prefix),
         title='Proton $\\theta$ Resolution (from $\\theta_e$)', xtitle='$\\theta_p$', ytitle='$\Delta \\theta_{p}$',
         max_errorbar = 3, y_fit_range=[-3,3], hline=0.00001, x_shift=True
     ) 
 
     plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
                   x_range=[7.5,11.2], y_range=[-1,1], x_bin_step=6, title_formatter='histos_theta_electron_delta_theta_electron_{}',
-                  save_name='theta_electron_delta_theta_electron_fit_{}.pdf'.format(args.output_prefix),
+                  save_name='theta_electron_delta_theta_electron_fit_{}.png'.format(args.output_prefix),
                   title='Electron $\\theta$ Resolution (from $\\theta_e$)', xtitle='$\\theta_e$', ytitle='$\Delta \\theta_{e}$',
                   max_errorbar = 3, y_fit_range=[-1,1], hline=0.00001, x_shift=True
     ) 
     
     plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
                   x_range=[8.7, 9.8], y_range=[0.8,1.2], x_bin_step=6, title_formatter='histos_p_w_ele_{}',
-                  save_name='p_w_ele_fit_{}.pdf'.format(args.output_prefix),
+                  save_name='p_w_ele_fit_{}.png'.format(args.output_prefix),
                   title='W Resolution (from $\\theta_e$)', xtitle='$P_{e}$', ytitle='$W$',
                   max_errorbar = 3, y_fit_range=[0.8, 1.1], hline=0.938, x_shift=True
     ) 
     
     plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
                   x_range=[7.5,11.2], y_range=[0.8,1.2], x_bin_step=6, title_formatter='histos_theta_w_ele_{}',
-                  save_name='theta_w_ele_fit_{}.pdf'.format(args.output_prefix),
+                  save_name='theta_w_ele_fit_{}.png'.format(args.output_prefix),
                   title='W Resolution (from $\\theta_e$)', xtitle='$\\theta_{e}$', ytitle='$W$',
                   max_errorbar = 3, y_fit_range=[0.8, 1.1], hline=0.938, x_shift=True
     ) 
@@ -371,68 +387,92 @@ if __name__ == '__main__':
     histos1 = [histos['sim']['histos_p_electron_dp_electron_simulation_{}'.format(h)] for h in range(1,7)]
     histos2 = [histos['sim']['histos_p_electron_delta_p_electron_{}'.format(h)] for h in range(1,7)]
     plot_fits_mpl(histos1=histos1, histos2=histos2, config1='Sim (using gen)', config2='Sim (using rec only)',
-                  x_range=[8.5,10.2], y_range=[-0.8,0.8], x_bin_step=6, title_formatter='doesnt_matter',
-                  save_name='p_ele_dp_sim_{}.pdf'.format(args.output_prefix),
+                  x_range=[8.5,10.0], y_range=[-0.1,0.1], x_bin_step=6, title_formatter='doesnt_matter',
+                  save_name='p_ele_dp_sim_{}.png'.format(args.output_prefix),
                   title='Momentum Resolution', xtitle='$p_e$', ytitle='$\Delta p_e$',
-                  max_errorbar = 3, y_fit_range=[-0.2, 0.2], hline=0.0001
+                  max_errorbar = 3, y_fit_range=[-0.1, 0.1], hline=0.0000001, x_shift=True
     ) 
-    
+    histos1 = [histos['sim']['histos_p_proton_dp_proton_simulation_{}'.format(h)] for h in range(1,7)]
+    histos2 = [histos['sim']['histos_p_proton_delta_p_proton_{}'.format(h)] for h in range(1,7)]
+    plot_fits_mpl(histos1=histos1, histos2=histos2, config1='Sim (using gen)', config2='Sim (using rec only)',
+                  x_range=[1.3,2.8], y_range=[-0.32,0.32], x_bin_step=6, title_formatter='doesnt_matter',
+                  save_name='p_pro_dp_sim_{}.png'.format(args.output_prefix),
+                  title='Momentum Resolution', xtitle='$p_p$', ytitle='$\Delta p_p$',
+                  max_errorbar = 3, y_fit_range=[-0.32, 0.32], hline=0.0000001, x_shift=True
+    )  
+    histos1 = [histos['sim']['histos_theta_electron_dtheta_electron_simulation_{}'.format(h)] for h in range(1,7)]
+    histos2 = [histos['sim']['histos_theta_electron_delta_theta_electron_{}'.format(h)] for h in range(1,7)]
+    plot_fits_mpl(histos1=histos1, histos2=histos2, config1='Sim (using gen)', config2='Sim (using rec only)',
+                  x_range=[6.5,12.0], y_range=[-0.25,0.25], x_bin_step=6, title_formatter='doesnt_matter',
+                  save_name='theta_ele_dtheta_sim_{}.png'.format(args.output_prefix),
+                  title='Angular Resolution', xtitle='$\\theta_e$', ytitle='$\Delta \\theta_e$',
+                  max_errorbar = 3, y_fit_range=[-0.25, 0.25], hline=0.0000001, x_shift=True
+    ) 
+    histos1 = [histos['sim']['histos_theta_proton_dtheta_proton_simulation_{}'.format(h)] for h in range(1,7)]
+    histos2 = [histos['sim']['histos_theta_proton_delta_theta_proton_{}'.format(h)] for h in range(1,7)]
+    plot_fits_mpl(histos1=histos1, histos2=histos2, config1='Sim (using gen)', config2='Sim (using rec only)',
+                  x_range=[35,60], y_range=[-1.0,1.0], x_bin_step=6, title_formatter='doesnt_matter',
+                  save_name='theta_pro_dtheta_sim_{}.png'.format(args.output_prefix),
+                  title='Angular Resolution', xtitle='$\\theta_p$', ytitle='$\Delta \\theta_p$',
+                  max_errorbar = 3, y_fit_range=[-1.0, 1.0], hline=0.0000001, x_shift=True
+    ) 
+
     gStyle.SetOptStat(0)
     gStyle.SetOptTitle(0)
     can = TCanvas('can', 'can', 1600, 1200)
 
     plot_sector_page(can, histos['data'], histos['sim'],
                      config1='Data', config2='Sim', title_formatter='histos_p_pro__{}',
-                     save_name='histos_p_proton_compare.pdf',
+                     save_name='histos_p_proton_compare.png',
                      xtitle='P_{p} (GeV/c)', title='P_{p}')
 
     plot_sector_page(can, histos['data'], histos['sim'],
                      config1='Data', config2='Sim', title_formatter='histos_p_ele__{}',
-                     save_name='histos_p_electron_compare.pdf',
+                     save_name='histos_p_electron_compare.png',
                      xtitle='P_{e} (GeV/c)', title='P_{e}')
 
     plot_sector_page(can, histos['data'], histos['sim'],
                      config1='Data', config2='Sim', title_formatter='histos_theta_electron__{}',
-                     save_name='histos_theta_electron_compare.pdf',
+                     save_name='histos_theta_electron_compare.png',
                      xtitle='#theta_{e}', title='#theta_{e}')
 
     plot_sector_page(can, histos['data'], histos['sim'],
                      config1='Data', config2='Sim', title_formatter='histos_theta_proton__{}',
-                     save_name='histos_theta_proton_compare.pdf',
+                     save_name='histos_theta_proton_compare.png',
                      xtitle='#theta_{p}', title='#theta_{p}')
 
     plot_sector_page(can, histos['data'], histos['sim'],
                      config1='Data', config2='Sim', title_formatter='histos_delta_p_proton_{}',
-                     save_name='histos_delta_p_proton_compare.pdf',
+                     save_name='histos_delta_p_proton_compare.png',
                      xtitle='#Delta P_{p} (GeV/c)', title='#Delta P_{p}')
 
     plot_sector_page(can, histos['data'], histos['sim'],
                      config1='Data', config2='Sim', title_formatter='histos_delta_theta_proton_{}',
-                     save_name='histos_delta_theta_proton_compare.pdf',
+                     save_name='histos_delta_theta_proton_compare.png',
                      xtitle='#Delta #theta_{p} (deg)', title='#Delta #theta_{p}')
 
     plot_sector_page(can, histos['data'], histos['sim'],
                      config1='Data', config2='Sim', title_formatter='histos_angle_ep_pass_w_in_ctof_{}',
-                     save_name='histos_angle_ep_compare.pdf',
+                     save_name='histos_angle_ep_compare.png',
                      xtitle='#phi_{ep} (deg)', title='#phi_{ep}', x_range=[172, 180])
 
     plot_sector_page(can, histos['data'], histos['sim'],
                      config1='Data', config2='Sim', title_formatter='histos_w_pass_angle_in_ctof_{}',
-                     save_name='histos_w_compare.pdf',
+                     save_name='histos_w_compare.png',
                      xtitle='W (GeV/c^{2})', title='W', x_range=[0.6, 1.35])
 
     plot_sector_page_single(can, histos['sim'], title_formatter='histos_p_electron_dp_electron_simulation_{}',
-                            save_name='p_electron_dp_electron_simulation.pdf', xtitle='p_{e} (gen)',
-                            title='#Delta p_{e} vs p_{e}', ytitle='#Delta p_{e}')
+                            save_name='p_electron_dp_electron_simulation.png', xtitle='p_{e} (gen)',
+                            title='#Delta p_{e} vs p_{e}', ytitle='#Delta p_{e}', hline=0.00001)
 
     plot_sector_page_single(can, histos['sim'], title_formatter='histos_theta_electron_dtheta_electron_simulation_{}',
-                            save_name='theta_electron_dtheta_electron_simulation.pdf', xtitle='#theta_{e} (gen)',
-                            title='#Delta #theta_{e} vs #theta_{e}', ytitle='#Delta #theta_{e}')
+                            save_name='theta_electron_dtheta_electron_simulation.png', xtitle='#theta_{e} (gen)',
+                            title='#Delta #theta_{e} vs #theta_{e}', ytitle='#Delta #theta_{e}', hline=0.00001)
 
     plot_sector_page_single(can, histos['sim'], title_formatter='histos_p_proton_dp_proton_simulation_{}',
-                            save_name='p_proton_dp_proton_simulation.pdf', xtitle='p_{p} (gen)',
-                            title='#Delta p_{p} vs p_{p}', ytitle='#Delta p_{p}')
+                            save_name='p_proton_dp_proton_simulation.png', xtitle='p_{p} (gen)',
+                            title='#Delta p_{p} vs p_{p}', ytitle='#Delta p_{p}', hline=0.00001)
 
     plot_sector_page_single(can, histos['sim'], title_formatter='histos_theta_proton_dtheta_proton_simulation_{}',
-                            save_name='theta_proton_dtheta_proton_simulation.pdf', xtitle='#theta_{p} (gen)',
-                            title='#Delta #theta_{p} vs #theta_{p}', ytitle='#Delta #theta_{p}')
+                            save_name='theta_proton_dtheta_proton_simulation.png', xtitle='#theta_{p} (gen)',
+                            title='#Delta #theta_{p} vs #theta_{p}', ytitle='#Delta #theta_{p}', hline=0.00001)

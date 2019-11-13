@@ -74,17 +74,29 @@ for (filename in args) {
             !cutResults.contains(false)
         }
         println(result)
-        */
+
 
         event.ctof_status.each{ i ->
             println(event.ctof_sector[i] + ", " + event.ctof_layer[i] + ", " + event.ctof_component[i])
             println(event.ctof_energy[i] + ", " + event.ctof_time[i] + ", " + event.ctof_path[i])
         }
-
+        */
         //if (event.mc_status) {
         //    println('Monte Carlo Event with ' + event.mc_npart + ' particles.')
         //    println(event.mc_p.values())
         //}
+
+        (0 ..< event.npart).each{ index ->
+            if (event.tof_status.contains(index)){
+                def hits = event.tof.get(index)
+                println(hits*.energy)
+                println(hits*.time)
+                println(hits*.path)
+                println(hits*.sector)
+                println(hits*.layer)
+                println(hits*.paddle)
+            }
+        }
 
         eventIndex++
     }

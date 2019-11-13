@@ -72,7 +72,8 @@ def plot_sector_page(canvas, histos, title_formatter, label, save_name,
             pass
 
         if vline:
-            line = TLine(vline, 0, vline, histos.get(title_formatter.format(i), default_histo).GetMaximum())
+            line = TLine(vline, histos.get(title_formatter.format(i), default_histo).GetYaxis().GetXmin(),
+                         vline, histos.get(title_formatter.format(i), default_histo).GetYaxis().GetXmax())
             line.SetLineColor(1)
             line.SetLineStyle(1)
             line.Draw('same')
@@ -466,6 +467,10 @@ if __name__ == '__main__':
 
     plot_sector_page(lcan, histos, 'histos_w_pass_angle_in_ctof_{}', lab, save_name='w_ctof_proton_pass_angle_{}.pdf'.format(args.output_prefix),
                      title='Electron and Proton w/ #phi_{ep} > 178', xtitle='W', y_fit_range=[0.85, 1.02],
+                     landscape=True, vline=0.938)
+
+    plot_sector_page(lcan, histos, 'histos_w_q2_pass_angle_in_ctof_{}', lab, save_name='w_q2_pass_angle_{}.png'.format(args.output_prefix),
+                     title='Electron and Proton w/ #phi_{ep} > 178', xtitle='W', ytitle='Q^{2}', log=True,
                      landscape=True, vline=0.938)
 
     plot_sector_page(lcan, histos, 'histos_angle_ep_pass_w_in_ctof_{}', lab, save_name='angle_ep_pass_w_{}.pdf'.format(args.output_prefix),
