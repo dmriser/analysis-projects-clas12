@@ -120,6 +120,7 @@ histoBuilders2 = [
         de_beam_de_beam  : { title -> limited_h2(title, 200, 200, lim.de_beam, lim.de_beam) },
         p_pro_dp         : { title -> limited_h2(title, 100, 100, lim.p_pro, lim.dp_pro) },
         p_ele_dp         : { title -> limited_h2(title, 100, 100, lim.p_ele, lim.dp_ele) },
+        p_ele_theta      : { title -> limited_h2(title, 100, 100, lim.p_ele, lim.theta_ele) },
         p_pro_dtheta     : { title -> limited_h2(title, 100, 100, lim.p_pro, lim.dtheta_pro) },
         p_ele_dtheta     : { title -> limited_h2(title, 100, 100, lim.p_ele, lim.dtheta_ele) },
         p_ele_fracp      : { title -> limited_h2(title, 100, 100, lim.p_ele, lim.fracp_ele) },
@@ -143,6 +144,10 @@ histoBuilders2 = [
         w_q2             : { title -> limited_h2(title, 200, 200, lim.w, lim.q2) },
 ]
 
+
+def getGeneratedSector(phi){
+    return Math.ceil(phi / 60) + 3
+}
 
 def shiftPhi(phi) {
     return (phi > 150) ? phi - 180 : phi + 180
@@ -311,6 +316,23 @@ def fillElectronResolutions(histos, event, beam, ele, pro, pred_e_beam,
 
 }
 
+def fillSimulationResolutions(histos, sector, ele, pro, gen_ele, gen_pro){
+    
+    histos.computeIfAbsent('p_electron_dp_electron_simulation_' + sector, histoBuilders2.p_ele_dp).fill(
+	gen_ele.p(), ele.p() - gen_ele.p()
+    )
+    histos.computeIfAbsent('theta_electron_dtheta_electron_simulation_' + sector, histoBuilders2.theta_ele_dtheta).fill(
+	Math.toDegrees(gen_ele.theta()), Math.toDegrees(ele.theta() - gen_ele.theta())
+    )
+    histos.computeIfAbsent('p_proton_dp_proton_simulation_' + sector, histoBuilders2.p_pro_dp).fill(
+	gen_pro.p(), pro.p() - gen_pro.p()
+    )
+    histos.computeIfAbsent('theta_proton_dtheta_proton_simulation_' + sector, histoBuilders2.theta_pro_dtheta).fill(
+	Math.toDegrees(gen_pro.theta()), Math.toDegrees(pro.theta() - gen_pro.theta())
+    )
+
+}
+
 GParsPool.withPool 16, {
     args.eachParallel { filename ->
 
@@ -326,6 +348,7 @@ GParsPool.withPool 16, {
             def dataEvent = reader.getNextEvent()
             def event = EventConverter.convert(dataEvent)
 
+	    // Reconstructed (for data and simulation)
             (0..<event.npart).find {
                 event.pid[it] == 11 && event.status[it] < 0
             }?.each { idx ->
@@ -369,6 +392,9 @@ GParsPool.withPool 16, {
                         histos.computeIfAbsent('p_w_ele_' + sector, histoBuilders2.p_w_ele).fill(ele.p(), pkin.w)
                         histos.computeIfAbsent('theta_w_ele_' + sector, histoBuilders2.theta_w_ele).fill(
                                 Math.toDegrees(ele.theta()), pkin.w)
+			histos.computeIfAbsent('p_theta_ele_pass_angle_in_ctof_' + sector, histoBuilders2.p_ele_theta).fill(
+			    ele.p(), Math.toDegrees(ele.theta())
+			)
                     }
 
                     // Pass W but no cut on phi
@@ -403,6 +429,24 @@ GParsPool.withPool 16, {
                         // We can go tight on protons
                         if (pkin.w > cuts.w[0] && pkin.w < cuts.w[1]) {
                             fillProtonResolutions(histos, event, ele, pro, pred_pro_theta, pred_pro_p)
+
+
+			    // This is a good elastic event, let's see if this is simulation.
+			    // If so, find the generated partciles and make more histograms.
+			    (0..<event.mc_npart).find { j ->
+				event.mc_pid[j] == 11
+			    }?.each { gidx ->
+				def gen_ele = new Particle(11, event.mc_px[gidx], event.mc_py[gidx], event.mc_pz[gidx])
+				def gen_sector = (int) getGeneratedSector(Math.toDegrees(gen_ele.phi()))
+				
+				(0..<event.mc_npart).find { k ->
+				    event.mc_pid[k] == 2212
+				}?.each { pidx ->
+				    def gen_pro = new Particle(2212, event.mc_px[pidx], event.mc_py[pidx], event.mc_pz[pidx])
+				    def gen_pkin = getPKin(beam, target, gen_ele, gen_pro)
+				    fillSimulationResolutions(histos, sector, ele, pro, gen_ele, gen_pro)
+				}
+			    }
                         }
                     }
                 }
@@ -417,4 +461,4 @@ def out = new TDirectory()
 out.mkdir("histos")
 out.cd("histos")
 histos.values().each { out.addDataSet(it) }
-out.writeFile("refactor.hipo")
+out.writeFile("monitor.hipo")
