@@ -132,6 +132,7 @@ histoBuilders2 = [
         phi_w            : { title -> limited_h2(title, 200, 200, lim.phi, lim.w) },
         phi_theta_proton : { title -> limited_h2(title, 100, 100, lim.phi, lim.theta_pro) },
         theta_ele_de_beam: { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.de_beam) },
+        theta_pro_de_beam: { title -> limited_h2(title, 200, 200, lim.theta_pro, lim.de_beam) },
         theta_ele_dp     : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.dp_ele) },
         theta_ele_dtheta : { title -> limited_h2(title, 200, 200, lim.theta_ele, lim.dtheta_ele) },
         theta_pro_dtheta : { title -> limited_h2(title, 200, 200, lim.theta_pro, lim.dtheta_pro) },
@@ -236,7 +237,7 @@ def fillInclusiveHistograms(histos, kin, sector){
     histos.computeIfAbsent('w_q2_inclusive_' + sector, histoBuilders2.w_q2).fill(kin.w, kin.q2)
 }
 
-def fillProtonResolutions(histos, event, ele, pro, pred_pro_theta, pred_pro_p){
+def fillProtonResolutions(histos, event, ele, pro, pred_pro_theta, pred_pro_p, delta_beam_energy){
 
     histos.computeIfAbsent("theta_proton_" + "_" + ele.sector, histoBuilders.theta_p).fill(Math.toDegrees(pro.theta()))
     histos.computeIfAbsent("theta_electron_" + "_" + ele.sector, histoBuilders.theta_ele).fill(Math.toDegrees(ele.theta()))
@@ -259,6 +260,8 @@ def fillProtonResolutions(histos, event, ele, pro, pred_pro_theta, pred_pro_p){
 
     histos.computeIfAbsent('theta_proton_delta_p_proton_' + ele.sector,
             histoBuilders2.theta_pro_dp).fill(Math.toDegrees(pro.theta()), pro.p() - pred_pro_p)
+    histos.computeIfAbsent('theta_proton_de_beam_' + ele.sector,
+            histoBuilders2.theta_pro_dp).fill(Math.toDegrees(pro.theta()), delta_beam_energy)
 
     histos.computeIfAbsent('theta_proton_delta_theta_proton_' + ele.sector,
             histoBuilders2.theta_pro_dtheta).fill(
@@ -428,7 +431,7 @@ GParsPool.withPool 16, {
 
                         // We can go tight on protons
                         if (pkin.w > cuts.w[0] && pkin.w < cuts.w[1]) {
-                            fillProtonResolutions(histos, event, ele, pro, pred_pro_theta, pred_pro_p)
+                            fillProtonResolutions(histos, event, ele, pro, pred_pro_theta, pred_pro_p, beam.e() - pred_e_beam_from_angles)
 
 
 			    // This is a good elastic event, let's see if this is simulation.
