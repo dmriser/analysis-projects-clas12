@@ -504,3 +504,8 @@ if __name__ == '__main__':
     plot_sector_page(lcan, histos, 'histos_theta_w_ele_{}', lab, save_name='theta_w_electron_{}.pdf'.format(args.output_prefix), 
                      title='W vs. #theta_{e}', ytitle='W',
                      xtitle='#theta_{e}', log=True, landscape=True, hline=0.938)
+
+    plot_sector_page(lcan, histos, 'histos_p_theta_ele_pass_angle_in_ctof_{}', lab,
+                     save_name='p_theta_electron_{}.png'.format(args.output_prefix), 
+                     title='#theta_{e} vs p_{e}', ytitle='#theta_{e}',
+                     xtitle='p_{e}', log=True, landscape=True)
