@@ -363,6 +363,13 @@ if __name__ == '__main__':
     ) 
 
     plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
+        x_range=[40,53], y_range=[-1.2,1.2], x_bin_step=3, title_formatter='histos_theta_proton_de_beam_{}',
+        save_name='theta_proton_de_beam_fit_{}.png'.format(args.output_prefix),
+        title='Beam Energy Resolution (from angles)', xtitle='$\\theta_p$', ytitle='$\Delta E_{beam}$',
+        max_errorbar = 3, y_fit_range=[-1.2,1.2], hline=0.00001, x_shift=True
+    ) 
+
+    plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
                   x_range=[7.5,11.2], y_range=[-1,1], x_bin_step=6, title_formatter='histos_theta_electron_delta_theta_electron_{}',
                   save_name='theta_electron_delta_theta_electron_fit_{}.png'.format(args.output_prefix),
                   title='Electron $\\theta$ Resolution (from $\\theta_e$)', xtitle='$\\theta_e$', ytitle='$\Delta \\theta_{e}$',
@@ -382,6 +389,7 @@ if __name__ == '__main__':
                   title='W Resolution (from $\\theta_e$)', xtitle='$\\theta_{e}$', ytitle='$W$',
                   max_errorbar = 3, y_fit_range=[0.8, 1.1], hline=0.938, x_shift=True
     ) 
+
 
     # Do the same thing but this time we're directly passing histos
     histos1 = [histos['sim']['histos_p_electron_dp_electron_simulation_{}'.format(h)] for h in range(1,7)]
