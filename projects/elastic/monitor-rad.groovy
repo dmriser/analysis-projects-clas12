@@ -44,7 +44,8 @@ tighter_kin_bounds = [
         vz        : [-20, 15],
         de_beam   : [-2, 2],
     missing_pt    : [0, 1],
-    e_gamma: [0, 11]
+    e_gamma: [0, 11],
+    theta_gamma:[0, 25]
 ]
 
 lim = tighter_kin_bounds
@@ -71,7 +72,8 @@ histoBuilders = [
         theta_ele: { title -> limited_h1(title, 200, lim.theta_ele) },
         theta_pro: { title -> limited_h1(title, 200, lim.theta_pro) },
         missing_pt: { title -> limited_h1(title, 200, lim.missing_pt) },
-        e_gamma: { title -> limited_h1(title, 200, lim.e_gamma) }
+        e_gamma: { title -> limited_h1(title, 200, lim.e_gamma) },
+    theta_gamma: { title -> limited_h1(title, 200, lim.theta_gamma) }
 ]
 
 histoBuilders2 = [
@@ -153,10 +155,14 @@ def getPKin(beam, target, electron, proton) {
     def phi = enorm.theta(pnorm)
     //def phi = Math.toDegrees(electron.phi() - proton.phi())
     def missing_pt = Math.sqrt(missing.px()**2 + missing.py()**2)
+    def theta_gamma = Math.toDegrees(missing.theta())
+    def norm = missing.vector().vect().mag() * electron.vector().vect().mag()
+    def theta_egamma = Math.toDegrees(Math.acos(missing.vector().vect().dot(electron.vector().vect()) / norm))
 
     return [x: x, y: y, w: w, nu: nu, q2: q2, angle: phi,
             missing_mass: missing_mass, missing_energy: missing.e(),
-	    missing_pt: missing_pt]
+	    missing_pt: missing_pt, theta_gamma:theta_gamma, 
+	    theta_egamma:theta_egamma]
 }
 
 GParsPool.withPool 16, {
@@ -191,7 +197,7 @@ GParsPool.withPool 16, {
                     pro.sphi = shiftPhi(Math.toDegrees(pro.phi()))
                     def pkin = getPKin(beam, target, ele, pro)
 
-		    def ctof = event.ctof_status.contains(it)
+		    def ctof = event.ctof_status.contains(it).findResult{stat -> stat ? "CTOF" : "FTOF"}
 
                     histos.computeIfAbsent('w_' + ctof + '_' + sector, histoBuilders.w).fill(pkin.w)
                     histos.computeIfAbsent('w_' + ctof, histoBuilders.w).fill(pkin.w)
@@ -205,6 +211,8 @@ GParsPool.withPool 16, {
 			histos.computeIfAbsent('w_pass_angle_'  + ctof, histoBuilders.w).fill(pkin.w)
 			histos.computeIfAbsent('missing_pt_pass_angle_' + ctof + '_' + sector, histoBuilders.missing_pt).fill(
 			    pkin.missing_pt)
+			histos.computeIfAbsent('theta_gamma_' + ctof + '_' + sector, histoBuilders.theta_gamma).fill(pkin.theta_gamma)
+			histos.computeIfAbsent('theta_egamma_' + ctof + '_' + sector, histoBuilders.theta_gamma).fill(pkin.theta_egamma)
 
 			// These are ISR events. 
 			if (pkin.missing_pt < cuts.missing_pt[1]) {
