@@ -26,24 +26,6 @@ histoBuilders = [
     beta_std: { title -> new H1F(title, title, 200, 0, 1.3) }
 ]
 
-def collectPositives(event){
-    return (0 ..< event.npart).findResults{ 
-	(event.charge[it] > 0) ? [
-	    index:it, 
-	    beta:event.beta[it], 
-	    p:event.p[it] 
-	] : null
-    }
-}
-
-def calcBeta(path, time){
-    return (path / time / 29.999)
-}
-
-def findBestShift(event, pos, minshift, maxshift){
-    return 0.0
-}
-
 GParsPool.withPool 16, {
     args.eachParallel { filename ->
 
@@ -53,7 +35,7 @@ GParsPool.withPool 16, {
         def eventIndex = 0
         while (reader.hasEvent() && eventIndex < 250000) {
             if (eventIndex % 5000 == 0) {
-                println("Processing " + eventIndex)
+                //println("Processing " + eventIndex)
             }
 
             def dataEvent = reader.getNextEvent()
@@ -62,15 +44,21 @@ GParsPool.withPool 16, {
             (0..<event.npart).find {
                 event.pid[it] == 11 && event.status[it] < 0
             }?.each { idx ->
-		
-		def pos = collectPositives(event)
-                pos.each{ i -> 
-		    histos.computeIfAbsent('p_beta_positive', histoBuilders.p_beta).fill(
-			event.p[i], event.beta[i])
-		}
-		
-		def shift = findBestShift(event, pos, -10, 10)
+		(0..<event.npart).findResults{ event.charge[it] > 0 ? it:null }.each{
+		    def tof_status = event.tof_status.contains(it)
+		    if (tof_status){
+			def layer = event.tof.get(it).*layer.max()
+			def path = event.tof.get(it).find{i->i.layer == layer}.path 
+			def time = event.tof.get(it).find{i->i.layer == layer}.time
+		    }
+		    else {
+			def path = event.ctof.get(it).path 
+			def time = event.ctof.get(it).time
+		    }
 
+		    println(eventIndex + "," + event.p[it] + "," + event.beta[it] + "," + event.pid[it] + "," + tof_status + "," + 
+			time + "," + path)
+		}
 	    }
 
             eventIndex++
