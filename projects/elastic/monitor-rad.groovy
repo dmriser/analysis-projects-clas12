@@ -31,12 +31,12 @@ tighter_kin_bounds = [
         theta_ele : [5, 35],
         theta_pro : [10, 70],
         p_ele     : [0.1, 10.5],
-        p_pro     : [0.1, 8.5],
+        p_pro     : [0.1, 3.5],
         w         : [0.6, 4.7],
         x         : [0.0, 1.0],
         phi       : [-30, 330],
-        dp_ele    : [-0.6, 0.6],
-        dp_pro    : [-1.6, 1.6],
+        dp_ele    : [-3, 3],
+        dp_pro    : [-3, 3],
         dtheta_ele: [-2, 2],
         dtheta_pro: [-4, 4],
         angle_ep  : [160, 180],
@@ -169,6 +169,28 @@ def getPKin(beam, target, electron, proton) {
 	    theta_egamma:theta_egamma]
 }
 
+def predictElectron(pro){
+    def a = pro.p()**2 
+    def b = -2 * pro.p() * Math.cos(pro.theta())
+    def c = PDGDatabase.getParticleMass(2212) - pro.e()
+    def beamEnergy = (c**2 - a) / (b - 2 * c)
+
+    def den = pro.p() * Math.sin(-1 * pro.theta())
+    def num = beamEnergy - pro.p() * Math.cos(pro.theta())
+    def alpha = Math.atan(den/num)
+
+    def kprime = pro.p() * Math.sin(-1 * pro.theta()) / Math.sin(alpha)
+
+    return [momentum:kprime, theta:alpha]
+}
+
+def predictProton(ele){
+    def beamEnergy = ele.p() / (1 + ele.p() / PDGDatabase.getParticleMass(2212) * (Math.cos(ele.theta()) - 1))
+    def beta = Math.atan(ele.p() * Math.sin(ele.theta()) / (beamEnergy - ele.p() * Math.cos(ele.theta())))
+    def pprime = ele.p() * Math.sin(ele.theta()) / Math.sin(beta)
+    return [momentum:pprime, theta:beta]
+}
+
 GParsPool.withPool 16, {
     args.eachParallel { filename ->
 
@@ -233,15 +255,11 @@ GParsPool.withPool 16, {
 			    pro.p(), Math.toDegrees(pro.theta()))
 
 			    // Resolutions 
-			    def pred_electron = new Particle(11, -1 * pro.px(), -1 * pro.py(), pro.pz()) 
-			    def pred_proton = new Particle(2212, -1 * ele.px(), -1 * ele.py(), ele.pz()) 
-			    def reso_ele = new Particle(pred_electron)
-			    reso_ele.combine(ele, -1)
-			    def reso_pro = new Particle(pred_proton)
-			    reso_pro.combine(pro, -1)
+			    def pred_ele = predictElectron(pro)
+			    def pred_pro = predictProton(ele)
 
-			    histos.computeIfAbsent('p_ele_dp_ele_' + ctof, histoBuilders2.p_ele_dp).fill(ele.p(), reso_ele.p())
-			    histos.computeIfAbsent('p_pro_dp_pro_' + ctof, histoBuilders2.p_pro_dp).fill(pro.p(), reso_pro.p())
+			    histos.computeIfAbsent('p_ele_dp_ele_' + ctof, histoBuilders2.p_ele_dp).fill(ele.p(), pred_ele.momentum - ele.p())
+			    histos.computeIfAbsent('p_pro_dp_pro_' + ctof, histoBuilders2.p_pro_dp).fill(pro.p(), pred_pro.momentum - pro.p())
 			}
 
 		    }
