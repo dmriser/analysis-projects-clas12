@@ -4,8 +4,9 @@ import org.jlab.io.hipo.HipoDataSource
 import org.jlab.clas.physics.Particle
 import org.jlab.clas.physics.Vector3
 import org.jlab.clas.pdg.PDGDatabase
-import org.jlab.jroot.ROOTFile
-import org.jlab.jroot.TNtuple
+//import org.jlab.jroot.ROOTFile
+//import org.jlab.jroot.TNtuple
+import java.io.FileWriter
 
 def beam = new Particle(11, 0.0, 0.0, 10.646)
 def target = new Particle(2212, 0.0, 0.0, 0.0)
@@ -37,11 +38,18 @@ def getKin(beam, target, electron, proton) {
     def pnorm = proton.vector().vect().cross(zaxis)
     def phi = enorm.theta(pnorm)
 
-    return [x: x, y: y, w: w, nu: nu, q2: q2, angle:phi]
+    missing.combine(proton,-1)
+    def angle_gamma = missing.theta()
+
+    return [x: x, y: y, w: w, nu: nu, q2: q2, angle:phi, angle_gamma:angle_gamma]
 }
 
-def outputFile = new ROOTFile("output.root")
-def tuple = outputFile.makeNTuple('events', 'events', 'var1')
+//def outputFile = new ROOTFile("output.root")
+//def tuple = outputFile.makeNTuple('events', 'events', 'var1')
+
+// Setup CSV File 
+def outputFile = new FileWriter("output.csv")
+outputFile.append("ele_p,ele_theta,ele_phi,ele_sect,pro_p,pro_theta,pro_phi,pro_sect,pro_det,w,q2,angle_gamma\n")
 
 for (filename in args) {
     def reader = new HipoDataSource()
@@ -63,7 +71,19 @@ for (filename in args) {
 	        def kin = getKin(beam, target, ele, pro)
 		
 		if (kin.w > 0.6 && kin.angle > 170.0){
-		    tuple.fill(kin.w)
+		    //tuple.fill(kin.w)
+		    def outputData = [ele.p(),ele.theta(),ele.phi(),event.dc_sector.get(i),
+				      pro.p(),pro.theta(),pro.phi(),event.dc_sector.get(pidx),
+				      event.ctof_status.contains(pidx), 
+				      kin.w, kin.q2, kin.angle_gamma]
+
+		    def strOut = outputData.collect{it.toString()}
+		    strOut.each{
+			outputFile.append(it)
+			outputFile.append(",")
+		    }
+		    outputFile.append("\n")
+
 		}
 	    }
         }
@@ -71,5 +91,8 @@ for (filename in args) {
     eventIndex++
 }
 
-tuple.write()
+//tuple.write()
+//outputFile.close()
+
+outputFile.flush()
 outputFile.close()

@@ -23,21 +23,23 @@ cuts = [
     w: [0.8, 1.15],
     w_loose: [0.8, 1.30],
     angle: [175, 185],
-    missing_pt: [0.0, 0.2]
+    missing_pt: [0.0, 0.2],
+    theta_gamma: [0, 3]
 ]
 
 tighter_kin_bounds = [
         theta_ele : [5, 35],
         theta_pro : [10, 70],
-        p_ele     : [7.8, 10.5],
-        p_pro     : [0.5, 3.5],
+        p_ele     : [0.1, 10.5],
+        p_pro     : [0.1, 8.5],
         w         : [0.6, 4.7],
+        x         : [0.0, 1.0],
         phi       : [-30, 330],
         dp_ele    : [-0.6, 0.6],
         dp_pro    : [-1.6, 1.6],
         dtheta_ele: [-2, 2],
         dtheta_pro: [-4, 4],
-        angle_ep  : [160, 200],
+        angle_ep  : [160, 180],
         fracp_ele : [-0.1, 0.1],
         fracp_pro : [-0.5, 0.5],
         q2        : [1.2, 4.5],
@@ -81,6 +83,7 @@ histoBuilders2 = [
         p_pro_dp         : { title -> limited_h2(title, 100, 100, lim.p_pro, lim.dp_pro) },
         p_ele_dp         : { title -> limited_h2(title, 100, 100, lim.p_ele, lim.dp_ele) },
         p_ele_theta      : { title -> limited_h2(title, 100, 100, lim.p_ele, lim.theta_ele) },
+        p_pro_theta      : { title -> limited_h2(title, 100, 100, lim.p_pro, lim.theta_pro) },
         p_pro_dtheta     : { title -> limited_h2(title, 100, 100, lim.p_pro, lim.dtheta_pro) },
         p_ele_dtheta     : { title -> limited_h2(title, 100, 100, lim.p_ele, lim.dtheta_ele) },
         p_ele_fracp      : { title -> limited_h2(title, 100, 100, lim.p_ele, lim.fracp_ele) },
@@ -103,6 +106,7 @@ histoBuilders2 = [
         theta_ele_dp     : { title -> limited_h2(title, 100, 100, lim.theta_ele, lim.dp_ele) },
         theta_pro_dp     : { title -> limited_h2(title, 100, 100, lim.theta_pro, lim.dp_pro) },
         w_q2             : { title -> limited_h2(title, 200, 200, lim.w, lim.q2) },
+        x_q2             : { title -> limited_h2(title, 200, 200, lim.x, lim.q2) },
 ]
 
 
@@ -197,7 +201,7 @@ GParsPool.withPool 16, {
                     pro.sphi = shiftPhi(Math.toDegrees(pro.phi()))
                     def pkin = getPKin(beam, target, ele, pro)
 
-		    def ctof = event.ctof_status.contains(it).findResult{stat -> stat ? "CTOF" : "FTOF"}
+		    def ctof = event.ctof_status.contains(it).findResult{ stat -> stat ? "CTOF" : "FTOF"}
 
                     histos.computeIfAbsent('w_' + ctof + '_' + sector, histoBuilders.w).fill(pkin.w)
                     histos.computeIfAbsent('w_' + ctof, histoBuilders.w).fill(pkin.w)
@@ -205,21 +209,39 @@ GParsPool.withPool 16, {
                     histos.computeIfAbsent('angle_ep_' + ctof + '_' + sector, histoBuilders.angle_ep).fill(pkin.angle)
 		    histos.computeIfAbsent('missing_pt_' + ctof + '_' + sector, histoBuilders.missing_pt).fill(
 			pkin.missing_pt)
+                    histos.computeIfAbsent('theta_gamma_' + ctof + '_' + sector, histoBuilders.theta_gamma).fill(pkin.theta_gamma)
 
 		    if (pkin.angle > cuts.angle[0] && pkin.angle < cuts.angle[1]){
 			histos.computeIfAbsent('w_pass_angle_' + ctof + '_' + sector, histoBuilders.w).fill(pkin.w)
 			histos.computeIfAbsent('w_pass_angle_'  + ctof, histoBuilders.w).fill(pkin.w)
 			histos.computeIfAbsent('missing_pt_pass_angle_' + ctof + '_' + sector, histoBuilders.missing_pt).fill(
 			    pkin.missing_pt)
-			histos.computeIfAbsent('theta_gamma_' + ctof + '_' + sector, histoBuilders.theta_gamma).fill(pkin.theta_gamma)
-			histos.computeIfAbsent('theta_egamma_' + ctof + '_' + sector, histoBuilders.theta_gamma).fill(pkin.theta_egamma)
+			histos.computeIfAbsent('theta_gamma_pass_angle_' + ctof + '_' + sector, histoBuilders.theta_gamma).fill(pkin.theta_gamma)
+			histos.computeIfAbsent('theta_egamma_pass_angle_' + ctof + '_' + sector, histoBuilders.theta_gamma).fill(pkin.theta_egamma)
 
 			// These are ISR events. 
-			if (pkin.missing_pt < cuts.missing_pt[1]) {
+			if (pkin.theta_gamma < cuts.theta_gamma[1]) {
 			    histos.computeIfAbsent('e_gamma_'  + ctof, histoBuilders.e_gamma).fill(beam.pz() - (ele.pz()+pro.pz()))
 			    histos.computeIfAbsent('e_beam_after_rad_'  + ctof, histoBuilders.e_gamma).fill(ele.pz()+pro.pz())
 			    histos.computeIfAbsent('theta_ele_' + ctof + '_' + sector, histoBuilders.theta_ele).fill(Math.toDegrees(ele.theta()))
+			    histos.computeIfAbsent('w_pass_all_' + ctof + '_' + sector, histoBuilders.w).fill(pkin.w)
+			    histos.computeIfAbsent('w_pass_all_'  + ctof, histoBuilders.w).fill(pkin.w)
 			    histos.computeIfAbsent('theta_pro_' + ctof + '_' + sector, histoBuilders.theta_pro).fill(Math.toDegrees(pro.theta()))
+			    histos.computeIfAbsent('p_ele_theta_ele_' + ctof + '_' + sector, histoBuilders2.p_ele_theta).fill(
+			    ele.p(), Math.toDegrees(ele.theta()))
+			    histos.computeIfAbsent('p_pro_theta_pro_' + ctof + '_' + sector, histoBuilders2.p_pro_theta).fill(
+			    pro.p(), Math.toDegrees(pro.theta()))
+
+			    // Resolutions 
+			    def pred_electron = new Particle(11, -1 * pro.px(), -1 * pro.py(), pro.pz()) 
+			    def pred_proton = new Particle(2212, -1 * ele.px(), -1 * ele.py(), ele.pz()) 
+			    def reso_ele = new Particle(pred_electron)
+			    reso_ele.combine(ele, -1)
+			    def reso_pro = new Particle(pred_proton)
+			    reso_pro.combine(pro, -1)
+
+			    histos.computeIfAbsent('p_ele_dp_ele_' + ctof, histoBuilders2.p_ele_dp).fill(ele.p(), reso_ele.p())
+			    histos.computeIfAbsent('p_pro_dp_pro_' + ctof, histoBuilders2.p_pro_dp).fill(pro.p(), reso_pro.p())
 			}
 
 		    }
