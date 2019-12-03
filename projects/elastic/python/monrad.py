@@ -337,15 +337,21 @@ if __name__ == '__main__':
 
     can.Print('{}['.format(output_pdfname))
 
-    add_text_page(can, lab, text='W Monitoring Plots', save_name=output_pdfname)
+    # add_text_page(can, lab, text='W Monitoring Plots', save_name=output_pdfname)
 
     plot_sector_page(can, histos, 'histos_w_pass_angle_CTOF_{}', lab, save_name=output_pdfname,
-                     title='Electron (Forward), Proton (CTOF)', xtitle='W')
+                     title='Pass #Delta #phi Cut (CTOF)', xtitle='W')
     
     plot_sector_page(can, histos, 'histos_w_pass_angle_FTOF_{}', lab, save_name=output_pdfname,
-                     title='Electron (Forward), Proton (FTOF)', xtitle='W')
+                     title='Pass #Delta #phi Cut (FTOF)', xtitle='W')
 
-    add_text_page(can, lab, text='Event Selection', save_name=output_pdfname)
+    plot_sector_page(can, histos, 'histos_w_pass_all_CTOF_{}', lab, save_name=output_pdfname,
+                     title='Pass All (CTOF)', xtitle='W')
+    
+    plot_sector_page(can, histos, 'histos_w_pass_all_FTOF_{}', lab, save_name=output_pdfname,
+                     title='Pass All (FTOF)', xtitle='W')
+
+    #    add_text_page(can, lab, text='Event Selection', save_name=output_pdfname)
     
     plot_sector_page(can, histos, 'histos_angle_ep_CTOF_{}', lab, save_name=output_pdfname,
                      title='Electron (Forward), Proton (CTOF)', xtitle='#phi_{ep}')
@@ -359,11 +365,15 @@ if __name__ == '__main__':
     plot_sector_page(can, histos, 'histos_theta_gamma_FTOF_{}', lab, save_name=output_pdfname,
                      title='Electron (Forward), Proton (FTOF)', xtitle='#theta_{#gamma}')
     
-    plot_sector_page(can, histos, 'histos_theta_egamma_CTOF_{}', lab, save_name=output_pdfname,
-                     title='Electron (Forward), Proton (CTOF)', xtitle='#theta_{e#gamma}')
+    plot_sector_page(can, histos, 'histos_theta_gamma_pass_angle_CTOF_{}', lab, save_name=output_pdfname,
+                     title='Pass #Delta #phi (CTOF)', xtitle='#theta_{#gamma}')
+     
+    plot_sector_page(can, histos, 'histos_theta_gamma_pass_angle_FTOF_{}', lab, save_name=output_pdfname,
+                     title='Pass #Delta #phi (FTOF)', xtitle='#theta_{#gamma}')
+
+    add_text_page(can, lab, text='Resolutions (future work)', save_name=output_pdfname)
+
     
-    plot_sector_page(can, histos, 'histos_theta_egamma_FTOF_{}', lab, save_name=output_pdfname,
-                     title='Electron (Forward), Proton (FTOF)', xtitle='#theta_{e#gamma}')
     
     #plot_fits(can, histos, x_range=[6.0,12.0], x_bin_step=6, title_formatter='histos_theta_w_ele_{}',
     #          save_name=output_pdfname, label=lab, y_range=[0.6, 1.5],
