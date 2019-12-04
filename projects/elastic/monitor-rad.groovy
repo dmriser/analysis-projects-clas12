@@ -151,7 +151,7 @@ def predictElectron(pro){
 
     def den = pro.p() * Math.sin(-1 * pro.theta())
     def num = beamEnergy - pro.p() * Math.cos(pro.theta())
-    def alpha = Math.atan(den/num)
+    def alpha = Math.atan2(den,num)
 
     def kprime = pro.p() * Math.sin(-1 * pro.theta()) / Math.sin(alpha)
 
