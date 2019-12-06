@@ -391,9 +391,15 @@ if __name__ == '__main__':
 
     plot_sector_page(can, histos, 'histos_p_pro_theta_pro_CTOF_{}', lab, save_name=output_pdfname,
                      title='(CTOF)', xtitle='p_{p}', ytitle='#theta_{p}', log=True)
-
+ 
     plot_sector_page(can, histos, 'histos_p_pro_theta_pro_FTOF_{}', lab, save_name=output_pdfname,
                      title='(FTOF)', xtitle='p_{p}', ytitle='#theta_{p}', log=True)
+ 
+    plot_sector_page(can, histos, 'histos_theta_e_theta_gamma_pass_angle_CTOF_{}', lab, save_name=output_pdfname,
+                     title='(CTOF)', xtitle='#theta_{e}', ytitle='#theta_{#gamma}', log=True)
+
+    plot_sector_page(can, histos, 'histos_theta_e_theta_gamma_pass_angle_FTOF_{}', lab, save_name=output_pdfname,
+                     title='(FTOF)', xtitle='#theta_{e}', ytitle='#theta_{#gamma}', log=True)
 
     add_text_page(can, lab, text='Resolutions', save_name=output_pdfname)
 
