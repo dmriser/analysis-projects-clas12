@@ -24,20 +24,21 @@ cuts = [
     w_loose: [0.8, 1.30],
     angle: [175, 185],
     missing_pt: [0.0, 0.2],
-    theta_gamma: [0, 3]
+    theta_gamma: [0, 3],
+    p_ele:[1.5, 10.646]
 ]
 
 tighter_kin_bounds = [
         theta_ele : [5, 45],
         theta_pro : [5, 90],
         p_ele     : [0.1, 10.5],
-        p_pro     : [0.1, 3.5],
+        p_pro     : [0.1, 5.5],
         w         : [0.6, 4.7],
         x         : [0.0, 1.0],
         phi       : [-30, 330],
         dp_ele    : [-3, 3],
         dp_pro    : [-3, 3],
-        dtheta_ele: [-6, 6],
+        dtheta_ele: [-180, 180],
         dtheta_pro: [-6, 6],
         angle_ep  : [120, 180],
         q2        : [1.2, 4.5],
@@ -144,10 +145,15 @@ def getPKin(beam, target, electron, proton) {
 }
 
 def predictElectron(pro){
-    def a = pro.p()**2 
-    def b = -2 * pro.p() * Math.cos(pro.theta())
-    def c = PDGDatabase.getParticleMass(2212) - pro.e()
-    def beamEnergy = (c**2 - a) / (b - 2 * c)
+    //def a = pro.p()**2 
+    //def b = -2 * pro.p() * Math.cos(pro.theta())
+    //def c = PDGDatabase.getParticleMass(2212) - pro.e()
+    //def beamEnergy = (c**2 - a) / (b - 2 * c)
+
+    def mp = PDGDatabase.getParticleMass(2212)
+    def beam_num = mp * (pro.p() + (-mp + Math.sqrt(mp**2 + pro.p()**2)) * Math.cos(pro.theta()))
+    def beam_den = 2 * mp * Math.cos(pro.theta()) - pro.p() * Math.sin(pro.theta())**2
+    def beamEnergy  = beam_num / beam_den
 
     def den = pro.p() * Math.sin(-1 * pro.theta())
     def num = beamEnergy - pro.p() * Math.cos(pro.theta())
@@ -182,7 +188,7 @@ GParsPool.withPool 16, {
 
 	    // Reconstructed (for data and simulation)
             (0..<event.npart).find {
-                event.pid[it] == 11 && event.status[it] < 0
+                event.pid[it] == 11 && event.status[it] < 0 && event.p[it] > cuts.p_ele[0]
             }?.each { idx ->
                 def sector = event.dc_sector[idx]
                 def ele = new Particle(11, event.px[idx], event.py[idx], event.pz[idx])
