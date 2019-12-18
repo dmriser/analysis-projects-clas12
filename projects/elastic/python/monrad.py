@@ -391,35 +391,64 @@ if __name__ == '__main__':
 
     plot_sector_page(can, histos, 'histos_p_pro_theta_pro_CTOF_{}', lab, save_name=output_pdfname,
                      title='(CTOF)', xtitle='p_{p}', ytitle='#theta_{p}', log=True)
-
+ 
     plot_sector_page(can, histos, 'histos_p_pro_theta_pro_FTOF_{}', lab, save_name=output_pdfname,
                      title='(FTOF)', xtitle='p_{p}', ytitle='#theta_{p}', log=True)
+ 
+    plot_sector_page(can, histos, 'histos_theta_e_theta_gamma_pass_angle_CTOF_{}', lab, save_name=output_pdfname,
+                     title='(CTOF)', xtitle='#theta_{e}', ytitle='#theta_{#gamma}', log=True)
+
+    plot_sector_page(can, histos, 'histos_theta_e_theta_gamma_pass_angle_FTOF_{}', lab, save_name=output_pdfname,
+                     title='(FTOF)', xtitle='#theta_{e}', ytitle='#theta_{#gamma}', log=True)
 
     add_text_page(can, lab, text='Resolutions', save_name=output_pdfname)
 
     plot_sector_page(can, histos, 'histos_p_ele_dp_ele_CTOF_{}', lab, save_name=output_pdfname,
-                     title='Momentum Resolution (CTOF)', xtitle='p_{e}', ytitle='#Delta p_{e}')
+                     title='Momentum Resolution (CTOF)', xtitle='p_{e}', ytitle='#Delta p_{e}',
+                     log=True)
+
+    plot_fits(can, histos, x_range=[1.5, 9.5], x_bin_step=6, title_formatter='histos_p_ele_dp_ele_CTOF_{}',
+              save_name=output_pdfname, label=lab, y_range=[-4, 4],
+              title='#Delta p_{e} vs. p_{e} (CTOF)', xtitle='p_{e}', ytitle='#Delta p_{e}', hline=0.0001, y_fit_range=[-4, 4])
 
     plot_sector_page(can, histos, 'histos_p_ele_dp_ele_FTOF_{}', lab, save_name=output_pdfname,
-                     title='Momentum Resolution (FTOF)', xtitle='p_{e}', ytitle='#Delta p_{e}')
+                     title='Momentum Resolution (FTOF)', xtitle='p_{e}', ytitle='#Delta p_{e}',
+                     log=True)
+
+    plot_fits(can, histos, x_range=[1.5, 9.5], x_bin_step=6, title_formatter='histos_p_ele_dp_ele_FTOF_{}',
+              save_name=output_pdfname, label=lab, y_range=[-4, 4],
+              title='#Delta p_{e} vs. p_{e} (FTOF)', xtitle='p_{e}', ytitle='#Delta p_{e}', hline=0.0001, y_fit_range=[-4, 4])
 
     plot_sector_page(can, histos, 'histos_p_pro_dp_pro_CTOF_{}', lab, save_name=output_pdfname,
-                     title='Momentum Resolution (CTOF)', xtitle='p_{p}', ytitle='#Delta p_{p}')
+                     title='Momentum Resolution (CTOF)', xtitle='p_{p}', ytitle='#Delta p_{p}',
+                     log=True)
 
+    plot_fits(can, histos, x_range=[0.0, 5.5], x_bin_step=6, title_formatter='histos_p_pro_dp_pro_CTOF_{}',
+              save_name=output_pdfname, label=lab, y_range=[-4, 4],
+              title='#Delta p_{p} vs. p_{p} (CTOF)', xtitle='p_{p}', ytitle='#Delta p_{p}', hline=0.0001, y_fit_range=[-4, 4])
     plot_sector_page(can, histos, 'histos_p_pro_dp_pro_FTOF_{}', lab, save_name=output_pdfname,
-                     title='Momentum Resolution (FTOF)', xtitle='p_{p}', ytitle='#Delta p_{p}')
+                     title='Momentum Resolution (FTOF)', xtitle='p_{p}', ytitle='#Delta p_{p}',
+                     log=True)
+
+    plot_fits(can, histos, x_range=[0.0, 5.5], x_bin_step=6, title_formatter='histos_p_pro_dp_pro_FTOF_{}',
+              save_name=output_pdfname, label=lab, y_range=[-4, 4],
+              title='#Delta p_{p} vs. p_{p} (FTOF)', xtitle='p_{p}', ytitle='#Delta p_{p}', hline=0.0001, y_fit_range=[-4, 4])
     
     plot_sector_page(can, histos, 'histos_theta_ele_dtheta_ele_CTOF_{}', lab, save_name=output_pdfname,
-                     title='#Theta Resolution (CTOF)', xtitle='#theta_{e}', ytitle='#Delta #theta_{e}')
+                     title='#Theta Resolution (CTOF)', xtitle='#theta_{e}', ytitle='#Delta #theta_{e}',
+                     log=True)
 
     plot_sector_page(can, histos, 'histos_theta_ele_dtheta_ele_FTOF_{}', lab, save_name=output_pdfname,
-                     title='#Theta Resolution (FTOF)', xtitle='#theta_{e}', ytitle='#Delta #theta_{e}')
+                     title='#Theta Resolution (FTOF)', xtitle='#theta_{e}', ytitle='#Delta #theta_{e}',
+                     log=True)
 
     plot_sector_page(can, histos, 'histos_theta_pro_dtheta_pro_CTOF_{}', lab, save_name=output_pdfname,
-                     title='#Theta Resolution (CTOF)', xtitle='#theta_{p}', ytitle='#Delta #theta_{p}')
+                     title='#Theta Resolution (CTOF)', xtitle='#theta_{p}', ytitle='#Delta #theta_{p}',
+                     log=True)
 
     plot_sector_page(can, histos, 'histos_theta_pro_dtheta_pro_FTOF_{}', lab, save_name=output_pdfname,
-                     title='#Theta Resolution (FTOF)', xtitle='#theta_{p}', ytitle='#Delta #theta_{p}')
+                     title='#Theta Resolution (FTOF)', xtitle='#theta_{p}', ytitle='#Delta #theta_{p}',
+                     log=True)
     
     #plot_fits(can, histos, x_range=[6.0,12.0], x_bin_step=6, title_formatter='histos_theta_w_ele_{}',
     #          save_name=output_pdfname, label=lab, y_range=[0.6, 1.5],
