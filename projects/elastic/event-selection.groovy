@@ -229,8 +229,15 @@ GParsPool.withPool 16, {
 			histos.computeIfAbsent('angle_ep_pass_theta_gamma_' + ctof, histoBuilders.angle_ep).fill(pkin.angle)
 		    }
 
+		    if (pass_angle_ep && pkin.w < cuts.w[1]){
+			histos.computeIfAbsent('p_ele_theta_ele_elastic_' + ctof, histoBuilders2.p_ele_theta).fill(
+			    ele.p(), Math.toDegrees(ele.theta()))
+		    }
+
 		    if (pass_theta_gamma && pass_angle_ep){
 			histos.computeIfAbsent('w_pass_all_angles_' + ctof, histoBuilders.w).fill(pkin.w)
+			histos.computeIfAbsent('p_ele_theta_ele_isr_' + ctof, histoBuilders2.p_ele_theta).fill(
+			    ele.p(), Math.toDegrees(ele.theta()))
 		    }
  
                  }
