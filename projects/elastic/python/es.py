@@ -345,7 +345,14 @@ def plot_phase_space(can, histos, keyword, output_prefix):
     can.cd(4)
     histos['sim']['histos_p_ele_theta_ele_'+keyword+'_FTOF'].Draw('colz')
     latex.DrawLatex(0.3, 0.92, 'Sim (proton in FTOF)')
-    
+
+    for ican in range(1, 5):
+        can.cd(ican)
+        latex.DrawLatex(0.45, 0.02, 'p_{e} (GeV)')
+        latex.SetTextAngle(90.0)
+        latex.DrawLatex(0.03, 0.45, '#theta_{e} (Deg.)')
+        latex.SetTextAngle(0.0)
+            
     can.Print('phase_space_' + keyword + '_' + output_prefix + '.pdf')
     can.Clear()
     
