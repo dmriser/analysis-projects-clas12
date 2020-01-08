@@ -216,7 +216,6 @@ GParsPool.withPool 16, {
 
 		    if (pass_angle_ep){
 			histos.computeIfAbsent('w_pass_angle_' + ctof, histoBuilders.w).fill(pkin.w)
- 			histos.computeIfAbsent('w_pass_angle_'  + ctof, histoBuilders.w).fill(pkin.w)
 			histos.computeIfAbsent('theta_gamma_pass_angle_' + ctof, histoBuilders.theta_gamma).fill(pkin.theta_gamma)
  			histos.computeIfAbsent('theta_egamma_pass_angle_' + ctof, histoBuilders.theta_gamma).fill(pkin.theta_egamma)
 			histos.computeIfAbsent('theta_e_theta_gamma_pass_angle_' + ctof, histoBuilders2.theta_theta).fill(
