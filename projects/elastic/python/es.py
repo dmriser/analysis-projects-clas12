@@ -13,7 +13,8 @@ from scipy.optimize import minimize
 
 from array import array 
 from ROOT import (TH1F, TH2F, TH1D, TF1, TFile, TCanvas,
-                  gPad, gStyle, TLatex, TGraphErrors, TLine)
+                  gPad, gStyle, TLatex, TGraphErrors, TLine,
+                  kGray, kRed, kBlue, kBlack)
 
 default_histo = TH1F('default', '', 100, 0, 1)
 default_histo2d = TH2F('default', '', 100, 0, 1, 100, 0, 1)
@@ -376,7 +377,8 @@ if __name__ == '__main__':
     histos = {}
     for config_type, file in files.items():
         histos[config_type] = load_histos(file)
- 
+        print(histos[config_type].keys())
+        
     # Global opts
     gStyle.SetOptStat(0)
     gStyle.SetOptTitle(0)
@@ -386,7 +388,231 @@ if __name__ == '__main__':
     plot_phase_space(can, histos,
                      keyword='isr',
                      output_prefix=args.output_prefix)
-
     plot_phase_space(can, histos,
                      keyword='elastic',
                      output_prefix=args.output_prefix)
+
+    # -----------------------------------------------------------
+    # Plot W
+    # -----------------------------------------------------------
+    latex = TLatex()
+    latex.SetNDC()
+    latex.SetTextSize(0.045)
+    
+    can.Divide(2,2)
+
+    can.cd(1)
+    histos['data']['histos_w_inclusive_'].SetLineColor(kBlack)
+    histos['data']['histos_w_inclusive_'].SetFillColorAlpha(kGray,1.0)
+    histos['data']['histos_w_inclusive_'].Draw()
+    histos['data']['histos_w_CTOF'].SetLineColor(kBlack)
+    histos['data']['histos_w_CTOF'].SetFillColorAlpha(kBlue,1.0)
+    histos['data']['histos_w_CTOF'].Draw('same')
+    histos['data']['histos_w_pass_angle_CTOF'].SetLineColor(kBlack)
+    histos['data']['histos_w_pass_angle_CTOF'].SetFillColorAlpha(kRed,1.0)
+    histos['data']['histos_w_pass_angle_CTOF'].Draw('same')
+    latex.DrawLatex(0.45, 0.02, 'W (GeV/c^{2})')
+    latex.DrawLatex(0.3, 0.95, 'Data w/ Proton in CTOF')
+    latex.SetTextColor(kBlue)
+    latex.DrawLatex(0.15, 0.85, 'w/ proton')
+    latex.SetTextColor(kRed)
+    latex.DrawLatex(0.15, 0.80, 'w/ #Delta #phi cut')
+    latex.SetTextColor(kBlack)
+    
+    can.cd(2)
+    histos['data']['histos_w_inclusive_'].SetLineColor(kBlack)
+    histos['data']['histos_w_inclusive_'].SetFillColorAlpha(kGray,1.0)
+    histos['data']['histos_w_inclusive_'].Draw()
+    histos['data']['histos_w_FTOF'].SetLineColor(kBlack)
+    histos['data']['histos_w_FTOF'].SetFillColorAlpha(kBlue,1.0)
+    histos['data']['histos_w_FTOF'].Draw('same')
+    histos['data']['histos_w_pass_angle_FTOF'].SetLineColor(kBlack)
+    histos['data']['histos_w_pass_angle_FTOF'].SetFillColorAlpha(kRed, 1.0)
+    histos['data']['histos_w_pass_angle_FTOF'].Draw('same')
+    latex.DrawLatex(0.45, 0.02, 'W (GeV/c^{2})')
+    latex.DrawLatex(0.3, 0.95, 'Data w/ Proton in FTOF')
+    latex.SetTextColor(kBlue)
+    latex.DrawLatex(0.15, 0.85, 'w/ proton')
+    latex.SetTextColor(kRed)
+    latex.DrawLatex(0.15, 0.80, 'w/ #Delta #phi cut')
+    latex.SetTextColor(kBlack)
+    
+    can.cd(3)
+    histos['sim']['histos_w_inclusive_'].SetLineColor(kBlack)
+    histos['sim']['histos_w_inclusive_'].SetFillColorAlpha(kGray,1.0)
+    histos['sim']['histos_w_inclusive_'].Draw()
+    histos['sim']['histos_w_CTOF'].SetLineColor(kBlack)
+    histos['sim']['histos_w_CTOF'].SetFillColorAlpha(kBlue,1.0)
+    histos['sim']['histos_w_CTOF'].Draw('same')
+    histos['sim']['histos_w_pass_angle_CTOF'].SetLineColor(kBlack)
+    histos['sim']['histos_w_pass_angle_CTOF'].SetFillColorAlpha(kRed,1.0)
+    histos['sim']['histos_w_pass_angle_CTOF'].Draw('same')
+    latex.DrawLatex(0.45, 0.02, 'W (GeV/c^{2})')
+    latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in CTOF')
+    latex.SetTextColor(kBlue)
+    latex.DrawLatex(0.75, 0.85, 'w/ proton')
+    latex.SetTextColor(kRed)
+    latex.DrawLatex(0.75, 0.80, 'w/ #Delta #phi cut')
+    latex.SetTextColor(kBlack)
+    
+    can.cd(4)
+    histos['sim']['histos_w_inclusive_'].SetLineColor(kBlack)
+    histos['sim']['histos_w_inclusive_'].SetFillColorAlpha(kGray,1.0)
+    histos['sim']['histos_w_inclusive_'].Draw()
+    histos['sim']['histos_w_FTOF'].SetLineColor(kBlack)
+    histos['sim']['histos_w_FTOF'].SetFillColorAlpha(kBlue,1.0)
+    histos['sim']['histos_w_FTOF'].Draw('same')
+    histos['sim']['histos_w_pass_angle_FTOF'].SetLineColor(kBlack)
+    histos['sim']['histos_w_pass_angle_FTOF'].SetFillColorAlpha(kRed, 1.0)
+    histos['sim']['histos_w_pass_angle_FTOF'].Draw('same')
+    latex.DrawLatex(0.45, 0.02, 'W (GeV/c^{2})')
+    latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in FTOF')
+    latex.SetTextColor(kBlue)
+    latex.DrawLatex(0.75, 0.85, 'w/ proton')
+    latex.SetTextColor(kRed)
+    latex.DrawLatex(0.75, 0.80, 'w/ #Delta #phi cut')
+    latex.SetTextColor(kBlack)
+
+    can.Print('w_' + args.output_prefix + '.pdf')
+
+    # -----------------------------------------------------------
+    # Plot delta phi
+    # -----------------------------------------------------------
+
+    can.Clear()
+    can.Divide(2,2)
+
+    can.cd(1)
+    histos['data']['histos_theta_gamma_CTOF'].SetLineColor(kBlack)
+    histos['data']['histos_theta_gamma_CTOF'].SetFillColorAlpha(kGray,1.0)
+    histos['data']['histos_theta_gamma_CTOF'].Draw()
+    histos['data']['histos_theta_gamma_pass_angle_CTOF'].SetLineColor(kBlack)
+    histos['data']['histos_theta_gamma_pass_angle_CTOF'].SetFillColorAlpha(kRed,1.0)
+    histos['data']['histos_theta_gamma_pass_angle_CTOF'].Draw('same')
+    latex.DrawLatex(0.45, 0.02, '#theta_{#gamma} (deg)')
+    latex.SetTextColor(kRed)
+    latex.DrawLatex(0.15, 0.85, 'w/ #Delta #phi cut')
+    latex.SetTextColor(kBlack)
+    latex.DrawLatex(0.3, 0.95, 'Data w/ Proton in CTOF')
+    
+    can.cd(2)
+    histos['data']['histos_theta_gamma_FTOF'].SetLineColor(kBlack)
+    histos['data']['histos_theta_gamma_FTOF'].SetFillColorAlpha(kGray,1.0)
+    histos['data']['histos_theta_gamma_FTOF'].Draw()
+    histos['data']['histos_theta_gamma_pass_angle_FTOF'].SetLineColor(kBlack)
+    histos['data']['histos_theta_gamma_pass_angle_FTOF'].SetFillColorAlpha(kRed,1.0)
+    histos['data']['histos_theta_gamma_pass_angle_FTOF'].Draw('same')
+    latex.DrawLatex(0.45, 0.02, '#theta_{#gamma} (deg)')
+    latex.SetTextColor(kRed)
+    latex.DrawLatex(0.72, 0.85, 'w/ #Delta #phi cut')
+    latex.SetTextColor(kBlack)
+    latex.DrawLatex(0.3, 0.95, 'Data w/ Proton in FTOF')
+    
+    can.cd(3)
+    histos['sim']['histos_theta_gamma_CTOF'].SetLineColor(kBlack)
+    histos['sim']['histos_theta_gamma_CTOF'].SetFillColorAlpha(kGray,1.0)
+    histos['sim']['histos_theta_gamma_CTOF'].Draw()
+    histos['sim']['histos_theta_gamma_pass_angle_CTOF'].SetLineColor(kBlack)
+    histos['sim']['histos_theta_gamma_pass_angle_CTOF'].SetFillColorAlpha(kRed,1.0)
+    histos['sim']['histos_theta_gamma_pass_angle_CTOF'].Draw('same')
+    latex.DrawLatex(0.45, 0.02, '#theta_{#gamma} (deg)')
+    latex.SetTextColor(kRed)
+    latex.DrawLatex(0.15, 0.85, 'w/ #Delta #phi cut')
+    latex.SetTextColor(kBlack)
+    latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in CTOF')
+    
+    can.cd(4)
+    histos['sim']['histos_theta_gamma_FTOF'].SetLineColor(kBlack)
+    histos['sim']['histos_theta_gamma_FTOF'].SetFillColorAlpha(kGray,1.0)
+    histos['sim']['histos_theta_gamma_FTOF'].Draw()
+    histos['sim']['histos_theta_gamma_pass_angle_FTOF'].SetLineColor(kBlack)
+    histos['sim']['histos_theta_gamma_pass_angle_FTOF'].SetFillColorAlpha(kRed,1.0)
+    histos['sim']['histos_theta_gamma_pass_angle_FTOF'].Draw('same')
+    latex.DrawLatex(0.45, 0.02, '#theta_{#gamma} (deg)')
+    latex.SetTextColor(kRed)
+    latex.DrawLatex(0.72, 0.85, 'w/ #Delta #phi cut')
+    latex.SetTextColor(kBlack)
+    latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in FTOF')
+    
+    can.Print('theta_gamma_' + args.output_prefix + '.pdf')
+
+    
+    # -----------------------------------------------------------
+    # Plot angle EP 
+    # -----------------------------------------------------------
+
+    can.Clear()
+    can.Divide(2,2)
+
+    can.cd(1)
+    histos['data']['histos_angle_ep_CTOF'].SetLineColor(kBlack)
+    histos['data']['histos_angle_ep_CTOF'].SetFillColorAlpha(kGray,1.0)
+    histos['data']['histos_angle_ep_CTOF'].Draw()
+    latex.DrawLatex(0.45, 0.02, '#Delta#phi (deg)')
+    latex.DrawLatex(0.3, 0.95, 'Data w/ Proton in CTOF')
+    
+    can.cd(2)
+    histos['data']['histos_angle_ep_FTOF'].SetLineColor(kBlack)
+    histos['data']['histos_angle_ep_FTOF'].SetFillColorAlpha(kGray,1.0)
+    histos['data']['histos_angle_ep_FTOF'].Draw()
+    latex.DrawLatex(0.45, 0.02, '#Delta#phi (deg)')
+    latex.DrawLatex(0.3, 0.95, 'Data w/ Proton in FTOF')
+    
+    can.cd(3)
+    histos['sim']['histos_angle_ep_CTOF'].SetLineColor(kBlack)
+    histos['sim']['histos_angle_ep_CTOF'].SetFillColorAlpha(kGray,1.0)
+    histos['sim']['histos_angle_ep_CTOF'].Draw()
+    latex.DrawLatex(0.45, 0.02, '#Delta#phi (deg)')
+    latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in CTOF')
+    
+    can.cd(4)
+    histos['sim']['histos_angle_ep_FTOF'].SetLineColor(kBlack)
+    histos['sim']['histos_angle_ep_FTOF'].SetFillColorAlpha(kGray,1.0)
+    histos['sim']['histos_angle_ep_FTOF'].Draw()
+    latex.DrawLatex(0.45, 0.02, '#Delta#phi (deg)')
+    latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in FTOF')
+    
+    can.Print('angle_ep_' + args.output_prefix + '.pdf')
+
+        
+    # -----------------------------------------------------------
+    # Plot all the plots 
+    # -----------------------------------------------------------
+    # histos_theta_e_theta_gamma_pass_angle_FTOF
+    
+    can.Clear()
+    can.Divide(2,2)
+
+    can.cd(1)
+    histos['data']['histos_theta_e_theta_gamma_pass_angle_CTOF'].Draw('colz')
+    latex.DrawLatex(0.45, 0.02, '#theta_{e} (deg)')
+    latex.SetTextAngle(90.0)
+    latex.DrawLatex(0.02, 0.4, '#theta_{#gamma} (deg)')
+    latex.SetTextAngle(0.0)
+    latex.DrawLatex(0.3, 0.95, 'Data w/ Proton in CTOF')
+    
+    can.cd(2)
+    histos['data']['histos_theta_e_theta_gamma_pass_angle_FTOF'].Draw('colz')
+    latex.DrawLatex(0.45, 0.02, '#theta_{e} (deg)')
+    latex.SetTextAngle(90.0)
+    latex.DrawLatex(0.02, 0.4, '#theta_{#gamma} (deg)')
+    latex.SetTextAngle(0.0)
+    latex.DrawLatex(0.3, 0.95, 'Data w/ Proton in FTOF')
+    
+    can.cd(3)
+    histos['sim']['histos_theta_e_theta_gamma_pass_angle_CTOF'].Draw('colz')
+    latex.DrawLatex(0.45, 0.02, '#theta_{e} (deg)')
+    latex.SetTextAngle(90.0)
+    latex.DrawLatex(0.02, 0.4, '#theta_{#gamma} (deg)')
+    latex.SetTextAngle(0.0)
+    latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in CTOF')
+    
+    can.cd(4)
+    histos['sim']['histos_theta_e_theta_gamma_pass_angle_FTOF'].Draw('colz')
+    latex.DrawLatex(0.45, 0.02, '#theta_{e} (deg)')
+    latex.SetTextAngle(90.0)
+    latex.DrawLatex(0.02, 0.4, '#theta_{#gamma} (deg)')
+    latex.SetTextAngle(0.0)
+    latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in FTOF')
+        
+    can.Print('theta_theta_' + args.output_prefix + '.pdf')
