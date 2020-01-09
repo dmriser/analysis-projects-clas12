@@ -38,7 +38,7 @@ tighter_kin_bounds = [
         phi       : [-30, 330],
         dp_ele    : [-3, 3],
         dp_pro    : [-3, 3],
-        dtheta_ele: [-180, 180],
+        dtheta_ele: [-15, 15],
         dtheta_pro: [-6, 6],
         angle_ep  : [120, 180],
         q2        : [1.2, 4.5],
@@ -171,6 +171,30 @@ def predictProton(ele){
     return [momentum:pprime, theta:beta]
 }
 
+def predictElectronMathematica(pro){
+    def M = PDGDatabase.getParticleMass(2212)
+    def Pp = pro.p()
+    def Ep = Math.sqrt(M**2 + Pp**2)
+    def beta = pro.theta()
+    def cbeta = Math.cos(beta)
+    def c2beta = Math.cos(2 * beta)
+    def c3beta = Math.cos(3 * beta)
+    def sbeta = Math.sin(-beta)
+    
+    // Angle 
+    def expr_num = 2 * M**2 - 2 * M * Ep - Pp * (M + Ep) * cbeta
+    expr_num += 2 * M * (M + Ep) * c2beta + M * Pp * c3beta + Pp * Ep * c3beta
+    def expr_den = 2 * (2 * M**2 + Pp**2 - Pp**2 * c2beta)
+    def alpha = Math.acos(-1 * expr_num/expr_den)
+    
+    // Mom
+    expr_num = -2 * M * (-M + Ep)  * cbeta + Pp * (M + Ep) + (M - Ep) * c2beta
+    expr_den = 4 * M * cbeta - 2 * Pp * sbeta**2
+    def kprime = expr_num / expr_den
+
+    return [momentum:kprime, theta:alpha]
+}
+
 GParsPool.withPool 16, {
     args.eachParallel { filename ->
 
@@ -233,7 +257,7 @@ GParsPool.withPool 16, {
 			    pro.p(), Math.toDegrees(pro.theta()))
 
 			    // Resolutions 
-			    def pred_ele = predictElectron(pro)
+			    def pred_ele = predictElectronMathematica(pro)
 			    def pred_pro = predictProton(ele)
  
 			    histos.computeIfAbsent('p_ele_dp_ele_' + ctof + '_' + sector, histoBuilders2.p_ele_dp).fill(ele.p(), pred_ele.momentum - ele.p())
