@@ -455,3 +455,26 @@ if __name__ == '__main__':
     #          title='W vs. #theta_{e}', xtitle='#theta_{e}', ytitle='W', hline=0.938, y_fit_range=[0.85, 1.1])
 
     can.Print('{}]'.format(output_pdfname))
+
+
+    # single plots on landscape canvas                                                                                                                                    
+    lcan = TCanvas('can', 'can', 1100, 800)
+    plot_sector_page(lcan, histos, 'histos_theta_ele_dtheta_ele_CTOF_{}', lab,
+                     save_name='theta_ele_dtheta_ele_CTOF_{}.pdf'.format(args.output_prefix), 
+                     title='#Delta #theta_{e} vs #theta_{e}', ytitle='#Delta #theta_{e}',
+                     xtitle='#theta_{e}', log=True, landscape=True)
+
+    plot_sector_page(lcan, histos, 'histos_theta_pro_dtheta_pro_CTOF_{}', lab,
+                     save_name='theta_pro_dtheta_pro_CTOF_{}.pdf'.format(args.output_prefix), 
+                     title='#Delta #theta_{p} vs #theta_{p}', ytitle='#Delta #theta_{p}',
+                     xtitle='#theta_{p}', log=True, landscape=True)
+
+    plot_sector_page(lcan, histos, 'histos_p_ele_dp_ele_CTOF_{}', lab,
+                     save_name='p_ele_dp_ele_CTOF_{}.pdf'.format(args.output_prefix), 
+                     title='#Delta p_{e} vs p_{e}', ytitle='#Delta p_{e}',
+                     xtitle='p_{e}', log=True, landscape=True)
+
+    plot_sector_page(lcan, histos, 'histos_p_pro_dp_pro_CTOF_{}', lab,
+                     save_name='p_pro_dp_pro_CTOF_{}.pdf'.format(args.output_prefix), 
+                     title='#Delta p_{p} vs p_{p}', ytitle='#Delta p_{p}',
+                     xtitle='p_{p}', log=True, landscape=True)
