@@ -216,6 +216,11 @@ GParsPool.withPool 16, {
 
 		    def pass_theta_gamma = pkin.theta_gamma < cuts.theta_gamma[1]
 		    def pass_angle_ep = pkin.angle > cuts.angle[0] && pkin.angle < cuts.angle[1]
+		    def pass_w_elastic = pkin.w < cuts.w[1]
+
+		    if (pass_w_elastic){
+			histos.computeIfAbsent('angle_ep_pass_w_elastic_' + ctof, histoBuilders.angle_ep).fill(pkin.angle)
+		    }
 
 		    if (pass_angle_ep){
 			histos.computeIfAbsent('w_pass_angle_' + ctof, histoBuilders.w).fill(pkin.w)
@@ -233,7 +238,7 @@ GParsPool.withPool 16, {
 			histos.computeIfAbsent('angle_ep_pass_theta_gamma_' + ctof, histoBuilders.angle_ep).fill(pkin.angle)
 		    }
 
-		    if (pass_angle_ep && pkin.w < cuts.w[1]){
+		    if (pass_angle_ep && pass_w_elastic){
 			histos.computeIfAbsent('p_ele_theta_ele_elastic_' + ctof, histoBuilders2.p_ele_theta).fill(
 			    ele.p(), Math.toDegrees(ele.theta()))
 		    }
