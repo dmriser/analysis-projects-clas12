@@ -31,6 +31,7 @@ cuts = [
 tighter_kin_bounds = [
         theta_ele   : [5, 45],
         theta_pro   : [5, 90],
+    theta_sum : [0, 120],
         p_ele       : [0.1, 10.5],
         p_pro       : [0.1, 5.5],
         w           : [0.6, 4.7],
@@ -84,6 +85,7 @@ histoBuilders2 = [
         w_q2             : { title -> limited_h2(title, 200, 200, lim.w, lim.q2) },
         x_q2             : { title -> limited_h2(title, 200, 200, lim.x, lim.q2) },
     theta_theta: { title -> limited_h2(title, 200, 200, lim.theta_egamma, lim.theta_gamma) },
+    w_theta_sum : { title -> limited_h2(title, 200, 200, lim.w, lim.theta_sum) }
 ]
 
 
@@ -231,6 +233,10 @@ GParsPool.withPool 16, {
 			)
 			histos.computeIfAbsent('missing_mass_pass_angle_' + ctof, 
 					       histoBuilders.missing_mass).fill(pkin.missing_mass)
+
+			histos.computeIfAbsent('w_theta_sum_pass_angle_' + ctof, histoBuilders2.w_theta_sum).fill(
+			    pkin.w, Math.toDegrees(ele.theta() + pro.theta())
+			)
 		    }
 
 		    if (pass_theta_gamma){
