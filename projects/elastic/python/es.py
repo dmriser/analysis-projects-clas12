@@ -602,13 +602,13 @@ if __name__ == '__main__':
     # -----------------------------------------------------------
     # Plot all the plots 
     # -----------------------------------------------------------
-    # histos_theta_e_theta_gamma_pass_angle_FTOF
     
     can.Clear()
     can.Divide(2,2)
 
     can.cd(1)
     histos['data']['histos_theta_e_theta_gamma_pass_angle_CTOF'].Draw('colz')
+    gPad.SetLogz()
     latex.DrawLatex(0.45, 0.02, '#theta_{e} (deg)')
     latex.SetTextAngle(90.0)
     latex.DrawLatex(0.02, 0.4, '#theta_{#gamma} (deg)')
@@ -617,6 +617,7 @@ if __name__ == '__main__':
     
     can.cd(2)
     histos['data']['histos_theta_e_theta_gamma_pass_angle_FTOF'].Draw('colz')
+    gPad.SetLogz()
     latex.DrawLatex(0.45, 0.02, '#theta_{e} (deg)')
     latex.SetTextAngle(90.0)
     latex.DrawLatex(0.02, 0.4, '#theta_{#gamma} (deg)')
@@ -625,6 +626,7 @@ if __name__ == '__main__':
     
     can.cd(3)
     histos['sim']['histos_theta_e_theta_gamma_pass_angle_CTOF'].Draw('colz')
+    gPad.SetLogz()
     latex.DrawLatex(0.45, 0.02, '#theta_{e} (deg)')
     latex.SetTextAngle(90.0)
     latex.DrawLatex(0.02, 0.4, '#theta_{#gamma} (deg)')
@@ -633,6 +635,7 @@ if __name__ == '__main__':
     
     can.cd(4)
     histos['sim']['histos_theta_e_theta_gamma_pass_angle_FTOF'].Draw('colz')
+    gPad.SetLogz()
     latex.DrawLatex(0.45, 0.02, '#theta_{e} (deg)')
     latex.SetTextAngle(90.0)
     latex.DrawLatex(0.02, 0.4, '#theta_{#gamma} (deg)')
