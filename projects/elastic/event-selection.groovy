@@ -31,6 +31,7 @@ cuts = [
 tighter_kin_bounds = [
         theta_ele   : [5, 45],
         theta_pro   : [5, 90],
+    theta_sum : [0, 120],
         p_ele       : [0.1, 10.5],
         p_pro       : [0.1, 5.5],
         w           : [0.6, 4.7],
@@ -45,7 +46,8 @@ tighter_kin_bounds = [
         missing_pt  : [0, 1],
         e_gamma     : [0, 11],
         theta_gamma :[0, 35],
-        theta_egamma:[0, 35]
+        theta_egamma:[0, 35],
+    missing_mass: [-1, 1]
 ]
 
 lim = tighter_kin_bounds
@@ -69,7 +71,8 @@ histoBuilders = [
         theta_ele: { title -> limited_h1(title, 200, lim.theta_ele) },
         theta_pro: { title -> limited_h1(title, 200, lim.theta_pro) },
         e_gamma: { title -> limited_h1(title, 200, lim.e_gamma) },
-    theta_gamma: { title -> limited_h1(title, 200, lim.theta_gamma) }
+    theta_gamma: { title -> limited_h1(title, 200, lim.theta_gamma) },
+    missing_mass: { title -> limited_h1(title, 200, lim.missing_mass) }
 ]
 
 histoBuilders2 = [
@@ -82,6 +85,7 @@ histoBuilders2 = [
         w_q2             : { title -> limited_h2(title, 200, 200, lim.w, lim.q2) },
         x_q2             : { title -> limited_h2(title, 200, 200, lim.x, lim.q2) },
     theta_theta: { title -> limited_h2(title, 200, 200, lim.theta_egamma, lim.theta_gamma) },
+    w_theta_sum : { title -> limited_h2(title, 200, 200, lim.w, lim.theta_sum) }
 ]
 
 
@@ -210,9 +214,15 @@ GParsPool.withPool 16, {
                     histos.computeIfAbsent('w_' + ctof, histoBuilders.w).fill(pkin.w)
                     histos.computeIfAbsent('angle_ep_' + ctof, histoBuilders.angle_ep).fill(pkin.angle)
                     histos.computeIfAbsent('theta_gamma_' + ctof, histoBuilders.theta_gamma).fill(pkin.theta_gamma)
+		    histos.computeIfAbsent('missing_mass_' + ctof, histoBuilders.missing_mass).fill(pkin.missing_mass)
 
 		    def pass_theta_gamma = pkin.theta_gamma < cuts.theta_gamma[1]
 		    def pass_angle_ep = pkin.angle > cuts.angle[0] && pkin.angle < cuts.angle[1]
+		    def pass_w_elastic = pkin.w < cuts.w[1]
+
+		    if (pass_w_elastic){
+			histos.computeIfAbsent('angle_ep_pass_w_elastic_' + ctof, histoBuilders.angle_ep).fill(pkin.angle)
+		    }
 
 		    if (pass_angle_ep){
 			histos.computeIfAbsent('w_pass_angle_' + ctof, histoBuilders.w).fill(pkin.w)
@@ -221,6 +231,12 @@ GParsPool.withPool 16, {
 			histos.computeIfAbsent('theta_e_theta_gamma_pass_angle_' + ctof, histoBuilders2.theta_theta).fill(
 			    Math.toDegrees(ele.theta()), pkin.theta_gamma
 			)
+			histos.computeIfAbsent('missing_mass_pass_angle_' + ctof, 
+					       histoBuilders.missing_mass).fill(pkin.missing_mass)
+
+			histos.computeIfAbsent('w_theta_sum_pass_angle_' + ctof, histoBuilders2.w_theta_sum).fill(
+			    pkin.w, Math.toDegrees(ele.theta() + pro.theta())
+			)
 		    }
 
 		    if (pass_theta_gamma){
@@ -228,7 +244,7 @@ GParsPool.withPool 16, {
 			histos.computeIfAbsent('angle_ep_pass_theta_gamma_' + ctof, histoBuilders.angle_ep).fill(pkin.angle)
 		    }
 
-		    if (pass_angle_ep && pkin.w < cuts.w[1]){
+		    if (pass_angle_ep && pass_w_elastic){
 			histos.computeIfAbsent('p_ele_theta_ele_elastic_' + ctof, histoBuilders2.p_ele_theta).fill(
 			    ele.p(), Math.toDegrees(ele.theta()))
 		    }

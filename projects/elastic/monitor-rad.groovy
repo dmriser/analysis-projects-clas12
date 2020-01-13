@@ -172,6 +172,7 @@ def predictProton(ele){
 }
 
 def predictElectronMathematica(pro){
+    // This one actually works! 
     def M = PDGDatabase.getParticleMass(2212)
     def Pp = pro.p()
     def Ep = Math.sqrt(M**2 + Pp**2)

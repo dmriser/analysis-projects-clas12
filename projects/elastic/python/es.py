@@ -548,29 +548,53 @@ if __name__ == '__main__':
     histos['data']['histos_angle_ep_CTOF'].SetLineColor(kBlack)
     histos['data']['histos_angle_ep_CTOF'].SetFillColorAlpha(kGray,1.0)
     histos['data']['histos_angle_ep_CTOF'].Draw()
+    histos['data']['histos_angle_ep_pass_w_elastic_CTOF'].SetLineColor(kBlack)
+    histos['data']['histos_angle_ep_pass_w_elastic_CTOF'].SetFillColorAlpha(kRed,1.0)
+    histos['data']['histos_angle_ep_pass_w_elastic_CTOF'].Draw('same')
     latex.DrawLatex(0.45, 0.02, '#Delta#phi (deg)')
     latex.DrawLatex(0.3, 0.95, 'Data w/ Proton in CTOF')
+    latex.SetTextColor(kRed)
+    latex.DrawLatex(0.68, 0.85, 'Elastic Peak')
+    latex.SetTextColor(kBlack)
     
     can.cd(2)
     histos['data']['histos_angle_ep_FTOF'].SetLineColor(kBlack)
     histos['data']['histos_angle_ep_FTOF'].SetFillColorAlpha(kGray,1.0)
     histos['data']['histos_angle_ep_FTOF'].Draw()
+    histos['data']['histos_angle_ep_pass_w_elastic_FTOF'].SetLineColor(kBlack)
+    histos['data']['histos_angle_ep_pass_w_elastic_FTOF'].SetFillColorAlpha(kRed,1.0)
+    histos['data']['histos_angle_ep_pass_w_elastic_FTOF'].Draw('same')
     latex.DrawLatex(0.45, 0.02, '#Delta#phi (deg)')
     latex.DrawLatex(0.3, 0.95, 'Data w/ Proton in FTOF')
+    latex.SetTextColor(kRed)
+    latex.DrawLatex(0.68, 0.85, 'Elastic Peak')
+    latex.SetTextColor(kBlack)
     
     can.cd(3)
     histos['sim']['histos_angle_ep_CTOF'].SetLineColor(kBlack)
     histos['sim']['histos_angle_ep_CTOF'].SetFillColorAlpha(kGray,1.0)
     histos['sim']['histos_angle_ep_CTOF'].Draw()
+    histos['sim']['histos_angle_ep_pass_w_elastic_CTOF'].SetLineColor(kBlack)
+    histos['sim']['histos_angle_ep_pass_w_elastic_CTOF'].SetFillColorAlpha(kRed,1.0)
+    histos['sim']['histos_angle_ep_pass_w_elastic_CTOF'].Draw('same')
     latex.DrawLatex(0.45, 0.02, '#Delta#phi (deg)')
     latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in CTOF')
+    latex.SetTextColor(kRed)
+    latex.DrawLatex(0.68, 0.85, 'Elastic Peak')
+    latex.SetTextColor(kBlack)
     
     can.cd(4)
     histos['sim']['histos_angle_ep_FTOF'].SetLineColor(kBlack)
     histos['sim']['histos_angle_ep_FTOF'].SetFillColorAlpha(kGray,1.0)
     histos['sim']['histos_angle_ep_FTOF'].Draw()
+    histos['sim']['histos_angle_ep_pass_w_elastic_FTOF'].SetLineColor(kBlack)
+    histos['sim']['histos_angle_ep_pass_w_elastic_FTOF'].SetFillColorAlpha(kRed,1.0)
+    histos['sim']['histos_angle_ep_pass_w_elastic_FTOF'].Draw('same')
     latex.DrawLatex(0.45, 0.02, '#Delta#phi (deg)')
     latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in FTOF')
+    latex.SetTextColor(kRed)
+    latex.DrawLatex(0.68, 0.85, 'Elastic Peak')
+    latex.SetTextColor(kBlack)
     
     can.Print('angle_ep_' + args.output_prefix + '.pdf')
 
@@ -578,13 +602,13 @@ if __name__ == '__main__':
     # -----------------------------------------------------------
     # Plot all the plots 
     # -----------------------------------------------------------
-    # histos_theta_e_theta_gamma_pass_angle_FTOF
     
     can.Clear()
     can.Divide(2,2)
 
     can.cd(1)
     histos['data']['histos_theta_e_theta_gamma_pass_angle_CTOF'].Draw('colz')
+    gPad.SetLogz()
     latex.DrawLatex(0.45, 0.02, '#theta_{e} (deg)')
     latex.SetTextAngle(90.0)
     latex.DrawLatex(0.02, 0.4, '#theta_{#gamma} (deg)')
@@ -593,6 +617,7 @@ if __name__ == '__main__':
     
     can.cd(2)
     histos['data']['histos_theta_e_theta_gamma_pass_angle_FTOF'].Draw('colz')
+    gPad.SetLogz()
     latex.DrawLatex(0.45, 0.02, '#theta_{e} (deg)')
     latex.SetTextAngle(90.0)
     latex.DrawLatex(0.02, 0.4, '#theta_{#gamma} (deg)')
@@ -601,6 +626,7 @@ if __name__ == '__main__':
     
     can.cd(3)
     histos['sim']['histos_theta_e_theta_gamma_pass_angle_CTOF'].Draw('colz')
+    gPad.SetLogz()
     latex.DrawLatex(0.45, 0.02, '#theta_{e} (deg)')
     latex.SetTextAngle(90.0)
     latex.DrawLatex(0.02, 0.4, '#theta_{#gamma} (deg)')
@@ -609,6 +635,7 @@ if __name__ == '__main__':
     
     can.cd(4)
     histos['sim']['histos_theta_e_theta_gamma_pass_angle_FTOF'].Draw('colz')
+    gPad.SetLogz()
     latex.DrawLatex(0.45, 0.02, '#theta_{e} (deg)')
     latex.SetTextAngle(90.0)
     latex.DrawLatex(0.02, 0.4, '#theta_{#gamma} (deg)')

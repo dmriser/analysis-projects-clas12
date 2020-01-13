@@ -1,4 +1,4 @@
-NAME: clas12-analysis-dmriser 
+JOBNAME: clas12-analysis-dmriser 
 PROJECT: clas12
 TRACK: simulation 
 TIME: 180
@@ -6,7 +6,7 @@ CPU: 1
 MEMORY: 2410 MB
 OS: CENTOS7
 COMMAND: chmod +x run.csh; ./run.csh
-OUTPUT_TEMPLATE:/volatile/clas12/dmriser/farm_out/elastic_jan24/data/02/* 
+OUTPUT_TEMPLATE:/volatile/clas12/dmriser/farm_out/elastic_jan24/data/03/* 
 
 OTHER_FILES: 
 /u/home/dmriser/analysis-projects-clas12/farm_scripts/run.csh
