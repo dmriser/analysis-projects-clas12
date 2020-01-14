@@ -342,6 +342,7 @@ if __name__ == '__main__':
         histos[config_type] = load_histos(file)
         print(histos[config_type].keys())
 
+    """
     plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
                   x_range=[0.25,2.00], y_range=[-0.8,0.8], x_bin_step=4, title_formatter='histos_p_pro_dp_pro_CTOF_{}',
                   save_name='p_pro_dp_pro_fit_rad_{}.png'.format(args.output_prefix),
@@ -369,3 +370,32 @@ if __name__ == '__main__':
                   title='Proton Angular Resolution', xtitle='$\theta_p$', ytitle='$\Delta \theta_{p}$',
                   max_errorbar = 0.8, y_fit_range=[-3, 3], hline=0.00001, x_shift=False
     ) 
+    """
+    
+    # ------------------------------------------------------
+    # Plot some distribution compare 
+    # ------------------------------------------------------
+    gStyle.SetOptTitle(0)
+    gStyle.SetOptStat(0)
+
+    can = TCanvas('can', 'can', 1100, 800)
+
+    plot_sector_page(can, histos['data'], histos['sim'],
+                     config1='Data', config2='Sim', title_formatter='histos_p_pro_CTOF_{}',
+                     save_name='histos_p_proton_ctof_compare_rad.pdf',
+                     xtitle='P_{p} (GeV/c)', title='P_{p}')
+
+    plot_sector_page(can, histos['data'], histos['sim'],
+                     config1='Data', config2='Sim', title_formatter='histos_p_pro_FTOF_{}',
+                     save_name='histos_p_proton_ftof_compare_rad.pdf',
+                     xtitle='P_{p} (GeV/c)', title='P_{p}')
+
+    plot_sector_page(can, histos['data'], histos['sim'],
+                     config1='Data', config2='Sim', title_formatter='histos_p_ele_CTOF_{}',
+                     save_name='histos_p_electron_ctof_compare_rad.pdf',
+                     xtitle='P_{e} (GeV/c)', title='P_{e}')
+
+    plot_sector_page(can, histos['data'], histos['sim'],
+                     config1='Data', config2='Sim', title_formatter='histos_p_ele_FTOF_{}',
+                     save_name='histos_p_electron_ftof_compare_rad.pdf',
+                     xtitle='P_{e} (GeV/c)', title='P_{e}')

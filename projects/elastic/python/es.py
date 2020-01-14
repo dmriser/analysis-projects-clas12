@@ -380,6 +380,8 @@ if __name__ == '__main__':
         print(histos[config_type].keys())
         
     # Global opts
+    kRed = kRed + 2
+    kBlue = kBlue + 2
     gStyle.SetOptStat(0)
     gStyle.SetOptTitle(0)
     
@@ -535,8 +537,7 @@ if __name__ == '__main__':
     latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in FTOF')
     
     can.Print('theta_gamma_' + args.output_prefix + '.pdf')
-
-    
+     
     # -----------------------------------------------------------
     # Plot angle EP 
     # -----------------------------------------------------------
@@ -689,3 +690,154 @@ if __name__ == '__main__':
     latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in FTOF')
 
     can.Print('w_theta_sum_' + args.output_prefix + '.pdf')
+
+    # -----------------------------------------------------------
+    # Plot Missing Mass
+    # -----------------------------------------------------------
+
+    can.Clear()
+    can.Divide(2,2)
+
+    can.cd(1)
+    histos['data']['histos_missing_mass_CTOF'].SetLineColor(kBlack)
+    histos['data']['histos_missing_mass_CTOF'].SetFillColorAlpha(kGray,1.0)
+    histos['data']['histos_missing_mass_CTOF'].Draw()
+    histos['data']['histos_missing_mass_pass_angle_CTOF'].SetLineColor(kBlack)
+    histos['data']['histos_missing_mass_pass_angle_CTOF'].SetFillColorAlpha(kRed,1.0)
+    histos['data']['histos_missing_mass_pass_angle_CTOF'].Draw('same')
+    latex.DrawLatex(0.45, 0.02, 'M_{X}')
+    latex.SetTextColor(kRed)
+    latex.DrawLatex(0.15, 0.85, 'w/ #Delta #phi cut')
+    latex.SetTextColor(kBlack)
+    latex.DrawLatex(0.3, 0.95, 'Data w/ Proton in CTOF')
+
+    can.cd(2)
+    histos['data']['histos_missing_mass_FTOF'].SetLineColor(kBlack)
+    histos['data']['histos_missing_mass_FTOF'].SetFillColorAlpha(kGray,1.0)
+    histos['data']['histos_missing_mass_FTOF'].Draw()
+    histos['data']['histos_missing_mass_pass_angle_FTOF'].SetLineColor(kBlack)
+    histos['data']['histos_missing_mass_pass_angle_FTOF'].SetFillColorAlpha(kRed,1.0)
+    histos['data']['histos_missing_mass_pass_angle_FTOF'].Draw('same')
+    latex.DrawLatex(0.45, 0.02, 'M_{X}')
+    latex.SetTextColor(kRed)
+    latex.DrawLatex(0.15, 0.85, 'w/ #Delta #phi cut')
+    latex.SetTextColor(kBlack)
+    latex.DrawLatex(0.3, 0.95, 'Data w/ Proton in FTOF')
+
+    can.cd(3)
+    histos['sim']['histos_missing_mass_CTOF'].SetLineColor(kBlack)
+    histos['sim']['histos_missing_mass_CTOF'].SetFillColorAlpha(kGray,1.0)
+    histos['sim']['histos_missing_mass_CTOF'].Draw()
+    histos['sim']['histos_missing_mass_pass_angle_CTOF'].SetLineColor(kBlack)
+    histos['sim']['histos_missing_mass_pass_angle_CTOF'].SetFillColorAlpha(kRed,1.0)
+    histos['sim']['histos_missing_mass_pass_angle_CTOF'].Draw('same')
+    latex.DrawLatex(0.45, 0.02, 'M_{X}')
+    latex.SetTextColor(kRed)
+    latex.DrawLatex(0.15, 0.85, 'w/ #Delta #phi cut')
+    latex.SetTextColor(kBlack)
+    latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in CTOF')
+
+    can.cd(4)
+    histos['sim']['histos_missing_mass_FTOF'].SetLineColor(kBlack)
+    histos['sim']['histos_missing_mass_FTOF'].SetFillColorAlpha(kGray,1.0)
+    histos['sim']['histos_missing_mass_FTOF'].Draw()
+    histos['sim']['histos_missing_mass_pass_angle_FTOF'].SetLineColor(kBlack)
+    histos['sim']['histos_missing_mass_pass_angle_FTOF'].SetFillColorAlpha(kRed,1.0)
+    histos['sim']['histos_missing_mass_pass_angle_FTOF'].Draw('same')
+    latex.DrawLatex(0.45, 0.02, 'M_{X}')
+    latex.SetTextColor(kRed)
+    latex.DrawLatex(0.15, 0.85, 'w/ #Delta #phi cut')
+    latex.SetTextColor(kBlack)
+    latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in FTOF')
+
+    can.Print('missing_mass_' + args.output_prefix + '.pdf')
+    
+    # -----------------------------------------------------------
+    # Plot Angular Sum
+    # -----------------------------------------------------------
+    
+    can.Clear()
+    can.Divide(2,2)
+
+    can.cd(1)
+    histos['data']['histos_w_theta_sum_pass_missing_mass_CTOF'].Draw('colz')
+    gPad.SetLogz()
+    latex.DrawLatex(0.45, 0.02, 'W')
+    latex.SetTextAngle(90.0)
+    latex.DrawLatex(0.02, 0.4, '#theta_{e} + #theta_{p} (deg)')
+    latex.SetTextAngle(0.0)
+    latex.DrawLatex(0.3, 0.95, 'Data w/ Proton in CTOF (Pass M_{X})')
+
+    can.cd(2)
+    histos['data']['histos_w_theta_sum_pass_missing_mass_FTOF'].Draw('colz')
+    gPad.SetLogz()
+    latex.DrawLatex(0.45, 0.02, 'W')
+    latex.SetTextAngle(90.0)
+    latex.DrawLatex(0.02, 0.4, '#theta_{e} + #theta_{p} (deg)')
+    latex.SetTextAngle(0.0)
+    latex.DrawLatex(0.3, 0.95, 'Data w/ Proton in FTOF (Pass M_{X})')
+
+    can.cd(3)
+    histos['sim']['histos_w_theta_sum_pass_missing_mass_CTOF'].Draw('colz')
+    gPad.SetLogz()
+    latex.DrawLatex(0.45, 0.02, 'W')
+    latex.SetTextAngle(90.0)
+    latex.DrawLatex(0.02, 0.4, '#theta_{e} + #theta_{p} (deg)')
+    latex.SetTextAngle(0.0)
+    latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in CTOF (Pass M_{X})')
+
+    can.cd(4)
+    histos['sim']['histos_w_theta_sum_pass_missing_mass_FTOF'].Draw('colz')
+    gPad.SetLogz()
+    latex.DrawLatex(0.45, 0.02, 'W')
+    latex.SetTextAngle(90.0)
+    latex.DrawLatex(0.02, 0.4, '#theta_{e} + #theta_{p} (deg)')
+    latex.SetTextAngle(0.0)
+    latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in FTOF (Pass M_{X})')
+
+    can.Print('w_theta_sum_pass_missing_mass_' + args.output_prefix + '.pdf')
+
+    # -----------------------------------------------------------
+    # Plot Angular Sum
+    # -----------------------------------------------------------
+    
+    can.Clear()
+    can.Divide(2,2)
+
+    can.cd(1)
+    histos['data']['histos_w_theta_sum_pass_missing_mass_angles_CTOF'].Draw('colz')
+    gPad.SetLogz()
+    latex.DrawLatex(0.45, 0.02, 'W')
+    latex.SetTextAngle(90.0)
+    latex.DrawLatex(0.02, 0.4, '#theta_{e} + #theta_{p} (deg)')
+    latex.SetTextAngle(0.0)
+    latex.DrawLatex(0.3, 0.95, 'Data w/ Proton in CTOF (Pass M_{X}, #Delta #phi)')
+
+    can.cd(2)
+    histos['data']['histos_w_theta_sum_pass_missing_mass_angles_FTOF'].Draw('colz')
+    gPad.SetLogz()
+    latex.DrawLatex(0.45, 0.02, 'W')
+    latex.SetTextAngle(90.0)
+    latex.DrawLatex(0.02, 0.4, '#theta_{e} + #theta_{p} (deg)')
+    latex.SetTextAngle(0.0)
+    latex.DrawLatex(0.3, 0.95, 'Data w/ Proton in FTOF (Pass M_{X}, #Delta #phi)')
+
+    can.cd(3)
+    histos['sim']['histos_w_theta_sum_pass_missing_mass_angles_CTOF'].Draw('colz')
+    gPad.SetLogz()
+    latex.DrawLatex(0.45, 0.02, 'W')
+    latex.SetTextAngle(90.0)
+    latex.DrawLatex(0.02, 0.4, '#theta_{e} + #theta_{p} (deg)')
+    latex.SetTextAngle(0.0)
+    latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in CTOF (Pass M_{X}, #Delta #phi)')
+
+    can.cd(4)
+    histos['sim']['histos_w_theta_sum_pass_missing_mass_angles_FTOF'].Draw('colz')
+    gPad.SetLogz()
+    latex.DrawLatex(0.45, 0.02, 'W')
+    latex.SetTextAngle(90.0)
+    latex.DrawLatex(0.02, 0.4, '#theta_{e} + #theta_{p} (deg)')
+    latex.SetTextAngle(0.0)
+    latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in FTOF (Pass M_{X}, #Delta #phi)')
+
+    can.Print('w_theta_sum_pass_missing_mass_angles_' + args.output_prefix + '.pdf')
