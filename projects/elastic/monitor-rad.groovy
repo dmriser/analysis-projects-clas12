@@ -25,7 +25,8 @@ cuts = [
     angle: [175, 185],
     missing_pt: [0.0, 0.2],
     theta_gamma: [0, 3],
-    p_ele:[1.5, 10.646]
+    p_ele:[1.5, 10.646],
+    missing_mass: [-0.08, 0.08]
 ]
 
 tighter_kin_bounds = [
@@ -249,13 +250,20 @@ GParsPool.withPool 16, {
 			    Math.toDegrees(ele.theta()), pkin.theta_gamma
 			)
 
+			def pass_missing_mass = pkin.missing_mass > cuts.missing_mass[0] && pkin.missing_mass < cuts.missing_mass[1]
+
 			// These are ISR events. 
-			if (pkin.theta_gamma < cuts.theta_gamma[1]) {
+			if (pkin.theta_gamma < cuts.theta_gamma[1] && pass_missing_mass) {
  			    histos.computeIfAbsent('w_pass_all_' + ctof + '_' + sector, histoBuilders.w).fill(pkin.w)
 			    histos.computeIfAbsent('p_ele_theta_ele_' + ctof + '_' + sector, histoBuilders2.p_ele_theta).fill(
 			    ele.p(), Math.toDegrees(ele.theta()))
 			    histos.computeIfAbsent('p_pro_theta_pro_' + ctof + '_' + sector, histoBuilders2.p_pro_theta).fill(
 			    pro.p(), Math.toDegrees(pro.theta()))
+
+			    histos.computeIfAbsent('p_ele_' + ctof + '_' + sector, histoBuilders.p_ele).fill(ele.p())
+			    histos.computeIfAbsent('theta_ele_' + ctof + '_' + sector, histoBuilders.theta_ele).fill(Math.toDegrees(ele.theta()))
+			    histos.computeIfAbsent('p_pro_' + ctof + '_' + sector, histoBuilders.p_pro).fill(pro.p())
+			    histos.computeIfAbsent('theta_pro_' + ctof + '_' + sector, histoBuilders.theta_pro).fill(Math.toDegrees(pro.theta()))
 
 			    // Resolutions 
 			    def pred_ele = predictElectronMathematica(pro)
