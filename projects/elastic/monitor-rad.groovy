@@ -197,6 +197,16 @@ def predictElectronMathematica(pro){
     return [momentum:kprime, theta:alpha]
 }
 
+def predictElectronMomentum(ele, pro){
+    def M = PDGDatabase.getParticleMass(2212)
+    return M * Math.cos(ele.theta()/2 + pro.theta()) / Math.sin(ele.theta()/2) / Math.sin(ele.theta() + pro.theta())
+}
+
+def predictProtonMomentum(ele, pro){
+    def M = PDGDatabase.getParticleMass(2212)
+    return 2 * M * Math.cos(ele.theta()/2) * Math.cos(ele.theta()/2 + pro.theta()) / Math.sin(pro.theta()) / Math.sin(ele.theta() + pro.theta())    
+}
+
 GParsPool.withPool 16, {
     args.eachParallel { filename ->
 
@@ -268,9 +278,16 @@ GParsPool.withPool 16, {
 			    // Resolutions 
 			    def pred_ele = predictElectronMathematica(pro)
 			    def pred_pro = predictProton(ele)
- 
+			    
+			    def pred_ele_p = predictElectronMomentum(ele, pro)
+			    def pred_pro_p = predictProtonMomentum(ele, pro)
+
 			    histos.computeIfAbsent('p_ele_dp_ele_' + ctof + '_' + sector, histoBuilders2.p_ele_dp).fill(ele.p(), pred_ele.momentum - ele.p())
+			    histos.computeIfAbsent('p_ele_dp_ele_from_angles_' + ctof + '_' + sector, histoBuilders2.p_ele_dp).fill(
+				ele.p(), pred_ele_p - ele.p())
 			    histos.computeIfAbsent('p_pro_dp_pro_' + ctof + '_' + sector, histoBuilders2.p_pro_dp).fill(pro.p(), pred_pro.momentum - pro.p())
+			    histos.computeIfAbsent('p_pro_dp_pro_from_angles_' + ctof + '_' + sector, histoBuilders2.p_pro_dp).fill(
+				pro.p(), pred_pro_p - pro.p())
 
 			    histos.computeIfAbsent('theta_ele_dtheta_ele_' + ctof + '_' + sector, histoBuilders2.theta_ele_dtheta).fill(
 				Math.toDegrees(ele.theta()), Math.toDegrees(pred_ele.theta - ele.theta()))
