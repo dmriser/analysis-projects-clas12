@@ -478,3 +478,13 @@ if __name__ == '__main__':
                      save_name='p_pro_dp_pro_CTOF_{}.pdf'.format(args.output_prefix), 
                      title='#Delta p_{p} vs p_{p}', ytitle='#Delta p_{p}',
                      xtitle='p_{p}', log=True, landscape=True)
+
+    plot_sector_page(lcan, histos, 'histos_p_ele_dp_ele_from_angles_CTOF_{}', lab,
+                     save_name='p_ele_dp_ele_from_angles_CTOF_{}.pdf'.format(args.output_prefix), 
+                     title='#Delta p_{e} vs p_{e}', ytitle='#Delta p_{e}',
+                     xtitle='p_{e}', log=True, landscape=True)
+
+    plot_sector_page(lcan, histos, 'histos_p_pro_dp_pro_from_angles_CTOF_{}', lab,
+                     save_name='p_pro_dp_pro_from_angles_CTOF_{}.pdf'.format(args.output_prefix), 
+                     title='#Delta p_{p} vs p_{p}', ytitle='#Delta p_{p}',
+                     xtitle='p_{p}', log=True, landscape=True)
