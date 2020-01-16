@@ -841,3 +841,48 @@ if __name__ == '__main__':
     latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in FTOF (Pass M_{X}, #Delta #phi)')
 
     can.Print('w_theta_sum_pass_missing_mass_angles_' + args.output_prefix + '.pdf')
+
+    # -----------------------------------------------------------
+    # Plot Angular Sum
+    # -----------------------------------------------------------
+    
+    can.Clear()
+    can.Divide(2,2)
+
+    can.cd(1)
+    histos['data']['histos_w_theta_sum_isr_CTOF'].Draw('colz')
+    gPad.SetLogz()
+    latex.DrawLatex(0.45, 0.02, 'W')
+    latex.SetTextAngle(90.0)
+    latex.DrawLatex(0.02, 0.4, '#theta_{e} + #theta_{p} (deg)')
+    latex.SetTextAngle(0.0)
+    latex.DrawLatex(0.3, 0.95, 'Data w/ Proton in CTOF (ISR)')
+
+    can.cd(2)
+    histos['data']['histos_w_theta_sum_isr_FTOF'].Draw('colz')
+    gPad.SetLogz()
+    latex.DrawLatex(0.45, 0.02, 'W')
+    latex.SetTextAngle(90.0)
+    latex.DrawLatex(0.02, 0.4, '#theta_{e} + #theta_{p} (deg)')
+    latex.SetTextAngle(0.0)
+    latex.DrawLatex(0.3, 0.95, 'Data w/ Proton in FTOF (ISR)')
+
+    can.cd(3)
+    histos['sim']['histos_w_theta_sum_isr_CTOF'].Draw('colz')
+    gPad.SetLogz()
+    latex.DrawLatex(0.45, 0.02, 'W')
+    latex.SetTextAngle(90.0)
+    latex.DrawLatex(0.02, 0.4, '#theta_{e} + #theta_{p} (deg)')
+    latex.SetTextAngle(0.0)
+    latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in CTOF (ISR)')
+
+    can.cd(4)
+    histos['sim']['histos_w_theta_sum_isr_FTOF'].Draw('colz')
+    gPad.SetLogz()
+    latex.DrawLatex(0.45, 0.02, 'W')
+    latex.SetTextAngle(90.0)
+    latex.DrawLatex(0.02, 0.4, '#theta_{e} + #theta_{p} (deg)')
+    latex.SetTextAngle(0.0)
+    latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in FTOF (ISR)')
+
+    can.Print('w_theta_sum_isr_' + args.output_prefix + '.pdf')
