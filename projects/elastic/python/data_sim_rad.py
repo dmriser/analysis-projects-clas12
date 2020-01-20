@@ -342,20 +342,21 @@ if __name__ == '__main__':
         histos[config_type] = load_histos(file)
         print(histos[config_type].keys())
 
-    """
     plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
-                  x_range=[0.25,2.00], y_range=[-0.8,0.8], x_bin_step=4, title_formatter='histos_p_pro_dp_pro_CTOF_{}',
+                  x_range=[0.40,2.00], y_range=[-1.0,1.0], x_bin_step=2, title_formatter='histos_p_pro_dp_pro_from_angles_CTOF_{}',
                   save_name='p_pro_dp_pro_fit_rad_{}.png'.format(args.output_prefix),
                   title='Proton Momentum Resolution', xtitle='$P_p$', ytitle='$\Delta P_{p}$',
                   max_errorbar = 0.8, y_fit_range=[-0.8, 0.8], hline=0.00001, x_shift=True
     ) 
  
     plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
-                  x_range=[1.5,5.00], y_range=[-2.0,2.0], x_bin_step=4, title_formatter='histos_p_ele_dp_ele_CTOF_{}',
+                  x_range=[1.5,4.00], y_range=[-1.0,1.0], x_bin_step=2, title_formatter='histos_p_ele_dp_ele_from_angles_CTOF_{}',
                   save_name='p_ele_dp_ele_fit_rad_{}.png'.format(args.output_prefix),
                   title='Electron Momentum Resolution', xtitle='$P_e$', ytitle='$\Delta P_{e}$',
                   max_errorbar = 0.8, y_fit_range=[-1.4, 1.4], hline=0.00001, x_shift=True
     ) 
+
+    """
 
     plot_fits_mpl(histos1=histos['data'], histos2=histos['sim'], config1='Data', config2='Sim',
                   x_range=[7,30], y_range=[-3.0,3.0], x_bin_step=4, title_formatter='histos_theta_ele_dtheta_ele_CTOF_{}',

@@ -255,6 +255,9 @@ GParsPool.withPool 16, {
 			histos.computeIfAbsent('w_pass_all_angles_' + ctof, histoBuilders.w).fill(pkin.w)
 			histos.computeIfAbsent('p_ele_theta_ele_isr_' + ctof, histoBuilders2.p_ele_theta).fill(
 			    ele.p(), Math.toDegrees(ele.theta()))
+			histos.computeIfAbsent('w_theta_sum_isr_' + ctof, histoBuilders2.w_theta_sum).fill(
+			    pkin.w, Math.toDegrees(ele.theta() + pro.theta())
+			)
 		    }
 
 		    if (pass_missing_mass){			
