@@ -21,12 +21,13 @@ def target = new Particle(2212, 0.0, 0.0, 0.0)
 
 cuts = [
     w: [0.8, 1.15],
+    high_w:[1.25,999.9],
     w_loose: [0.8, 1.30],
-    angle: [175, 185],
+    angle: [178, 180],
     missing_pt: [0.0, 0.2],
     theta_gamma: [0, 3],
     p_ele:[1.5, 10.646],
-    missing_mass: [-0.08, 0.08]
+    missing_mass: [-0.4, 0.4]
 ]
 
 tighter_kin_bounds = [
@@ -46,7 +47,8 @@ tighter_kin_bounds = [
     missing_pt    : [0, 1],
     e_gamma: [0, 11],
     theta_gamma:[0, 35],
-    theta_egamma:[0, 35]
+    theta_egamma:[0, 35],
+    chi2:[0,10]
 ]
 
 lim = tighter_kin_bounds
@@ -83,6 +85,8 @@ histoBuilders2 = [
         w_q2             : { title -> limited_h2(title, 200, 200, lim.w, lim.q2) },
         x_q2             : { title -> limited_h2(title, 200, 200, lim.x, lim.q2) },
     theta_theta: { title -> limited_h2(title, 200, 200, lim.theta_egamma, lim.theta_gamma) },
+    chi2_dp_ele      : { title -> limited_h2(title, 100, 100, lim.chi2, lim.dp_ele) },
+    chi2_dp_pro      : { title -> limited_h2(title, 100, 100, lim.chi2, lim.dp_pro) },
 ]
 
 
@@ -261,9 +265,11 @@ GParsPool.withPool 16, {
 			)
 
 			def pass_missing_mass = pkin.missing_mass > cuts.missing_mass[0] && pkin.missing_mass < cuts.missing_mass[1]
+			def pass_high_w = pkin.w > cuts.high_w[0]
+			def pass_angle_ep = pkin.angle > cuts.angle[0] && pkin.angle < cuts.angle[1]
 
 			// These are ISR events. 
-			if (pkin.theta_gamma < cuts.theta_gamma[1] && pass_missing_mass) {
+			if (pkin.theta_gamma < cuts.theta_gamma[1] && pass_missing_mass && pass_high_w && pass_angle_ep) {
  			    histos.computeIfAbsent('w_pass_all_' + ctof + '_' + sector, histoBuilders.w).fill(pkin.w)
 			    histos.computeIfAbsent('p_ele_theta_ele_' + ctof + '_' + sector, histoBuilders2.p_ele_theta).fill(
 			    ele.p(), Math.toDegrees(ele.theta()))
@@ -293,8 +299,10 @@ GParsPool.withPool 16, {
 				Math.toDegrees(ele.theta()), Math.toDegrees(pred_ele.theta - ele.theta()))
 			    histos.computeIfAbsent('theta_pro_dtheta_pro_' + ctof + '_' + sector, histoBuilders2.theta_pro_dtheta).fill(
 				Math.toDegrees(pro.theta()), Math.toDegrees(pred_pro.theta - pro.theta()))
+			    
+			    histos.computeIfAbsent('chi2_dp_ele_' + ctof, histoBuilders2.chi2_dp_ele).fill(event.chi2pid[it], pred_ele_p - ele.p())
+			    histos.computeIfAbsent('chi2_dp_pro_' + ctof, histoBuilders2.chi2_dp_ele).fill(event.chi2pid[it], pred_pro_p - pro.p())
 			}
-
 		    }
                 }
             }

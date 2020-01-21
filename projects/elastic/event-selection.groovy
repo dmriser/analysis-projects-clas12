@@ -21,12 +21,13 @@ def target = new Particle(2212, 0.0, 0.0, 0.0)
 
 cuts = [
     w: [0.8, 1.15],
+    high_w: [1.25, 999.9],
     w_loose: [0.8, 1.30],
-    angle: [175, 185],
+    angle: [178, 180],
     missing_pt: [0.0, 0.2],
     theta_gamma: [0, 3],
     p_ele:[1.5, 10.646],
-    missing_mass:[-0.08, 0.08]
+    missing_mass:[-0.4, 0.4]
 ]
 
 tighter_kin_bounds = [
@@ -48,7 +49,11 @@ tighter_kin_bounds = [
         e_gamma     : [0, 11],
         theta_gamma :[0, 35],
         theta_egamma:[0, 35],
-    missing_mass: [-1, 1]
+    missing_mass: [-1, 1],
+    chi2:[0, 10],
+    dc1:[-150,150],
+    dc2:[-250,250],
+    dc3:[-350,350]
 ]
 
 lim = tighter_kin_bounds
@@ -73,7 +78,8 @@ histoBuilders = [
         theta_pro: { title -> limited_h1(title, 200, lim.theta_pro) },
         e_gamma: { title -> limited_h1(title, 200, lim.e_gamma) },
     theta_gamma: { title -> limited_h1(title, 200, lim.theta_gamma) },
-    missing_mass: { title -> limited_h1(title, 200, lim.missing_mass) }
+    missing_mass: { title -> limited_h1(title, 200, lim.missing_mass) },
+    chi2 : { title -> limited_h1(title, 200, lim.chi2) }
 ]
 
 histoBuilders2 = [
@@ -86,7 +92,14 @@ histoBuilders2 = [
         w_q2             : { title -> limited_h2(title, 200, 200, lim.w, lim.q2) },
         x_q2             : { title -> limited_h2(title, 200, 200, lim.x, lim.q2) },
     theta_theta: { title -> limited_h2(title, 200, 200, lim.theta_egamma, lim.theta_gamma) },
-    w_theta_sum : { title -> limited_h2(title, 200, 200, lim.w, lim.theta_sum) }
+    w_theta_sum : { title -> limited_h2(title, 200, 200, lim.w, lim.theta_sum) },
+    dc1 : {title -> limited_h2(title, 200, 200, lim.dc1, lim.dc1)},
+    dc2 : {title -> limited_h2(title, 200, 200, lim.dc2, lim.dc2)},
+    dc3 : {title -> limited_h2(title, 200, 200, lim.dc3, lim.dc3)},
+    w_missing_mass : { title -> limited_h2(title, 200, 200, lim.w, lim.missing_mass) },
+    w_chi2 : {title -> limited_h2(title, 200, 200, lim.w, lim.chi2) },
+    w_angle_ep : {title -> limited_h2(title, 200, 200, lim.w, lim.angle_ep) },
+    w_theta_gamma : {title -> limited_h2(title, 200, 200, lim.w, lim.theta_gamma) },
 ]
 
 
@@ -201,7 +214,14 @@ GParsPool.withPool 16, {
                 ele.pindex = idx
                 ele.sphi = shiftPhi(Math.toDegrees(ele.phi()))
                 def kin = getKin(beam, target, ele)
-             
+              
+		def hits1 = event.dc1.get(idx)
+		def hits2 = event.dc2.get(idx)
+		def hits3 = event.dc3.get(idx)
+		def hit1 = hits1.find{it.layer==12}
+		def hit2 = hits2.find{it.layer==24}
+		def hit3 = hits3.find{it.layer==36}
+
                 histos.computeIfAbsent('w_inclusive_', histoBuilders.w).fill(kin.w)
 
                 (0..<event.npart).findAll { event.pid[it] == 2212 }.each {
@@ -221,6 +241,9 @@ GParsPool.withPool 16, {
 		    def pass_angle_ep = pkin.angle > cuts.angle[0] && pkin.angle < cuts.angle[1]
 		    def pass_w_elastic = pkin.w < cuts.w[1]
 		    def pass_missing_mass = pkin.missing_mass > cuts.missing_mass[0] && pkin.missing_mass < cuts.missing_mass[1]
+		    def pass_high_w = pkin.w > cuts.high_w[0]
+
+		    histos.computeIfAbsent('w_angle_ep_' + ctof, histoBuilders2.w_angle_ep).fill(pkin.w, pkin.angle)
 
 		    if (pass_w_elastic){
 			histos.computeIfAbsent('angle_ep_pass_w_elastic_' + ctof, histoBuilders.angle_ep).fill(pkin.angle)
@@ -236,9 +259,19 @@ GParsPool.withPool 16, {
 			histos.computeIfAbsent('missing_mass_pass_angle_' + ctof, 
 					       histoBuilders.missing_mass).fill(pkin.missing_mass)
 
+			if (pkin.w > 2){
+			    histos.computeIfAbsent('missing_mass_high_w_pass_angle_' + ctof, 
+						   histoBuilders.missing_mass).fill(pkin.missing_mass)
+			}
+
 			histos.computeIfAbsent('w_theta_sum_pass_angle_' + ctof, histoBuilders2.w_theta_sum).fill(
 			    pkin.w, Math.toDegrees(ele.theta() + pro.theta())
 			)
+			histos.computeIfAbsent('w_missing_mass_pass_angle_ep_elastic_' + ctof, histoBuilders2.w_missing_mass).fill(
+			    pkin.w, pkin.missing_mass
+			)
+			histos.computeIfAbsent('chi2_pass_angle_' + ctof, histoBuilders.chi2).fill(event.chi2pid[it])
+			histos.computeIfAbsent('w_chi2_pass_angle_' + ctof, histoBuilders2.w_chi2).fill(pkin.w, event.chi2pid[it])
 		    }
 
 		    if (pass_theta_gamma){
@@ -249,15 +282,26 @@ GParsPool.withPool 16, {
 		    if (pass_angle_ep && pass_w_elastic){
 			histos.computeIfAbsent('p_ele_theta_ele_elastic_' + ctof, histoBuilders2.p_ele_theta).fill(
 			    ele.p(), Math.toDegrees(ele.theta()))
+			if (hit1 && hit2 && hit3){
+			    histos.computeIfAbsent('dc1_elastic_' + ctof, histoBuilders2.dc1).fill(hit1.x, hit1.y)
+			    histos.computeIfAbsent('dc2_elastic_' + ctof, histoBuilders2.dc2).fill(hit2.x, hit2.y)
+			    histos.computeIfAbsent('dc3_elastic_' + ctof, histoBuilders2.dc3).fill(hit3.x, hit3.y)
+			}
 		    }
 
-		    if (pass_theta_gamma && pass_angle_ep && pass_missing_mass){
+		    if (pass_theta_gamma && pass_angle_ep && pass_missing_mass && pass_high_w){
 			histos.computeIfAbsent('w_pass_all_angles_' + ctof, histoBuilders.w).fill(pkin.w)
 			histos.computeIfAbsent('p_ele_theta_ele_isr_' + ctof, histoBuilders2.p_ele_theta).fill(
 			    ele.p(), Math.toDegrees(ele.theta()))
 			histos.computeIfAbsent('w_theta_sum_isr_' + ctof, histoBuilders2.w_theta_sum).fill(
 			    pkin.w, Math.toDegrees(ele.theta() + pro.theta())
 			)
+			if (hit1 && hit2 && hit3){
+			    histos.computeIfAbsent('dc1_isr_' + ctof, histoBuilders2.dc1).fill(hit1.x, hit1.y)
+			    histos.computeIfAbsent('dc2_isr_' + ctof, histoBuilders2.dc2).fill(hit2.x, hit2.y)
+			    histos.computeIfAbsent('dc3_isr_' + ctof, histoBuilders2.dc3).fill(hit3.x, hit3.y)
+			}
+
 		    }
 
 		    if (pass_missing_mass){			
@@ -268,9 +312,26 @@ GParsPool.withPool 16, {
 			    histos.computeIfAbsent('w_theta_sum_pass_missing_mass_angles_' + ctof, histoBuilders2.w_theta_sum).fill(
 				pkin.w, Math.toDegrees(ele.theta() + pro.theta())
 			    )
+			    histos.computeIfAbsent('w_theta_gamma_' + ctof, histoBuilders2.w_theta_gamma).fill(pkin.w,pkin.theta_gamma)
 			}
 		    }
  
+		    // Everything Else Passed (eep)
+		    if (pass_angle_ep && pass_missing_mass && pass_theta_gamma){
+			histos.computeIfAbsent('w_eep_' + ctof, histoBuilders.w).fill(pkin.w)
+		    }
+
+		    if (pass_missing_mass && pass_high_w && pass_theta_gamma){
+			histos.computeIfAbsent('angle_ep_eep_' + ctof, histoBuilders.angle_ep).fill(pkin.angle)
+		    }
+
+		    if (pass_missing_mass && pass_angle_ep && pass_high_w){
+			histos.computeIfAbsent('theta_gamma_eep_' + ctof, histoBuilders.theta_gamma).fill(pkin.theta_gamma)
+		    }
+		    
+		    if (pass_high_w && pass_theta_gamma && pass_angle_ep){
+			histos.computeIfAbsent('missing_mass_eep_' + ctof, histoBuilders.missing_mass).fill(pkin.missing_mass)
+		    }
                  }
             }
 
