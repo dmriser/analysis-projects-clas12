@@ -54,6 +54,15 @@ def chi2(data, theory, err):
 def model(x,p):
     return p[0] * np.exp( -0.5 * (x - p[1])**2 / p[2]**2 )
 
+def get_min_max(histos):
+#    return min([h.GetMinimum() for h in histos]), max([h.GetMaximum() for h in histos])
+    return histos[0].GetMinimum(), max([h.GetMaximum() for h in histos])
+
+def color_draw(histo, color=kGray, opts=""):
+    histo.SetLineColor(kBlack)
+    histo.SetFillColorAlpha(color,1.0)
+    histo.Draw(opts)
+    
 def scipy_fit_slice(x, y, err, bounds):        
     
     p0 = np.random.uniform(-1, 1, 3)    
@@ -378,12 +387,18 @@ if __name__ == '__main__':
     for config_type, file in files.items():
         histos[config_type] = load_histos(file)
         print(histos[config_type].keys())
-        
+
+    # Setup Cuts
+    cuts = {}
+    cuts['w'] = [1.25, 6.0]
+    cuts['angle_ep'] = [178.0, 180.0]
+    cuts['theta_gamma'] = [0.0, 3.0]
+    cuts['missing_mass'] = [-0.4, 0.4]
+    
     # Global opts
-    kRed = kRed + 2
-    kBlue = kBlue + 2
     gStyle.SetOptStat(0)
     gStyle.SetOptTitle(0)
+    root_garbage_can = [] 
     
     can = TCanvas('can', 'can', 1100, 800)
 
@@ -404,15 +419,9 @@ if __name__ == '__main__':
     can.Divide(2,2)
 
     can.cd(1)
-    histos['data']['histos_w_inclusive_'].SetLineColor(kBlack)
-    histos['data']['histos_w_inclusive_'].SetFillColorAlpha(kGray,1.0)
-    histos['data']['histos_w_inclusive_'].Draw()
-    histos['data']['histos_w_CTOF'].SetLineColor(kBlack)
-    histos['data']['histos_w_CTOF'].SetFillColorAlpha(kBlue,1.0)
-    histos['data']['histos_w_CTOF'].Draw('same')
-    histos['data']['histos_w_pass_angle_CTOF'].SetLineColor(kBlack)
-    histos['data']['histos_w_pass_angle_CTOF'].SetFillColorAlpha(kRed,1.0)
-    histos['data']['histos_w_pass_angle_CTOF'].Draw('same')
+    color_draw(histos['data']['histos_w_inclusive_'], kGray, "")
+    color_draw(histos['data']['histos_w_CTOF'], kBlue, "same")
+    color_draw(histos['data']['histos_w_pass_angle_CTOF'], kRed, "same")
     latex.DrawLatex(0.45, 0.02, 'W (GeV/c^{2})')
     latex.DrawLatex(0.3, 0.95, 'Data w/ Proton in CTOF')
     latex.SetTextColor(kBlue)
@@ -422,15 +431,9 @@ if __name__ == '__main__':
     latex.SetTextColor(kBlack)
     
     can.cd(2)
-    histos['data']['histos_w_inclusive_'].SetLineColor(kBlack)
-    histos['data']['histos_w_inclusive_'].SetFillColorAlpha(kGray,1.0)
-    histos['data']['histos_w_inclusive_'].Draw()
-    histos['data']['histos_w_FTOF'].SetLineColor(kBlack)
-    histos['data']['histos_w_FTOF'].SetFillColorAlpha(kBlue,1.0)
-    histos['data']['histos_w_FTOF'].Draw('same')
-    histos['data']['histos_w_pass_angle_FTOF'].SetLineColor(kBlack)
-    histos['data']['histos_w_pass_angle_FTOF'].SetFillColorAlpha(kRed, 1.0)
-    histos['data']['histos_w_pass_angle_FTOF'].Draw('same')
+    color_draw(histos['data']['histos_w_inclusive_'], kGray, "")
+    color_draw(histos['data']['histos_w_FTOF'], kBlue, "same")
+    color_draw(histos['data']['histos_w_pass_angle_FTOF'], kRed, "same")
     latex.DrawLatex(0.45, 0.02, 'W (GeV/c^{2})')
     latex.DrawLatex(0.3, 0.95, 'Data w/ Proton in FTOF')
     latex.SetTextColor(kBlue)
@@ -440,15 +443,9 @@ if __name__ == '__main__':
     latex.SetTextColor(kBlack)
     
     can.cd(3)
-    histos['sim']['histos_w_inclusive_'].SetLineColor(kBlack)
-    histos['sim']['histos_w_inclusive_'].SetFillColorAlpha(kGray,1.0)
-    histos['sim']['histos_w_inclusive_'].Draw()
-    histos['sim']['histos_w_CTOF'].SetLineColor(kBlack)
-    histos['sim']['histos_w_CTOF'].SetFillColorAlpha(kBlue,1.0)
-    histos['sim']['histos_w_CTOF'].Draw('same')
-    histos['sim']['histos_w_pass_angle_CTOF'].SetLineColor(kBlack)
-    histos['sim']['histos_w_pass_angle_CTOF'].SetFillColorAlpha(kRed,1.0)
-    histos['sim']['histos_w_pass_angle_CTOF'].Draw('same')
+    color_draw(histos['sim']['histos_w_inclusive_'], kGray, "")
+    color_draw(histos['sim']['histos_w_CTOF'], kBlue, "same")
+    color_draw(histos['sim']['histos_w_pass_angle_CTOF'], kRed, "same")
     latex.DrawLatex(0.45, 0.02, 'W (GeV/c^{2})')
     latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in CTOF')
     latex.SetTextColor(kBlue)
@@ -458,15 +455,9 @@ if __name__ == '__main__':
     latex.SetTextColor(kBlack)
     
     can.cd(4)
-    histos['sim']['histos_w_inclusive_'].SetLineColor(kBlack)
-    histos['sim']['histos_w_inclusive_'].SetFillColorAlpha(kGray,1.0)
-    histos['sim']['histos_w_inclusive_'].Draw()
-    histos['sim']['histos_w_FTOF'].SetLineColor(kBlack)
-    histos['sim']['histos_w_FTOF'].SetFillColorAlpha(kBlue,1.0)
-    histos['sim']['histos_w_FTOF'].Draw('same')
-    histos['sim']['histos_w_pass_angle_FTOF'].SetLineColor(kBlack)
-    histos['sim']['histos_w_pass_angle_FTOF'].SetFillColorAlpha(kRed, 1.0)
-    histos['sim']['histos_w_pass_angle_FTOF'].Draw('same')
+    color_draw(histos['sim']['histos_w_inclusive_'], kGray, "")
+    color_draw(histos['sim']['histos_w_FTOF'], kBlue, "same")
+    color_draw(histos['sim']['histos_w_pass_angle_FTOF'], kRed, "same")
     latex.DrawLatex(0.45, 0.02, 'W (GeV/c^{2})')
     latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in FTOF')
     latex.SetTextColor(kBlue)
@@ -496,7 +487,17 @@ if __name__ == '__main__':
     latex.DrawLatex(0.15, 0.85, 'w/ #Delta #phi cut')
     latex.SetTextColor(kBlack)
     latex.DrawLatex(0.3, 0.95, 'Data w/ Proton in CTOF')
-    
+
+    ymin, ymax = get_min_max([
+        histos['data']['histos_theta_gamma_CTOF'],
+        histos['data']['histos_theta_gamma_pass_angle_CTOF']]
+    )
+    line = TLine(3.0, ymin, 3.0, ymax)
+    line.SetLineColor(1)
+    line.SetLineStyle(1)
+    line.Draw('same')
+    root_garbage_can.append(line)
+
     can.cd(2)
     histos['data']['histos_theta_gamma_FTOF'].SetLineColor(kBlack)
     histos['data']['histos_theta_gamma_FTOF'].SetFillColorAlpha(kGray,1.0)
@@ -509,7 +510,17 @@ if __name__ == '__main__':
     latex.DrawLatex(0.72, 0.85, 'w/ #Delta #phi cut')
     latex.SetTextColor(kBlack)
     latex.DrawLatex(0.3, 0.95, 'Data w/ Proton in FTOF')
-    
+
+    ymin, ymax = get_min_max([
+        histos['data']['histos_theta_gamma_FTOF'],
+        histos['data']['histos_theta_gamma_pass_angle_FTOF']]
+    )
+    line = TLine(3.0, ymin, 3.0, ymax)
+    line.SetLineColor(1)
+    line.SetLineStyle(1)
+    line.Draw('same')
+    root_garbage_can.append(line)
+        
     can.cd(3)
     histos['sim']['histos_theta_gamma_CTOF'].SetLineColor(kBlack)
     histos['sim']['histos_theta_gamma_CTOF'].SetFillColorAlpha(kGray,1.0)
@@ -522,6 +533,15 @@ if __name__ == '__main__':
     latex.DrawLatex(0.15, 0.85, 'w/ #Delta #phi cut')
     latex.SetTextColor(kBlack)
     latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in CTOF')
+    ymin, ymax = get_min_max([
+        histos['sim']['histos_theta_gamma_CTOF'],
+        histos['sim']['histos_theta_gamma_pass_angle_CTOF']]
+    )
+    line = TLine(3.0, ymin, 3.0, ymax)
+    line.SetLineColor(1)
+    line.SetLineStyle(1)
+    line.Draw('same')
+    root_garbage_can.append(line)
     
     can.cd(4)
     histos['sim']['histos_theta_gamma_FTOF'].SetLineColor(kBlack)
@@ -535,6 +555,15 @@ if __name__ == '__main__':
     latex.DrawLatex(0.72, 0.85, 'w/ #Delta #phi cut')
     latex.SetTextColor(kBlack)
     latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in FTOF')
+    ymin, ymax = get_min_max([
+        histos['sim']['histos_theta_gamma_FTOF'],
+        histos['sim']['histos_theta_gamma_pass_angle_FTOF']]
+    )
+    line = TLine(3.0, ymin, 3.0, ymax)
+    line.SetLineColor(1)
+    line.SetLineStyle(1)
+    line.Draw('same')
+    root_garbage_can.append(line)
     
     can.Print('theta_gamma_' + args.output_prefix + '.pdf')
      
@@ -557,6 +586,16 @@ if __name__ == '__main__':
     latex.SetTextColor(kRed)
     latex.DrawLatex(0.68, 0.85, 'Elastic Peak')
     latex.SetTextColor(kBlack)
+
+    ymin, ymax = get_min_max([
+        histos['data']['histos_angle_ep_CTOF'],
+        histos['data']['histos_angle_ep_pass_w_elastic_CTOF']]
+    )
+    line = TLine(178.0, ymin, 178.0, ymax)
+    line.SetLineColor(1)
+    line.SetLineStyle(1)
+    line.Draw('same')
+    root_garbage_can.append(line)
     
     can.cd(2)
     histos['data']['histos_angle_ep_FTOF'].SetLineColor(kBlack)
@@ -570,6 +609,16 @@ if __name__ == '__main__':
     latex.SetTextColor(kRed)
     latex.DrawLatex(0.68, 0.85, 'Elastic Peak')
     latex.SetTextColor(kBlack)
+
+    ymin, ymax = get_min_max([
+        histos['data']['histos_angle_ep_FTOF'],
+        histos['data']['histos_angle_ep_pass_w_elastic_FTOF']]
+    )
+    line = TLine(178.0, ymin, 178.0, ymax)
+    line.SetLineColor(1)
+    line.SetLineStyle(1)
+    line.Draw('same')
+    root_garbage_can.append(line)
     
     can.cd(3)
     histos['sim']['histos_angle_ep_CTOF'].SetLineColor(kBlack)
@@ -583,7 +632,16 @@ if __name__ == '__main__':
     latex.SetTextColor(kRed)
     latex.DrawLatex(0.68, 0.85, 'Elastic Peak')
     latex.SetTextColor(kBlack)
-    
+    ymin, ymax = get_min_max([
+        histos['sim']['histos_angle_ep_CTOF'],
+        histos['sim']['histos_angle_ep_pass_w_elastic_CTOF']]
+    )
+    line = TLine(178.0, ymin, 178.0, ymax)
+    line.SetLineColor(1)
+    line.SetLineStyle(1)
+    line.Draw('same')
+    root_garbage_can.append(line)
+
     can.cd(4)
     histos['sim']['histos_angle_ep_FTOF'].SetLineColor(kBlack)
     histos['sim']['histos_angle_ep_FTOF'].SetFillColorAlpha(kGray,1.0)
@@ -596,7 +654,16 @@ if __name__ == '__main__':
     latex.SetTextColor(kRed)
     latex.DrawLatex(0.68, 0.85, 'Elastic Peak')
     latex.SetTextColor(kBlack)
-    
+    ymin, ymax = get_min_max([
+        histos['sim']['histos_angle_ep_FTOF'],
+        histos['sim']['histos_angle_ep_pass_w_elastic_FTOF']]
+    )
+    line = TLine(178.0, ymin, 178.0, ymax)
+    line.SetLineColor(1)
+    line.SetLineStyle(1)
+    line.Draw('same')
+    root_garbage_can.append(line)
+
     can.Print('angle_ep_' + args.output_prefix + '.pdf')
 
         
@@ -705,11 +772,25 @@ if __name__ == '__main__':
     histos['data']['histos_missing_mass_pass_angle_CTOF'].SetLineColor(kBlack)
     histos['data']['histos_missing_mass_pass_angle_CTOF'].SetFillColorAlpha(kRed,1.0)
     histos['data']['histos_missing_mass_pass_angle_CTOF'].Draw('same')
-    latex.DrawLatex(0.45, 0.02, 'M_{X}')
+    latex.DrawLatex(0.45, 0.02, 'M_{X}^{2}')
     latex.SetTextColor(kRed)
     latex.DrawLatex(0.15, 0.85, 'w/ #Delta #phi cut')
     latex.SetTextColor(kBlack)
     latex.DrawLatex(0.3, 0.95, 'Data w/ Proton in CTOF')
+    ymin, ymax = get_min_max([
+        histos['data']['histos_missing_mass_CTOF'],
+        histos['data']['histos_missing_mass_pass_angle_CTOF']]
+    )
+    lline = TLine(-0.08, ymin, -0.08, ymax)
+    lline.SetLineColor(1)
+    lline.SetLineStyle(1)
+    lline.Draw('same')
+    root_garbage_can.append(lline)
+    rline = TLine(0.08, ymin, 0.08, ymax)
+    rline.SetLineColor(1)
+    rline.SetLineStyle(1)
+    rline.Draw('same')
+    root_garbage_can.append(rline)
 
     can.cd(2)
     histos['data']['histos_missing_mass_FTOF'].SetLineColor(kBlack)
@@ -718,11 +799,25 @@ if __name__ == '__main__':
     histos['data']['histos_missing_mass_pass_angle_FTOF'].SetLineColor(kBlack)
     histos['data']['histos_missing_mass_pass_angle_FTOF'].SetFillColorAlpha(kRed,1.0)
     histos['data']['histos_missing_mass_pass_angle_FTOF'].Draw('same')
-    latex.DrawLatex(0.45, 0.02, 'M_{X}')
+    latex.DrawLatex(0.45, 0.02, 'M_{X}^{2}')
     latex.SetTextColor(kRed)
     latex.DrawLatex(0.15, 0.85, 'w/ #Delta #phi cut')
     latex.SetTextColor(kBlack)
     latex.DrawLatex(0.3, 0.95, 'Data w/ Proton in FTOF')
+    ymin, ymax = get_min_max([
+        histos['data']['histos_missing_mass_FTOF'],
+        histos['data']['histos_missing_mass_pass_angle_FTOF']]
+    )
+    lline = TLine(-0.08, ymin, -0.08, ymax)
+    lline.SetLineColor(1)
+    lline.SetLineStyle(1)
+    lline.Draw('same')
+    root_garbage_can.append(lline)
+    rline = TLine(0.08, ymin, 0.08, ymax)
+    rline.SetLineColor(1)
+    rline.SetLineStyle(1)
+    rline.Draw('same')
+    root_garbage_can.append(rline)
 
     can.cd(3)
     histos['sim']['histos_missing_mass_CTOF'].SetLineColor(kBlack)
@@ -731,12 +826,27 @@ if __name__ == '__main__':
     histos['sim']['histos_missing_mass_pass_angle_CTOF'].SetLineColor(kBlack)
     histos['sim']['histos_missing_mass_pass_angle_CTOF'].SetFillColorAlpha(kRed,1.0)
     histos['sim']['histos_missing_mass_pass_angle_CTOF'].Draw('same')
-    latex.DrawLatex(0.45, 0.02, 'M_{X}')
+    latex.DrawLatex(0.45, 0.02, 'M_{X}^{2}')
     latex.SetTextColor(kRed)
     latex.DrawLatex(0.15, 0.85, 'w/ #Delta #phi cut')
     latex.SetTextColor(kBlack)
     latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in CTOF')
+    ymin, ymax = get_min_max([
+        histos['sim']['histos_missing_mass_CTOF'],
+        histos['sim']['histos_missing_mass_pass_angle_CTOF']]
+    )
+    lline = TLine(-0.08, ymin, -0.08, ymax)
+    lline.SetLineColor(1)
+    lline.SetLineStyle(1)
+    lline.Draw('same')
+    root_garbage_can.append(lline)
+    rline = TLine(0.08, ymin, 0.08, ymax)
+    rline.SetLineColor(1)
+    rline.SetLineStyle(1)
+    rline.Draw('same')
+    root_garbage_can.append(rline)
 
+    
     can.cd(4)
     histos['sim']['histos_missing_mass_FTOF'].SetLineColor(kBlack)
     histos['sim']['histos_missing_mass_FTOF'].SetFillColorAlpha(kGray,1.0)
@@ -744,12 +854,27 @@ if __name__ == '__main__':
     histos['sim']['histos_missing_mass_pass_angle_FTOF'].SetLineColor(kBlack)
     histos['sim']['histos_missing_mass_pass_angle_FTOF'].SetFillColorAlpha(kRed,1.0)
     histos['sim']['histos_missing_mass_pass_angle_FTOF'].Draw('same')
-    latex.DrawLatex(0.45, 0.02, 'M_{X}')
+    latex.DrawLatex(0.45, 0.02, 'M_{X}^{2}')
     latex.SetTextColor(kRed)
     latex.DrawLatex(0.15, 0.85, 'w/ #Delta #phi cut')
     latex.SetTextColor(kBlack)
     latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in FTOF')
+    ymin, ymax = get_min_max([
+        histos['sim']['histos_missing_mass_FTOF'],
+        histos['sim']['histos_missing_mass_pass_angle_FTOF']]
+    )
+    lline = TLine(-0.4, ymin, -0.4, ymax)
+    lline.SetLineColor(1)
+    lline.SetLineStyle(1)
+    lline.Draw('same')
+    root_garbage_can.append(lline)
+    rline = TLine(0.4, ymin, 0.4, ymax)
+    rline.SetLineColor(1)
+    rline.SetLineStyle(1)
+    rline.Draw('same')
+    root_garbage_can.append(rline)
 
+    
     can.Print('missing_mass_' + args.output_prefix + '.pdf')
     
     # -----------------------------------------------------------
@@ -886,3 +1011,239 @@ if __name__ == '__main__':
     latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in FTOF (ISR)')
 
     can.Print('w_theta_sum_isr_' + args.output_prefix + '.pdf')
+
+    # -----------------------------------------------------------
+    # Plot Drift Chambers
+    # -----------------------------------------------------------
+    
+    can.Clear()
+    can.Divide(3,2)
+
+    can.cd(1)
+    histos['data']['histos_dc1_elastic_CTOF'].Draw('colz')
+    gPad.SetLogz()
+    latex.DrawLatex(0.45, 0.02, 'X')
+    latex.SetTextAngle(90.0)
+    latex.DrawLatex(0.02, 0.4, 'Y')
+    latex.SetTextAngle(0.0) 
+    latex.DrawLatex(0.15, 0.95, 'Data w/ Proton in CTOF (Elastic) DC1')
+
+    can.cd(2)
+    histos['data']['histos_dc2_elastic_CTOF'].Draw('colz')
+    gPad.SetLogz()
+    latex.DrawLatex(0.45, 0.02, 'X')
+    latex.SetTextAngle(90.0)
+    latex.DrawLatex(0.02, 0.4, 'Y')
+    latex.SetTextAngle(0.0) 
+    latex.DrawLatex(0.15, 0.95, 'Data w/ Proton in CTOF (Elastic) DC2')
+
+    can.cd(3)
+    histos['data']['histos_dc3_elastic_CTOF'].Draw('colz')
+    gPad.SetLogz()
+    latex.DrawLatex(0.45, 0.02, 'X')
+    latex.SetTextAngle(90.0)
+    latex.DrawLatex(0.02, 0.4, 'Y')
+    latex.SetTextAngle(0.0) 
+    latex.DrawLatex(0.15, 0.95, 'Data w/ Proton in CTOF (Elastic) DC3')
+
+    can.cd(4)
+    histos['data']['histos_dc1_isr_CTOF'].Draw('colz')
+    gPad.SetLogz()
+    latex.DrawLatex(0.45, 0.02, 'X')
+    latex.SetTextAngle(90.0)
+    latex.DrawLatex(0.02, 0.4, 'Y')
+    latex.SetTextAngle(0.0) 
+    latex.DrawLatex(0.15, 0.95, 'Data w/ Proton in CTOF (ISR) DC1')
+
+    can.cd(5)
+    histos['data']['histos_dc2_isr_CTOF'].Draw('colz')
+    gPad.SetLogz()
+    latex.DrawLatex(0.45, 0.02, 'X')
+    latex.SetTextAngle(90.0)
+    latex.DrawLatex(0.02, 0.4, 'Y')
+    latex.SetTextAngle(0.0) 
+    latex.DrawLatex(0.15, 0.95, 'Data w/ Proton in CTOF (ISR) DC2')
+
+    can.cd(6)
+    histos['data']['histos_dc3_isr_CTOF'].Draw('colz')
+    gPad.SetLogz()
+    latex.DrawLatex(0.45, 0.02, 'X')
+    latex.SetTextAngle(90.0)
+    latex.DrawLatex(0.02, 0.4, 'Y')
+    latex.SetTextAngle(0.0) 
+    latex.DrawLatex(0.15, 0.95, 'Data w/ Proton in CTOF (ISR) DC3')
+
+    can.Print('dc_summary_' + args.output_prefix + '.pdf')
+
+
+    # -----------------------------------------------------------
+    # Plot Summary of DATA/CTOF event selection
+    # -----------------------------------------------------------
+    
+    can.Clear()
+    can.Divide(2,2)
+
+    can.cd(1)
+    color_draw(histos['data']['histos_w_CTOF'], kGray, "")
+    color_draw(histos['data']['histos_w_eep_CTOF'], kRed, "same")
+    latex.DrawLatex(0.3, 0.95, 'Data w/ Proton in CTOF')
+    latex.DrawLatex(0.45, 0.02, 'W')
+    latex.SetTextColor(kRed)
+    latex.DrawLatex(0.15, 0.85, 'Pass Others')
+    latex.SetTextColor(kBlack)
+    ymin, ymax = get_min_max([
+        histos['data']['histos_w_CTOF'],
+        histos['data']['histos_w_eep_CTOF']]
+    )
+    line = TLine(cuts['w'][0], ymin, cuts['w'][0], ymax)
+    line.SetLineColor(1)
+    line.SetLineStyle(1)
+    line.Draw('same')
+    root_garbage_can.append(line)
+
+    can.cd(2)
+    color_draw(histos['data']['histos_theta_gamma_CTOF'], kGray, "")
+    color_draw(histos['data']['histos_theta_gamma_eep_CTOF'], kRed, "same")
+    latex.DrawLatex(0.3, 0.95, 'Data w/ Proton in CTOF')
+    latex.DrawLatex(0.45, 0.02, '#theta_{#gamma}')
+    latex.SetTextColor(kRed)
+    latex.DrawLatex(0.15, 0.85, 'Pass Others')
+    latex.SetTextColor(kBlack)
+    ymin, ymax = get_min_max([
+        histos['data']['histos_theta_gamma_CTOF'],
+        histos['data']['histos_theta_gamma_eep_CTOF']]
+    )
+    line = TLine(cuts['theta_gamma'][1], ymin, cuts['theta_gamma'][1], ymax)
+    line.SetLineColor(1)
+    line.SetLineStyle(1)
+    line.Draw('same')
+    root_garbage_can.append(line)
+
+    can.cd(3)
+    color_draw(histos['data']['histos_angle_ep_CTOF'], kGray, "")
+    color_draw(histos['data']['histos_angle_ep_eep_CTOF'], kRed, "same")
+    latex.DrawLatex(0.3, 0.95, 'Data w/ Proton in CTOF')
+    latex.DrawLatex(0.45, 0.02, '#Delta#phi_{ep}')
+    latex.SetTextColor(kRed)
+    latex.DrawLatex(0.15, 0.85, 'Pass Others')
+    latex.SetTextColor(kBlack)
+    ymin, ymax = get_min_max([
+        histos['data']['histos_angle_ep_CTOF'],
+        histos['data']['histos_angle_ep_eep_CTOF']]
+    )
+    line = TLine(cuts['angle_ep'][0], ymin, cuts['angle_ep'][0], ymax)
+    line.SetLineColor(1)
+    line.SetLineStyle(1)
+    line.Draw('same')
+    root_garbage_can.append(line)
+
+    can.cd(4)
+    color_draw(histos['data']['histos_missing_mass_CTOF'], kGray, "")
+    color_draw(histos['data']['histos_missing_mass_eep_CTOF'], kRed, "same")
+    latex.DrawLatex(0.3, 0.95, 'Data w/ Proton in CTOF')
+    latex.DrawLatex(0.45, 0.02, 'M_{X}^{2}')
+    latex.SetTextColor(kRed)
+    latex.DrawLatex(0.15, 0.85, 'Pass Others')
+    latex.SetTextColor(kBlack)
+    ymin, ymax = get_min_max([
+        histos['data']['histos_missing_mass_CTOF'],
+        histos['data']['histos_missing_mass_eep_CTOF']]
+    )
+    line = TLine(cuts['missing_mass'][0], ymin, cuts['missing_mass'][0], ymax)
+    line.SetLineColor(1)
+    line.SetLineStyle(1)
+    line.Draw('same')
+    root_garbage_can.append(line)
+    line = TLine(cuts['missing_mass'][1], ymin, cuts['missing_mass'][1], ymax)
+    line.SetLineColor(1)
+    line.SetLineStyle(1)
+    line.Draw('same')
+    root_garbage_can.append(line)
+
+    can.Print('es_summary_data_ctof_' + args.output_prefix + '.pdf')
+
+    # -----------------------------------------------------------
+    # Plot Summary of SIM/CTOF event selection
+    # -----------------------------------------------------------
+    
+    can.Clear()
+    can.Divide(2,2)
+
+    can.cd(1)
+    color_draw(histos['sim']['histos_w_CTOF'], kGray, "")
+    color_draw(histos['sim']['histos_w_eep_CTOF'], kRed, "same")
+    latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in CTOF')
+    latex.DrawLatex(0.45, 0.02, 'W')
+    latex.SetTextColor(kRed)
+    latex.DrawLatex(0.15, 0.85, 'Pass Others')
+    latex.SetTextColor(kBlack)
+    ymin, ymax = get_min_max([
+        histos['sim']['histos_w_CTOF'],
+        histos['sim']['histos_w_eep_CTOF']]
+    )
+    line = TLine(cuts['w'][0], ymin, cuts['w'][0], ymax)
+    line.SetLineColor(1)
+    line.SetLineStyle(1)
+    line.Draw('same')
+    root_garbage_can.append(line)
+
+    can.cd(2)
+    color_draw(histos['sim']['histos_theta_gamma_CTOF'], kGray, "")
+    color_draw(histos['sim']['histos_theta_gamma_eep_CTOF'], kRed, "same")
+    latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in CTOF')
+    latex.DrawLatex(0.45, 0.02, '#theta_{#gamma}')
+    latex.SetTextColor(kRed)
+    latex.DrawLatex(0.15, 0.85, 'Pass Others')
+    latex.SetTextColor(kBlack)
+    ymin, ymax = get_min_max([
+        histos['sim']['histos_theta_gamma_CTOF'],
+        histos['sim']['histos_theta_gamma_eep_CTOF']]
+    )
+    line = TLine(cuts['theta_gamma'][0], ymin, cuts['theta_gamma'][0], ymax)
+    line.SetLineColor(1)
+    line.SetLineStyle(1)
+    line.Draw('same')
+    root_garbage_can.append(line)
+
+    can.cd(3)
+    color_draw(histos['sim']['histos_angle_ep_CTOF'], kGray, "")
+    color_draw(histos['sim']['histos_angle_ep_eep_CTOF'], kRed, "same")
+    latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in CTOF')
+    latex.DrawLatex(0.45, 0.02, '#Delta#phi_{ep}')
+    latex.SetTextColor(kRed)
+    latex.DrawLatex(0.15, 0.85, 'Pass Others')
+    latex.SetTextColor(kBlack)
+    ymin, ymax = get_min_max([
+        histos['sim']['histos_angle_ep_CTOF'],
+        histos['sim']['histos_angle_ep_eep_CTOF']]
+    )
+    line = TLine(cuts['angle_ep'][0], ymin, cuts['angle_ep'][0], ymax)
+    line.SetLineColor(1)
+    line.SetLineStyle(1)
+    line.Draw('same')
+    root_garbage_can.append(line)
+
+    can.cd(4)
+    color_draw(histos['sim']['histos_missing_mass_CTOF'], kGray, "")
+    color_draw(histos['sim']['histos_missing_mass_eep_CTOF'], kRed, "same")
+    latex.DrawLatex(0.3, 0.95, 'Sim w/ Proton in CTOF')
+    latex.DrawLatex(0.45, 0.02, 'M_{X}^{2}')
+    latex.SetTextColor(kRed)
+    latex.DrawLatex(0.15, 0.85, 'Pass Others')
+    latex.SetTextColor(kBlack)
+    ymin, ymax = get_min_max([
+        histos['sim']['histos_missing_mass_CTOF'],
+        histos['sim']['histos_missing_mass_eep_CTOF']]
+    )
+    line = TLine(cuts['missing_mass'][0], ymin, cuts['missing_mass'][0], ymax)
+    line.SetLineColor(1)
+    line.SetLineStyle(1)
+    line.Draw('same')
+    root_garbage_can.append(line)
+    line = TLine(cuts['missing_mass'][1], ymin, cuts['missing_mass'][1], ymax)
+    line.SetLineColor(1)
+    line.SetLineStyle(1)
+    line.Draw('same')
+    root_garbage_can.append(line)
+
+    can.Print('es_summary_sim_ctof_' + args.output_prefix + '.pdf')
