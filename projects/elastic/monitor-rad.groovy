@@ -21,13 +21,13 @@ def target = new Particle(2212, 0.0, 0.0, 0.0)
 
 cuts = [
     w: [0.8, 1.15],
-    high_w:[1.25,999.9],
+    high_w:[1.15,999.9],
     w_loose: [0.8, 1.30],
     angle: [178, 180],
     missing_pt: [0.0, 0.2],
     theta_gamma: [0, 3],
     p_ele:[1.5, 10.646],
-    missing_mass: [-0.4, 0.4]
+    missing_mass: [-0.1, 0.1]
 ]
 
 tighter_kin_bounds = [

@@ -21,13 +21,14 @@ def target = new Particle(2212, 0.0, 0.0, 0.0)
 
 cuts = [
     w: [0.8, 1.15],
-    high_w: [1.25, 999.9],
+    high_w: [1.15, 999.9],
     w_loose: [0.8, 1.30],
     angle: [178, 180],
     missing_pt: [0.0, 0.2],
     theta_gamma: [0, 3],
     p_ele:[1.5, 10.646],
-    missing_mass:[-0.4, 0.4]
+    missing_mass:[-0.4, 0.4],
+    missing_mass_ftof:[-0.1,0.1]
 ]
 
 tighter_kin_bounds = [
@@ -242,6 +243,7 @@ GParsPool.withPool 16, {
 		    def pass_w_elastic = pkin.w < cuts.w[1]
 		    def pass_missing_mass = pkin.missing_mass > cuts.missing_mass[0] && pkin.missing_mass < cuts.missing_mass[1]
 		    def pass_high_w = pkin.w > cuts.high_w[0]
+		    def pass_missing_mass_ftof = pkin.missing_mass > cuts.missing_mass_ftof[0] && pkin.missing_mass < cuts.missing_mass_ftof[1]
 
 		    histos.computeIfAbsent('w_angle_ep_' + ctof, histoBuilders2.w_angle_ep).fill(pkin.w, pkin.angle)
 
@@ -289,7 +291,7 @@ GParsPool.withPool 16, {
 			}
 		    }
 
-		    if (pass_theta_gamma && pass_angle_ep && pass_missing_mass && pass_high_w){
+		    if (pass_theta_gamma && pass_angle_ep && pass_missing_mass_ftof && pass_high_w){
 			histos.computeIfAbsent('w_pass_all_angles_' + ctof, histoBuilders.w).fill(pkin.w)
 			histos.computeIfAbsent('p_ele_theta_ele_isr_' + ctof, histoBuilders2.p_ele_theta).fill(
 			    ele.p(), Math.toDegrees(ele.theta()))
@@ -304,7 +306,7 @@ GParsPool.withPool 16, {
 
 		    }
 
-		    if (pass_missing_mass){			
+		    if (pass_missing_mass_ftof){			
 			histos.computeIfAbsent('w_theta_sum_pass_missing_mass_' + ctof, histoBuilders2.w_theta_sum).fill(
 			    pkin.w, Math.toDegrees(ele.theta() + pro.theta())
 			)
@@ -317,15 +319,15 @@ GParsPool.withPool 16, {
 		    }
  
 		    // Everything Else Passed (eep)
-		    if (pass_angle_ep && pass_missing_mass && pass_theta_gamma){
+		    if (pass_angle_ep && pass_missing_mass_ftof && pass_theta_gamma){
 			histos.computeIfAbsent('w_eep_' + ctof, histoBuilders.w).fill(pkin.w)
 		    }
 
-		    if (pass_missing_mass && pass_high_w && pass_theta_gamma){
+		    if (pass_missing_mass_ftof && pass_high_w && pass_theta_gamma){
 			histos.computeIfAbsent('angle_ep_eep_' + ctof, histoBuilders.angle_ep).fill(pkin.angle)
 		    }
 
-		    if (pass_missing_mass && pass_angle_ep && pass_high_w){
+		    if (pass_missing_mass_ftof && pass_angle_ep && pass_high_w){
 			histos.computeIfAbsent('theta_gamma_eep_' + ctof, histoBuilders.theta_gamma).fill(pkin.theta_gamma)
 		    }
 		    

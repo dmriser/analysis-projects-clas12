@@ -39,9 +39,9 @@ if __name__ == "__main__":
         subprocess.call(['mv', es_out + '.root', 'es-esepp.root'])
 
     if args.monitor:
-        subprocess.call([run_cmd, mon_exe, data_files])
-        subprocess.call([run_cmd, convert_exe, mon_out])
-        subprocess.call(['mv', mon_out + '.root', 'rga.root'])
+        #subprocess.call([run_cmd, mon_exe, data_files])
+        #subprocess.call([run_cmd, convert_exe, mon_out])
+        #subprocess.call(['mv', mon_out + '.root', 'rga.root'])
 
         subprocess.call([run_cmd, mon_exe, mc_files])
         subprocess.call([run_cmd, convert_exe, mon_out])
